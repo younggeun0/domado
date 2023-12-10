@@ -24,6 +24,14 @@ const electronHandler = {
   },
 };
 
+const dotEnvHandler = {
+  NOTION_POST_DATABASE_ID: process.env.NOTION_POST_DATABASE_ID,
+  NOTION_POMODORO_DATABASE_ID: process.env.NOTION_POMODORO_DATABASE_ID,
+  NOTION_KEY: process.env.NOTION_KEY,
+};
+
 contextBridge.exposeInMainWorld('electron', electronHandler);
+contextBridge.exposeInMainWorld('dot_env', dotEnvHandler);
 
 export type ElectronHandler = typeof electronHandler;
+export type DotEnvHandler = typeof dotEnvHandler;

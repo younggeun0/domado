@@ -96,10 +96,14 @@
     }
   },
   "dependencies": {
+    "@notionhq/client": "^2.2.14",
+    "dayjs": "^1.11.10",
+    "dotenv": "^16.3.1",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.4",
     "react": "^18.2.0",
+    "react-countdown-circle-timer": "^3.2.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.16.0"
   },
@@ -178,7 +182,8 @@
     "files": [
       "dist",
       "node_modules",
-      "package.json"
+      "package.json",
+      "assets/sounds/chime.mp3"
     ],
     "afterSign": ".erb/scripts/notarize.js",
     "mac": {
