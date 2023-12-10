@@ -2,37 +2,37 @@ import dayjs from 'dayjs';
 import React from 'react';
 import PomodoroTimer, { PomodoroInfo } from './PomodoroTimer';
 
-export function Pomodoro() {
+export default function Pomodoro() {
   // const { data: session } = useSession();
   // const isYoung = true; // session?.user?.email === 'dureng5@gmail.com'
-  const allPomodoroInfos: any[] = [];
+  // const allPomodoroInfos: any[] = [];
   const [todayInfo, setTodayInfo] = React.useState<
     PomodoroInfo | null | undefined
   >(null);
-  const [pomodoroInfos, setPomodoroInfos] =
-    React.useState<PomodoroInfo[]>(allPomodoroInfos);
+  // const [pomodoroInfos, setPomodoroInfos] =
+  //   React.useState<PomodoroInfo[]>(allPomodoroInfos);
 
-  React.useEffect(() => {
-    const today = dayjs().format('YYYY-MM-DD');
-    const info = pomodoroInfos.find((info) => info.date === today);
-    setTodayInfo(info);
-  }, [pomodoroInfos]);
+  // React.useEffect(() => {
+  //   const today = dayjs().format('YYYY-MM-DD');
+  //   const found = pomodoroInfos.find((info) => info.date === today);
+  //   setTodayInfo(found);
+  // }, [pomodoroInfos]);
 
-  React.useEffect(() => {
-    if (!todayInfo) return;
+  // React.useEffect(() => {
+  //   if (!todayInfo) return;
 
-    const idx = pomodoroInfos.findIndex(
-      (info) => info.date === todayInfo?.date,
-    );
+  //   const idx = pomodoroInfos.findIndex(
+  //     (info) => info.date === todayInfo?.date,
+  //   );
 
-    if (idx !== -1) {
-      const newPomodoroInfos = [...pomodoroInfos];
-      newPomodoroInfos[idx] = todayInfo;
-      setPomodoroInfos(newPomodoroInfos);
-    } else {
-      setPomodoroInfos([...pomodoroInfos, todayInfo]);
-    }
-  }, [pomodoroInfos, todayInfo]);
+  //   if (idx !== -1) {
+  //     const newPomodoroInfos = [...pomodoroInfos];
+  //     newPomodoroInfos[idx] = todayInfo;
+  //     setPomodoroInfos(newPomodoroInfos);
+  //   } else {
+  //     setPomodoroInfos([...pomodoroInfos, todayInfo]);
+  //   }
+  // }, [pomodoroInfos, todayInfo]);
 
   return (
     <section style={{ paddingTop: '1px' }}>

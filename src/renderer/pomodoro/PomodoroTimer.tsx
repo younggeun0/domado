@@ -1,11 +1,7 @@
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { CountdownCircleTimer } from 'react-countdown-circle-timer';
-import { Client } from '@notionhq/client';
 // import chimeSound from '../../../audio/chime.mp3';
-
-// const notion = new Client({ auth: window.dot_env.NOTION_KEY });
-// const POMODORO_DB_ID = window.dot_env.NOTION_POMODORO_DATABASE_ID as string;
 
 export interface PomodoroInfo {
   date: string;
@@ -44,72 +40,7 @@ export default function PomodoroTimer({
   async function updateOrCreatePomodoro() {
     try {
       // TODO, sound, post to notion using ipc
-
-      // try {
-      //   const today = new Date();
-      //   today.setHours(0, 0, 0, 0);
-
-      //   const { results } = await notion.databases.query({
-      //     database_id: POMODORO_DB_ID,
-      //     filter: {
-      //       created_time: {
-      //         after: today.toISOString(),
-      //       },
-      //       timestamp: 'created_time',
-      //     },
-      //     sorts: [
-      //       {
-      //         timestamp: 'created_time',
-      //         direction: 'ascending',
-      //       },
-      //     ],
-      //   });
-
-      //   if (results.length > 0) {
-      //     // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 🍅 추가
-      //     const page = results[0];
-      //     const previousTitle = (page as any).properties.name.title[0].text
-      //       .content;
-      //     const tokens = previousTitle.split(' ');
-      //     await notion.pages.update({
-      //       page_id: page.id as string,
-      //       properties: {
-      //         name: {
-      //           title: [
-      //             {
-      //               text: {
-      //                 content: `🍅 * ${
-      //                   parseInt(tokens[tokens.length - 1], 10) + 1
-      //                 }`,
-      //               },
-      //             },
-      //           ],
-      //         },
-      //       },
-      //     });
-      //   } else {
-      //     // 새로운 페이지가 없으면 새로 생성
-      //     await notion.pages.create({
-      //       parent: {
-      //         type: 'database_id',
-      //         database_id: POMODORO_DB_ID,
-      //       },
-      //       properties: {
-      //         name: {
-      //           title: [
-      //             {
-      //               text: {
-      //                 content: '🍅 * 1',
-      //               },
-      //             },
-      //           ],
-      //         },
-      //       },
-      //     });
-      //   }
-      // } catch (e) {
-      //   console.error(e);
-      // }
+      window.electron.ipcRenderer.sendMessage('post_pomodoro', ['ooooo']);
 
       // new Audio(chimeSound).play();
       // await fetch('/api/pomodoro', {

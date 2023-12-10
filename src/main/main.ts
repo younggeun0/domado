@@ -12,9 +12,12 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import dotenv from 'dotenv';
+import { Client } from '@notionhq/client';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import dotenv from 'dotenv';
+
+dotenv.config();
 
 class AppUpdater {
   constructor() {
@@ -30,6 +33,81 @@ ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+const notion = new Client({ auth: process.env.NOTION_KEY });
+const POMODORO_DB_ID = process.env.NOTION_POMODORO_DATABASE_ID as string;
+
+ipcMain.on('post_pomodoro', async (event, _arg) => {
+  // const msgTemplate = (pingPong: string) => `post_pomodoro test: ${pingPong}`;
+  // console.log(msgTemplate(_arg));
+  // TODO, 이어서 이벤트 체이닝이 가능
+  // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
+
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const { results } = await notion.databases.query({
+      database_id: POMODORO_DB_ID,
+      filter: {
+        created_time: {
+          after: today.toISOString(),
+        },
+        timestamp: 'created_time',
+      },
+      sorts: [
+        {
+          timestamp: 'created_time',
+          direction: 'ascending',
+        },
+      ],
+    });
+
+    if (results.length > 0) {
+      // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 🍅 추가
+      const page = results[0];
+      const previousTitle = (page as any).properties.name.title[0].text.content;
+      const tokens = previousTitle.split(' ');
+      await notion.pages.update({
+        page_id: page.id as string,
+        properties: {
+          name: {
+            title: [
+              {
+                text: {
+                  content: `🍅 * ${
+                    parseInt(tokens[tokens.length - 1], 10) + 1
+                  }`,
+                },
+              },
+            ],
+          },
+        },
+      });
+    } else {
+      // 새로운 페이지가 없으면 새로 생성
+      await notion.pages.create({
+        parent: {
+          type: 'database_id',
+          database_id: POMODORO_DB_ID,
+        },
+        properties: {
+          name: {
+            title: [
+              {
+                text: {
+                  content: '🍅 * 1',
+                },
+              },
+            ],
+          },
+        },
+      });
+    }
+  } catch (e) {
+    console.error(e);
+  }
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -128,8 +206,6 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
-    dotenv.config();
-
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the

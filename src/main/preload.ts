@@ -2,7 +2,8 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'ipc-example';
+// TODO, 필요한 이벤트 추가예정
+export type Channels = 'ipc-example' | 'post_pomodoro' | 'end_post_pomodoro';
 
 const electronHandler = {
   ipcRenderer: {
@@ -24,14 +25,6 @@ const electronHandler = {
   },
 };
 
-const dotEnvHandler = {
-  NOTION_POST_DATABASE_ID: process.env.NOTION_POST_DATABASE_ID,
-  NOTION_POMODORO_DATABASE_ID: process.env.NOTION_POMODORO_DATABASE_ID,
-  NOTION_KEY: process.env.NOTION_KEY,
-};
-
 contextBridge.exposeInMainWorld('electron', electronHandler);
-contextBridge.exposeInMainWorld('dot_env', dotEnvHandler);
 
 export type ElectronHandler = typeof electronHandler;
-export type DotEnvHandler = typeof dotEnvHandler;
