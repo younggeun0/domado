@@ -8,8 +8,9 @@ export interface PomodoroInfo {
 }
 
 // TODO, 한 사이클 분설정 기능 추가
-const MIN_PER_POMODORO = 0.05 // 25;
-const MIN_PER_REST = 0.05 // 5;
+const { isDebug } = window.electron
+const MIN_PER_POMODORO = isDebug ? 0.05 : 25
+const MIN_PER_REST = isDebug ? 0.05 : 5
 const DURATIONS = [60 * MIN_PER_POMODORO, 60 * MIN_PER_REST] // 웹앱 특성 상 계속 사용하지 않으므로 15분 쉬는건 우선 제외
 // const DURATIONS = [5, 3] // for test
 

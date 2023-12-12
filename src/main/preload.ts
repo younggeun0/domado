@@ -23,6 +23,7 @@ const electronHandler = {
       ipcRenderer.once(channel, (_event, ...args) => func(...args))
     },
   },
+  isDebug: process.env.NODE_ENV === 'development',
 }
 
 contextBridge.exposeInMainWorld('electron', electronHandler)
