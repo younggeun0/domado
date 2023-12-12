@@ -47,19 +47,21 @@ ipcMain.on('rest_finished', async () => {
   }).show()
 })
 
-ipcMain.on('post_pomodoro', async () => {
+ipcMain.on('post_pomodoro', async (event) => {
   // const msgTemplate = (pingPong: string) => `post_pomodoro test: ${pingPong}`;
   // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
+
   new Notification({
     title: '🍅 뽀모도로 종료! 고생했어!',
     body: '조금만 쉬었다 해요 🥰',
   }).show()
 
   if (!notionClient || !notionDatabaseId) {
-    console.log(
-      '기록 기능은 .env파일에 NOTION_KEY, NOTION_POMODORO_DATABASE_ID가 설정된 상태로 패키징돼야 동작합니다.',
+    event.reply(
+      'warn_unset_notion_keys',
+      '노션 페이지 기록 기능은 노션 API 키와 노션 데이터베이스 ID값을 설정해야 동작합니다.',
     )
     return
   }

@@ -8,6 +8,7 @@ export type Channels =
   | 'post_pomodoro'
   | 'rest_finished'
   | 'set_notion_keys'
+  | 'warn_unset_notion_keys'
 
 const electronHandler = {
   ipcRenderer: {

@@ -19,3 +19,9 @@ root.render(<App />)
 //   // TODO, 최초 뽀모도로 리스트를 조회할 때 사용
 //   console.log(arg);
 // });
+
+window.electron.ipcRenderer.on('warn_unset_notion_keys', async (message) => {
+  setTimeout(() => {
+    alert(message)
+  }, 2000)
+})
