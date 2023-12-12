@@ -3,7 +3,7 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 // TODO, 필요한 이벤트 추가예정
-export type Channels = 'ipc-example' | 'post_pomodoro' | 'end_post_pomodoro';
+export type Channels = 'ipc-example' | 'post_pomodoro' | 'rest_finished';
 
 const electronHandler = {
   ipcRenderer: {

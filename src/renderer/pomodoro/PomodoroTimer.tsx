@@ -29,41 +29,30 @@ export default function PomodoroTimer({
   const [status, setStatus] = useState<'play' | 'paused' | 'finished'>(
     'paused',
   );
+  const isRest = seq === 1;
 
   useEffect(() => {
     if (status === 'finished') {
+      if (isRest) window.electron.ipcRenderer.sendMessage('rest_finished');
+
       setSeq((s) => (s + 1) % 2);
       setStatus('paused');
     }
-  }, [status]);
+  }, [status, isRest]);
 
   async function updateOrCreatePomodoro() {
-    try {
-      // TODO, sound, post to notion using ipc
-      window.electron.ipcRenderer.sendMessage('post_pomodoro', ['ooooo']);
+    window.electron.ipcRenderer.sendMessage('post_pomodoro');
 
-      // new Audio(chimeSound).play();
-      // await fetch('/api/pomodoro', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
-
-      if (todayInfo) {
-        setTodayInfo({
-          date: todayInfo.date,
-          count: todayInfo.count + 1,
-        });
-      } else {
-        setTodayInfo({
-          date: dayjs().format('YYYY-MM-DD'),
-          count: 1,
-        });
-      }
-    } catch (e) {
-      alert(e);
-      console.error(e);
+    if (todayInfo) {
+      setTodayInfo({
+        date: todayInfo.date,
+        count: todayInfo.count + 1,
+      });
+    } else {
+      setTodayInfo({
+        date: dayjs().format('YYYY-MM-DD'),
+        count: 1,
+      });
     }
   }
 
@@ -71,8 +60,6 @@ export default function PomodoroTimer({
     setSeq((s) => (s = 0));
     setStatus('play');
   }
-
-  const isRest = seq === 1;
 
   return (
     <div

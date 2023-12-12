@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, Notification } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import dotenv from 'dotenv';
@@ -38,13 +38,21 @@ ipcMain.on('ipc-example', async (event, arg) => {
 const notion = new Client({ auth: process.env.NOTION_KEY });
 const POMODORO_DB_ID = process.env.NOTION_POMODORO_DATABASE_ID as string;
 
-ipcMain.on('post_pomodoro', async (event, _arg) => {
+ipcMain.on('rest_finished', async () => {
+  new Notification({
+    title: '휴식 종료!',
+    body: '다시 힘내보자구! 화이팅! 💪',
+  }).show();
+});
+
+ipcMain.on('post_pomodoro', async () => {
   // const msgTemplate = (pingPong: string) => `post_pomodoro test: ${pingPong}`;
   // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
 
   try {
+    // TODO, dot env 내용 못 읽는 이슈 확인
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -105,6 +113,11 @@ ipcMain.on('post_pomodoro', async (event, _arg) => {
         },
       });
     }
+    // TODO, notification 알림
+    new Notification({
+      title: '🍅 뽀모도로 종료! 고생했어!',
+      body: '조금만 쉬었다 해요 🥰',
+    }).show();
   } catch (e) {
     console.error(e);
   }
