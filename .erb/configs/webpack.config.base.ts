@@ -4,8 +4,13 @@
 
 import webpack from 'webpack';
 import TsconfigPathsPlugins from 'tsconfig-paths-webpack-plugin';
+import dotenv from 'dotenv';
 import webpackPaths from './webpack.paths';
 import { dependencies as externals } from '../../release/app/package.json';
+
+// TODO, dotenv 대신 입력받아 사용하도록 변경(localStroage에 저장)
+// TODO, 환경변수 미설정 시 에러 발생처리 or 노션 기록 제거
+dotenv.config();
 
 const configuration: webpack.Configuration = {
   externals: [...Object.keys(externals || {})],
@@ -52,6 +57,8 @@ const configuration: webpack.Configuration = {
   plugins: [
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
+      NOTION_POMODORO_DATABASE_ID: process.env.NOTION_POMODORO_DATABASE_ID,
+      NOTION_KEY: process.env.NOTION_KEY,
     }),
   ],
 };

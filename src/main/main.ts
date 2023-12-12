@@ -12,12 +12,9 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain, Notification } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import dotenv from 'dotenv';
 import { Client } from '@notionhq/client';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-
-dotenv.config();
 
 class AppUpdater {
   constructor() {
@@ -50,9 +47,19 @@ ipcMain.on('post_pomodoro', async () => {
   // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
+  new Notification({
+    title: '🍅 뽀모도로 종료! 고생했어!',
+    body: '조금만 쉬었다 해요 🥰',
+  }).show();
+
+  if (!process.env.NOTION_KEY || !process.env.NOTION_POMODORO_DATABASE_ID) {
+    console.log(
+      '기록 기능은 .env파일에 NOTION_KEY, NOTION_POMODORO_DATABASE_ID가 설정된 상태로 패키징돼야 동작합니다.',
+    );
+    return;
+  }
 
   try {
-    // TODO, dot env 내용 못 읽는 이슈 확인
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -123,10 +130,6 @@ ipcMain.on('post_pomodoro', async () => {
         },
       });
     }
-    new Notification({
-      title: '🍅 뽀모도로 종료! 고생했어!',
-      body: '조금만 쉬었다 해요 🥰',
-    }).show();
   } catch (e) {
     console.error(e);
   }
@@ -172,8 +175,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 300,
+    height: 300,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
