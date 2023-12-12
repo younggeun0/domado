@@ -95,6 +95,8 @@ ipcMain.on('post_pomodoro', async (event) => {
       ],
     })
 
+    // TODO, isDebug일 때 다른 타이틀로 변경해서 구분
+
     if (res.results.length > 0) {
       // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 🍅 추가
       const page = res.results[0]
