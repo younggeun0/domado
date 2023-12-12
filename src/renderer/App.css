@@ -14,6 +14,20 @@ body {
   align-items: center;
 }
 
+.help-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 5px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  color: white;
+  background: transparent;
+  cursor: pointer;
+  border: 1px solid white;
+  border-radius: 100%;
+  transition: all ease-in 0.1s;
+}
+
 button {
   background-color: white;
   padding: 10px 20px;

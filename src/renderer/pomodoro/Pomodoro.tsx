@@ -35,38 +35,43 @@ export default function Pomodoro() {
   // }, [pomodoroInfos, todayInfo]);
 
   return (
-    <section style={{ paddingTop: '1px' }}>
-      <PomodoroTimer todayInfo={todayInfo} setTodayInfo={setTodayInfo} />
+    <>
+      <div style={{ paddingTop: '1px' }}>
+        <PomodoroTimer todayInfo={todayInfo} setTodayInfo={setTodayInfo} />
 
-      {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <div style={{ width: '70%' }}>
-                    <CalendarHeatmap
-                        startDate={new Date('2023-04-30')}
-                        endDate={new Date('2023-08-01')}
-                        onClick={(value: any) => {
-                            if (!value || !isYoung) return
+        {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <div style={{ width: '70%' }}>
+                        <CalendarHeatmap
+                            startDate={new Date('2023-04-30')}
+                            endDate={new Date('2023-08-01')}
+                            onClick={(value: any) => {
+                                if (!value || !isYoung) return
 
-                            alert(`${value.date}  🍅 * ${value.count}`)
-                        }}
-                        classForValue={(value: any) => {
-                            let selectorNumber = 0
-                            if (!value || value.count === 0) {
-                            } else if (value.count > 8) {
-                                selectorNumber = 4
-                            } else if (value.count > 6) {
-                                selectorNumber = 3
-                            } else if (value.count > 4) {
-                                selectorNumber = 2
-                            } else if (value.count > 0) {
-                                selectorNumber = 1
-                            }
+                                alert(`${value.date}  🍅 * ${value.count}`)
+                            }}
+                            classForValue={(value: any) => {
+                                let selectorNumber = 0
+                                if (!value || value.count === 0) {
+                                } else if (value.count > 8) {
+                                    selectorNumber = 4
+                                } else if (value.count > 6) {
+                                    selectorNumber = 3
+                                } else if (value.count > 4) {
+                                    selectorNumber = 2
+                                } else if (value.count > 0) {
+                                    selectorNumber = 1
+                                }
 
-                            return `color-github-${selectorNumber}`
-                        }}
-                        values={pomodoroInfos}
-                    />
-                </div>
-            </div> */}
-    </section>
+                                return `color-github-${selectorNumber}`
+                            }}
+                            values={pomodoroInfos}
+                        />
+                    </div>
+                </div> */}
+      </div>
+    <button type="button" className="help-btn" role="button">
+        ?
+    </button>
+    </>
   )
 }
