@@ -1,7 +1,6 @@
 import dayjs from 'dayjs'
 import React, { useEffect, useState } from 'react'
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
-// import chimeSound from '../../../audio/chime.mp3';
 
 export interface PomodoroInfo {
   date: string
@@ -133,7 +132,6 @@ export default function PomodoroTimer({
           )
         }}
       </CountdownCircleTimer>
-      <audio id="audio" src="/chime.mp3" />
     </div>
   )
 }
