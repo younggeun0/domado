@@ -2,6 +2,8 @@ module.exports = {
   extends: 'erb',
   plugins: ['@typescript-eslint'],
   rules: {
+    semi: [2, 'never'],
+    'prettier/prettier': ['error', { semi: false }],
     // A temporary hack related to IDE not resolving correct package.json
     'import/no-extraneous-dependencies': 'off',
     'react/react-in-jsx-scope': 'off',
@@ -31,4 +33,4 @@ module.exports = {
       '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
   },
-};
+}

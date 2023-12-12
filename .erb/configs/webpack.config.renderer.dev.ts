@@ -1,27 +1,27 @@
-import 'webpack-dev-server';
-import path from 'path';
-import fs from 'fs';
-import webpack from 'webpack';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
-import chalk from 'chalk';
-import { merge } from 'webpack-merge';
-import { execSync, spawn } from 'child_process';
-import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
-import baseConfig from './webpack.config.base';
-import webpackPaths from './webpack.paths';
-import checkNodeEnv from '../scripts/check-node-env';
+import 'webpack-dev-server'
+import path from 'path'
+import fs from 'fs'
+import webpack from 'webpack'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+import chalk from 'chalk'
+import { merge } from 'webpack-merge'
+import { execSync, spawn } from 'child_process'
+import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
+import baseConfig from './webpack.config.base'
+import webpackPaths from './webpack.paths'
+import checkNodeEnv from '../scripts/check-node-env'
 
 // When an ESLint server is running, we can't set the NODE_ENV so we'll check if it's
 // at the dev webpack config is not accidentally run in a production environment
 if (process.env.NODE_ENV === 'production') {
-  checkNodeEnv('development');
+  checkNodeEnv('development')
 }
 
-const port = process.env.PORT || 1212;
-const manifest = path.resolve(webpackPaths.dllPath, 'renderer.json');
+const port = process.env.PORT || 1212
+const manifest = path.resolve(webpackPaths.dllPath, 'renderer.json')
 const skipDLLs =
   module.parent?.filename.includes('webpack.config.renderer.dev.dll') ||
-  module.parent?.filename.includes('webpack.config.eslint');
+  module.parent?.filename.includes('webpack.config.eslint')
 
 /**
  * Warn if the DLL is not built
@@ -34,8 +34,8 @@ if (
     chalk.black.bgYellow.bold(
       'The DLL files are missing. Sit back while we build them for you with "npm run build-dll"',
     ),
-  );
-  execSync('npm run postinstall');
+  )
+  execSync('npm run postinstall')
 }
 
 const configuration: webpack.Configuration = {
@@ -181,33 +181,33 @@ const configuration: webpack.Configuration = {
       verbose: true,
     },
     setupMiddlewares(middlewares) {
-      console.log('Starting preload.js builder...');
+      console.log('Starting preload.js builder...')
       const preloadProcess = spawn('npm', ['run', 'start:preload'], {
         shell: true,
         stdio: 'inherit',
       })
         .on('close', (code: number) => process.exit(code!))
-        .on('error', (spawnError) => console.error(spawnError));
+        .on('error', (spawnError) => console.error(spawnError))
 
-      console.log('Starting Main Process...');
-      let args = ['run', 'start:main'];
+      console.log('Starting Main Process...')
+      let args = ['run', 'start:main']
       if (process.env.MAIN_ARGS) {
         args = args.concat(
           ['--', ...process.env.MAIN_ARGS.matchAll(/"[^"]+"|[^\s"]+/g)].flat(),
-        );
+        )
       }
       spawn('npm', args, {
         shell: true,
         stdio: 'inherit',
       })
         .on('close', (code: number) => {
-          preloadProcess.kill();
-          process.exit(code!);
+          preloadProcess.kill()
+          process.exit(code!)
         })
-        .on('error', (spawnError) => console.error(spawnError));
-      return middlewares;
+        .on('error', (spawnError) => console.error(spawnError))
+      return middlewares
     },
   },
-};
+}
 
-export default merge(baseConfig, configuration);
+export default merge(baseConfig, configuration)

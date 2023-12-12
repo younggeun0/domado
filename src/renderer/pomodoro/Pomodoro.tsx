@@ -1,6 +1,6 @@
-import dayjs from 'dayjs';
-import React from 'react';
-import PomodoroTimer, { PomodoroInfo } from './PomodoroTimer';
+// import dayjs from 'dayjs'
+import React from 'react'
+import PomodoroTimer, { PomodoroInfo } from './PomodoroTimer'
 
 export default function Pomodoro() {
   // const { data: session } = useSession();
@@ -8,7 +8,7 @@ export default function Pomodoro() {
   // const allPomodoroInfos: any[] = [];
   const [todayInfo, setTodayInfo] = React.useState<
     PomodoroInfo | null | undefined
-  >(null);
+  >(null)
   // const [pomodoroInfos, setPomodoroInfos] =
   //   React.useState<PomodoroInfo[]>(allPomodoroInfos);
 
@@ -68,5 +68,5 @@ export default function Pomodoro() {
                 </div>
             </div> */}
     </section>
-  );
+  )
 }

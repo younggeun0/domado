@@ -1,64 +1,62 @@
-import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
-import { CountdownCircleTimer } from 'react-countdown-circle-timer';
+import dayjs from 'dayjs'
+import React, { useEffect, useState } from 'react'
+import { CountdownCircleTimer } from 'react-countdown-circle-timer'
 // import chimeSound from '../../../audio/chime.mp3';
 
 export interface PomodoroInfo {
-  date: string;
-  count: number;
+  date: string
+  count: number
 }
 
 // TODO, 한 사이클 분설정 기능 추가
-const MIN_PER_POMODORO = 0.05; // 25;
-const MIN_PER_REST = 0.05; // 5;
-const DURATIONS = [60 * MIN_PER_POMODORO, 60 * MIN_PER_REST]; // 웹앱 특성 상 계속 사용하지 않으므로 15분 쉬는건 우선 제외
+const MIN_PER_POMODORO = 0.05 // 25;
+const MIN_PER_REST = 0.05 // 5;
+const DURATIONS = [60 * MIN_PER_POMODORO, 60 * MIN_PER_REST] // 웹앱 특성 상 계속 사용하지 않으므로 15분 쉬는건 우선 제외
 // const DURATIONS = [5, 3] // for test
 
 interface PomodoroTimerProps {
-  todayInfo: PomodoroInfo | null | undefined;
+  todayInfo: PomodoroInfo | null | undefined
   setTodayInfo: React.Dispatch<
     React.SetStateAction<PomodoroInfo | null | undefined>
-  >;
+  >
 }
 
 export default function PomodoroTimer({
   todayInfo,
   setTodayInfo,
 }: PomodoroTimerProps) {
-  const [seq, setSeq] = useState(0);
-  const [status, setStatus] = useState<'play' | 'paused' | 'finished'>(
-    'paused',
-  );
-  const isRest = seq === 1;
+  const [seq, setSeq] = useState(0)
+  const [status, setStatus] = useState<'play' | 'paused' | 'finished'>('paused')
+  const isRest = seq === 1
 
   useEffect(() => {
     if (status === 'finished') {
-      if (isRest) window.electron.ipcRenderer.sendMessage('rest_finished');
+      if (isRest) window.electron.ipcRenderer.sendMessage('rest_finished')
 
-      setSeq((s) => (s + 1) % 2);
-      setStatus('paused');
+      setSeq((s) => (s + 1) % 2)
+      setStatus('paused')
     }
-  }, [status, isRest]);
+  }, [status, isRest])
 
   async function updateOrCreatePomodoro() {
-    window.electron.ipcRenderer.sendMessage('post_pomodoro');
+    window.electron.ipcRenderer.sendMessage('post_pomodoro')
 
     if (todayInfo) {
       setTodayInfo({
         date: todayInfo.date,
         count: todayInfo.count + 1,
-      });
+      })
     } else {
       setTodayInfo({
         date: dayjs().format('YYYY-MM-DD'),
         count: 1,
-      });
+      })
     }
   }
 
   function start() {
-    setSeq((s) => (s = 0));
-    setStatus('play');
+    setSeq((s) => (s = 0))
+    setStatus('play')
   }
 
   return (
@@ -91,8 +89,8 @@ export default function PomodoroTimer({
         duration={DURATIONS[seq]}
         colors="url(#pomodoro-timer)"
         onComplete={(_totalElapsedTime) => {
-          if (!isRest) updateOrCreatePomodoro();
-          setStatus('finished');
+          if (!isRest) updateOrCreatePomodoro()
+          setStatus('finished')
         }}
         trailStrokeWidth={30}
         trailColor="#373d47"
@@ -107,7 +105,7 @@ export default function PomodoroTimer({
                   <span
                     style={{ cursor: 'pointer', marginRight: '1rem' }}
                     onClick={() => {
-                      setStatus('play');
+                      setStatus('play')
                     }}
                   >
                     ☕️
@@ -117,26 +115,25 @@ export default function PomodoroTimer({
                   🔥
                 </span>
               </>
-            );
+            )
           }
           // TODO, 브라우저 종료 시 remainingTime을 로컬 스토리지에 백업하고 다시 불러오는 기능
-          const minutes = Math.floor(remainingTime / 60);
-          const seconds = remainingTime % 60;
+          const minutes = Math.floor(remainingTime / 60)
+          const seconds = remainingTime % 60
 
           return (
             <span
               style={{ cursor: 'pointer' }}
               onClick={() => {
-                setStatus('paused');
+                setStatus('paused')
               }}
             >
               {`${minutes}:${seconds}`}
             </span>
-          );
+          )
         }}
       </CountdownCircleTimer>
       <audio id="audio" src="/chime.mp3" />
     </div>
-  );
+  )
 }
-
