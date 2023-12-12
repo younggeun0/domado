@@ -56,7 +56,16 @@ ipcMain.on('post_pomodoro', async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const { results } = await notion.databases.query({
+    // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
+    let name = 'name';
+    const { properties } = await notion.databases.retrieve({
+      database_id: POMODORO_DB_ID,
+    });
+    if (!properties.name) {
+      name = 'Name';
+    }
+
+    const res = await notion.databases.query({
       database_id: POMODORO_DB_ID,
       filter: {
         created_time: {
@@ -72,15 +81,16 @@ ipcMain.on('post_pomodoro', async () => {
       ],
     });
 
-    if (results.length > 0) {
+    if (res.results.length > 0) {
       // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 🍅 추가
-      const page = results[0];
-      const previousTitle = (page as any).properties.name.title[0].text.content;
+      const page = res.results[0];
+      const previousTitle = (page as any).properties[name].title[0].text
+        .content;
       const tokens = previousTitle.split(' ');
       await notion.pages.update({
         page_id: page.id as string,
         properties: {
-          name: {
+          [name]: {
             title: [
               {
                 text: {
@@ -101,7 +111,7 @@ ipcMain.on('post_pomodoro', async () => {
           database_id: POMODORO_DB_ID,
         },
         properties: {
-          name: {
+          [name]: {
             title: [
               {
                 text: {
@@ -113,7 +123,6 @@ ipcMain.on('post_pomodoro', async () => {
         },
       });
     }
-    // TODO, notification 알림
     new Notification({
       title: '🍅 뽀모도로 종료! 고생했어!',
       body: '조금만 쉬었다 해요 🥰',
