@@ -1,5 +1,5 @@
 // import dayjs from 'dayjs'
-import React from 'react'
+import React, { useEffect } from 'react'
 import PomodoroTimer, { PomodoroInfo } from './PomodoroTimer'
 
 export default function Pomodoro() {
@@ -33,6 +33,51 @@ export default function Pomodoro() {
   //     setPomodoroInfos([...pomodoroInfos, todayInfo]);
   //   }
   // }, [pomodoroInfos, todayInfo]);
+
+  function showGuide() {
+    alert(`🍅 사용 가이드 🍅`)
+  }
+
+  useEffect(() => {
+    const { NOTION_KEY, NOTION_POMODORO_DATABASE_ID } = window.electron
+
+    if (NOTION_KEY && NOTION_POMODORO_DATABASE_ID) {
+      localStorage.setItem('notion_key', NOTION_KEY)
+      localStorage.setItem(
+        'notion_pomodoro_database_id',
+        NOTION_POMODORO_DATABASE_ID,
+      )
+      window.electron.ipcRenderer.sendMessage('set_notion_keys', {
+        NOTION_KEY,
+        NOTION_POMODORO_DATABASE_ID,
+      })
+    }
+    // const notionKey = localStorage.getItem('notion_key')
+    // const notionPomodoroDatabaseId = localStorage.getItem(
+    //   'notion_pomodoro_database_id',
+    // )
+
+    // if (notionKey && notionPomodoroDatabaseId) {
+    //   window.electron.ipcRenderer.sendMessage('set_notion_keys', [
+    //     notionKey,
+    //     notionPomodoroDatabaseId,
+    //   ])
+    // }
+
+    // window.electron.ipcRenderer.send('pomodoro:ready')
+    // window.electron.ipcRenderer.on('pomodoro:ready', () => {
+    //   window.electron.ipcRenderer.send('pomodoro:load')
+    // })
+    // window.electron.ipcRenderer.on(
+    //   'pomodoro:load',
+    //   (event: any, pomodoroInfos: PomodoroInfo[]) => {
+    //     // setPomodoroInfos(pomodoroInfos);
+    //     const today = new Date().toLocaleDateString()
+    //     const found = pomodoroInfos.find((info) => info.date === today)
+    //     setTodayInfo(found)
+    //   },
+    // )
+  }, [])
 
   return (
     <>
@@ -69,7 +114,7 @@ export default function Pomodoro() {
                     </div>
                 </div> */}
       </div>
-      <button type="button" className="help-btn">
+      <button type="button" className="help-btn" onClick={showGuide}>
         ?
       </button>
     </>
