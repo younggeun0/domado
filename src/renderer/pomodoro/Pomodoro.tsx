@@ -69,9 +69,9 @@ export default function Pomodoro() {
                     </div>
                 </div> */}
       </div>
-    <button type="button" className="help-btn" role="button">
+      <button type="button" className="help-btn">
         ?
-    </button>
+      </button>
     </>
   )
 }
