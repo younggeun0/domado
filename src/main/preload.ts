@@ -3,7 +3,12 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
 // TODO, 필요한 이벤트 추가예정
-export type Channels = 'ipc-example' | 'post_pomodoro' | 'rest_finished'
+export type Channels =
+  | 'ipc-example'
+  | 'post_pomodoro'
+  | 'rest_finished'
+  | 'set_notion_keys'
+  | 'warn_unset_notion_keys'
 
 const electronHandler = {
   ipcRenderer: {
@@ -24,6 +29,8 @@ const electronHandler = {
     },
   },
   isDebug: process.env.NODE_ENV === 'development',
+  NOTION_KEY: process.env.NOTION_KEY,
+  NOTION_POMODORO_DATABASE_ID: process.env.NOTION_POMODORO_DATABASE_ID,
 }
 
 contextBridge.exposeInMainWorld('electron', electronHandler)

@@ -32,8 +32,13 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'))
 })
 
-const notion = new Client({ auth: process.env.NOTION_KEY })
-const POMODORO_DB_ID = process.env.NOTION_POMODORO_DATABASE_ID as string
+let notionClient: Client | null = null
+let notionDatabaseId: string | null = null
+
+ipcMain.on('set_notion_keys', async (event, data) => {
+  notionClient = new Client({ auth: data.NOTION_KEY })
+  notionDatabaseId = data.NOTION_POMODORO_DATABASE_ID
+})
 
 ipcMain.on('rest_finished', async () => {
   new Notification({
@@ -42,19 +47,21 @@ ipcMain.on('rest_finished', async () => {
   }).show()
 })
 
-ipcMain.on('post_pomodoro', async () => {
+ipcMain.on('post_pomodoro', async (event) => {
   // const msgTemplate = (pingPong: string) => `post_pomodoro test: ${pingPong}`;
   // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
+
   new Notification({
     title: '🍅 뽀모도로 종료! 고생했어!',
     body: '조금만 쉬었다 해요 🥰',
   }).show()
 
-  if (!process.env.NOTION_KEY || !process.env.NOTION_POMODORO_DATABASE_ID) {
-    console.log(
-      '기록 기능은 .env파일에 NOTION_KEY, NOTION_POMODORO_DATABASE_ID가 설정된 상태로 패키징돼야 동작합니다.',
+  if (!notionClient || !notionDatabaseId) {
+    event.reply(
+      'warn_unset_notion_keys',
+      '노션 페이지 기록 기능은 노션 API 키와 노션 데이터베이스 ID값을 설정해야 동작합니다.',
     )
     return
   }
@@ -65,15 +72,15 @@ ipcMain.on('post_pomodoro', async () => {
 
     // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
     let name = 'name'
-    const { properties } = await notion.databases.retrieve({
-      database_id: POMODORO_DB_ID,
+    const { properties } = await notionClient.databases.retrieve({
+      database_id: notionDatabaseId,
     })
     if (!properties.name) {
       name = 'Name'
     }
 
-    const res = await notion.databases.query({
-      database_id: POMODORO_DB_ID,
+    const res = await notionClient.databases.query({
+      database_id: notionDatabaseId,
       filter: {
         created_time: {
           after: today.toISOString(),
@@ -88,12 +95,14 @@ ipcMain.on('post_pomodoro', async () => {
       ],
     })
 
+    // TODO, isDebug일 때 다른 타이틀로 변경해서 구분
+
     if (res.results.length > 0) {
       // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 🍅 추가
       const page = res.results[0]
       const previousTitle = (page as any).properties[name].title[0].text.content
       const tokens = previousTitle.split(' ')
-      await notion.pages.update({
+      await notionClient.pages.update({
         page_id: page.id as string,
         properties: {
           [name]: {
@@ -111,10 +120,10 @@ ipcMain.on('post_pomodoro', async () => {
       })
     } else {
       // 새로운 페이지가 없으면 새로 생성
-      await notion.pages.create({
+      await notionClient.pages.create({
         parent: {
           type: 'database_id',
-          database_id: POMODORO_DB_ID,
+          database_id: notionDatabaseId,
         },
         properties: {
           [name]: {
@@ -174,8 +183,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 300,
-    height: 450,
+    width: isDebug ? 1000 : 300,
+    height: isDebug ? 600 : 450,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
