@@ -59,80 +59,94 @@ export default function PomodoroTimer({
     setStatus('play')
   }
 
+  function adjustTime(sec: number) {
+    DURATIONS[seq] += sec
+    if (DURATIONS[seq] < 0) {
+      DURATIONS[seq] = isDebug ? 3 : 60 * 5
+    }
+    if (DURATIONS[seq] > 60 * 60) {
+      DURATIONS[seq] = isDebug ? 3 : 60 * 25
+    }
+  }
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        fontSize: '3rem',
-        alignItems: 'center',
-        margin: '3rem 0 4rem 0',
-      }}
-    >
-      <svg style={{ position: 'absolute' }}>
-        <defs>
-          <linearGradient id="pomodoro-timer" x1="1" y1="0" x2="0" y2="0">
-            {isRest ? (
-              <stop offset="100%" stopColor="#478476" />
-            ) : (
-              <>
-                <stop offset="5%" stopColor="gold" />
-                <stop offset="95%" stopColor="red" />
-              </>
-            )}
-          </linearGradient>
-        </defs>
-      </svg>
-      <CountdownCircleTimer
-        key={seq}
-        isPlaying={status === 'play'}
-        duration={DURATIONS[seq]}
-        colors="url(#pomodoro-timer)"
-        onComplete={(_totalElapsedTime) => {
-          if (!isRest) updateOrCreatePomodoro()
-          setStatus('finished')
+    <>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          fontSize: '3rem',
+          alignItems: 'center',
+          marginBottom: '1rem',
         }}
-        trailStrokeWidth={30}
-        trailColor="#373d47"
-        strokeWidth={20}
-        size={250}
       >
-        {({ remainingTime }) => {
-          if (status === 'paused') {
-            return (
-              <>
-                {isRest && (
-                  <span
-                    style={{ cursor: 'pointer', marginRight: '1rem' }}
-                    onClick={() => {
-                      setStatus('play')
-                    }}
-                  >
-                    ☕️
+        <svg style={{ position: 'absolute' }}>
+          <defs>
+            <linearGradient id="pomodoro-timer" x1="1" y1="0" x2="0" y2="0">
+              {isRest ? (
+                <stop offset="100%" stopColor="#478476" />
+              ) : (
+                <>
+                  <stop offset="5%" stopColor="gold" />
+                  <stop offset="95%" stopColor="red" />
+                </>
+              )}
+            </linearGradient>
+          </defs>
+        </svg>
+        <CountdownCircleTimer
+          key={seq}
+          isPlaying={status === 'play'}
+          duration={DURATIONS[seq]}
+          colors="url(#pomodoro-timer)"
+          onComplete={(_totalElapsedTime) => {
+            if (!isRest) updateOrCreatePomodoro()
+            setStatus('finished')
+          }}
+          trailStrokeWidth={30}
+          trailColor="#373d47"
+          strokeWidth={20}
+          size={250}
+        >
+          {({ remainingTime }) => {
+            if (status === 'paused') {
+              return (
+                <>
+                  {isRest && (
+                    <span
+                      style={{ cursor: 'pointer', marginRight: '1rem' }}
+                      onClick={() => {
+                        setStatus('play')
+                      }}
+                    >
+                      ☕️
+                    </span>
+                  )}
+                  <span style={{ cursor: 'pointer' }} onClick={start}>
+                    🔥
                   </span>
-                )}
-                <span style={{ cursor: 'pointer' }} onClick={start}>
-                  🔥
-                </span>
-              </>
+                </>
+              )
+            }
+            // TODO, 브라우저 종료 시 remainingTime을 로컬 스토리지에 백업하고 다시 불러오는 기능
+            const minutes = Math.floor(remainingTime / 60)
+            const seconds = remainingTime % 60
+            return (
+              <span
+                style={{ cursor: 'pointer' }}
+                onClick={() => {setStatus('paused')}}
+              >
+                {`${minutes}:${seconds}`}
+              </span>
             )
-          }
-          // TODO, 브라우저 종료 시 remainingTime을 로컬 스토리지에 백업하고 다시 불러오는 기능
-          const minutes = Math.floor(remainingTime / 60)
-          const seconds = remainingTime % 60
-
-          return (
-            <span
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                setStatus('paused')
-              }}
-            >
-              {`${minutes}:${seconds}`}
-            </span>
-          )
-        }}
-      </CountdownCircleTimer>
-    </div>
+          }}
+        </CountdownCircleTimer>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div>
+          <button type="button" style={{ marginRight: '2px'}} onClick={() => adjustTime(5 * 60)}>+</button>
+          <button type="button" style={{ marginLeft: '2px'}} onClick={() => adjustTime(-5 * 60)}>-</button>
+        </div>
+      </div>
+    </>
   )
 }
