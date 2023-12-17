@@ -16,6 +16,13 @@ import { Client } from '@notionhq/client'
 import MenuBuilder from './menu'
 import { resolveHtmlPath } from './util'
 
+const isDebug =
+  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
+
+if (isDebug) {
+  require('electron-debug')()
+}
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info'
@@ -95,49 +102,56 @@ ipcMain.on('post_pomodoro', async (event) => {
       ],
     })
 
-    // TODO, isDebug일 때 다른 타이틀로 변경해서 구분
+    const emoji = isDebug ? '🪲' : '🍅'
 
     if (res.results.length > 0) {
-      // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 🍅 추가
-      const page = res.results[0]
-      const previousTitle = (page as any).properties[name].title[0].text.content
-      const tokens = previousTitle.split(' ')
-      await notionClient.pages.update({
-        page_id: page.id as string,
-        properties: {
-          [name]: {
-            title: [
-              {
-                text: {
-                  content: `🍅 * ${
-                    parseInt(tokens[tokens.length - 1], 10) + 1
-                  }`,
-                },
-              },
-            ],
-          },
-        },
+      const page = res.results.find((result) => {
+        return result.properties[name].title[0].text.content.startsWith(emoji)
       })
-    } else {
-      // 새로운 페이지가 없으면 새로 생성
-      await notionClient.pages.create({
-        parent: {
-          type: 'database_id',
-          database_id: notionDatabaseId,
-        },
-        properties: {
-          [name]: {
-            title: [
-              {
-                text: {
-                  content: '🍅 * 1',
+
+      if (page) {
+        // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 뽀모도로 횟수 count++
+        const previousTitle = (page as any).properties[name].title[0].text
+          .content
+        const tokens = previousTitle.split(' ')
+        await notionClient.pages.update({
+          page_id: page.id as string,
+          properties: {
+            [name]: {
+              title: [
+                {
+                  text: {
+                    content: `${emoji} * ${
+                      parseInt(tokens[tokens.length - 1], 10) + 1
+                    }`,
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
-        },
-      })
+        })
+        return
+      }
     }
+
+    // 새로운 페이지가 없으면 새로 생성
+    await notionClient.pages.create({
+      parent: {
+        type: 'database_id',
+        database_id: notionDatabaseId,
+      },
+      properties: {
+        [name]: {
+          title: [
+            {
+              text: {
+                content: `${emoji} * 1`,
+              },
+            },
+          ],
+        },
+      },
+    })
   } catch (e) {
     console.error(e)
   }
@@ -146,13 +160,6 @@ ipcMain.on('post_pomodoro', async (event) => {
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support')
   sourceMapSupport.install()
-}
-
-const isDebug =
-  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
-
-if (isDebug) {
-  require('electron-debug')()
 }
 
 const installExtensions = async () => {
