@@ -60,16 +60,11 @@ ipcMain.on('post_pomodoro', async (event) => {
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
 
-  new Notification({
-    title: '🍅 뽀모도로 종료! 고생했어!',
-    body: '조금만 쉬었다 해요 🥰',
-  }).show()
-
   if (!notionClient || !notionDatabaseId) {
-    event.reply(
-      'warn_unset_notion_keys',
-      '노션 페이지 기록 기능은 노션 API 키와 노션 데이터베이스 ID값을 설정해야 동작합니다.',
-    )
+    new Notification({
+      title: '🍅 뽀모도로 종료! 고생했어!',
+      body: '조금만 쉬었다 해요 🥰',
+    }).show()
     return
   }
 
@@ -105,7 +100,7 @@ ipcMain.on('post_pomodoro', async (event) => {
     const emoji = isDebug ? '🪲' : '🍅'
 
     if (res.results.length > 0) {
-      const page = res.results.find((result) => {
+      const page = res.results.find((result: any) => {
         return result.properties[name].title[0].text.content.startsWith(emoji)
       })
 
@@ -114,6 +109,7 @@ ipcMain.on('post_pomodoro', async (event) => {
         const previousTitle = (page as any).properties[name].title[0].text
           .content
         const tokens = previousTitle.split(' ')
+        const count = parseInt(tokens[tokens.length - 1], 10) + 1
         await notionClient.pages.update({
           page_id: page.id as string,
           properties: {
@@ -121,15 +117,18 @@ ipcMain.on('post_pomodoro', async (event) => {
               title: [
                 {
                   text: {
-                    content: `${emoji} * ${
-                      parseInt(tokens[tokens.length - 1], 10) + 1
-                    }`,
+                    content: `${emoji} * ${count}`,
                   },
                 },
               ],
             },
           },
         })
+
+        new Notification({
+          title: '🍅 뽀모도로 종료! 고생했어!',
+          body: `오늘 ${count}번째 뽀모도로를 완료했어요! 🥰`,
+        }).show()
         return
       }
     }
@@ -152,8 +151,16 @@ ipcMain.on('post_pomodoro', async (event) => {
         },
       },
     })
+    new Notification({
+      title: '첫 🍅 뽀모도로 종료!',
+      body: '오늘도 화이팅! 🥰',
+    }).show()
   } catch (e) {
     console.error(e)
+    new Notification({
+      title: '오류 발생!',
+      body: `노션에 뽀모도로를 등록하지 못했어요 😭, ${e.message}`,
+    }).show()
   }
 })
 
