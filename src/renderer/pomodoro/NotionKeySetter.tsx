@@ -8,37 +8,38 @@ export default function NotionKeySetter({
   return (
     <div>
       <div style={{ textAlign: 'center', padding: '0 10px 30px 10px' }}>
-        노션에 뽀모도로(🍅) 횟수를 기록하기 위해 노션 API키와 DB ID를 설정해주세요.
+        노션에 뽀모도로(🍅) 횟수를 기록하기 위해 노션 API키와 DB ID를
+        설정해주세요.
       </div>
       <form
         onSubmit={(e) => {
           e.preventDefault()
 
-          const NOTION_KEY = (
+          const notionKey = (
             document.getElementById('notion_key') as HTMLInputElement
           ).value
-          const NOTION_POMODORO_DATABASE_ID = (
+          const notionPomodoroDatabaseId = (
             document.getElementById(
               'notion_pomodoro_database_id',
             ) as HTMLInputElement
           ).value
 
           // TODO, validate inputs
-          if (!NOTION_KEY.trim() || !NOTION_POMODORO_DATABASE_ID.trim()) {
+          if (!notionKey.trim() || !notionPomodoroDatabaseId.trim()) {
             alert('노션 API키와 페이지를 기록할 노션 DB ID를 입력해주세요.')
             return
           }
 
-          localStorage.setItem('notion_key', NOTION_KEY)
-          localStorage.setItem(
-            'notion_pomodoro_database_id',
-            NOTION_POMODORO_DATABASE_ID,
+          window.electron.ipcRenderer.sendMessage(
+            'electron-store-set',
+            'NOTION_KEY',
+            notionKey,
           )
-
-          window.electron.ipcRenderer.sendMessage('set_notion_keys', {
-            NOTION_KEY,
-            NOTION_POMODORO_DATABASE_ID,
-          })
+          window.electron.ipcRenderer.sendMessage(
+            'electron-store-set',
+            'NOTION_POMODORO_DATABASE_ID',
+            notionPomodoroDatabaseId,
+          )
           setIsKeySet(true)
         }}
         style={{

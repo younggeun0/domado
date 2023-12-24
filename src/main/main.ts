@@ -13,6 +13,7 @@ import { app, BrowserWindow, shell, ipcMain, Notification } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
 import { Client } from '@notionhq/client'
+import Store from 'electron-store'
 import MenuBuilder from './menu'
 import { resolveHtmlPath } from './util'
 
@@ -23,28 +24,27 @@ if (isDebug) {
   require('electron-debug')()
 }
 
-class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info'
-    autoUpdater.logger = log
-    autoUpdater.checkForUpdatesAndNotify()
-  }
-}
-
-let mainWindow: BrowserWindow | null = null
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`
-  console.log(msgTemplate(arg))
-  event.reply('ipc-example', msgTemplate('pong'))
+const store = new Store()
+ipcMain.on('electron-store-get', async (event, val) => {
+  event.returnValue = store.get(val)
+})
+ipcMain.on('electron-store-set', async (event, key, val) => {
+  store.set(key, val)
 })
 
+// pomodoro
 let notionClient: Client | null = null
-let notionDatabaseId: string | null = null
 
-ipcMain.on('set_notion_keys', async (event, data) => {
-  notionClient = new Client({ auth: data.NOTION_KEY })
-  notionDatabaseId = data.NOTION_POMODORO_DATABASE_ID
+function setNotionClient() {
+  const notionKey = store.get('NOTION_KEY') as string
+  if (notionKey)
+    notionClient = notionKey ? new Client({ auth: notionKey }) : null
+}
+
+ipcMain.on('reset_notion_keys', async () => {
+  store.set('NOTION_KEY', null)
+  store.set('NOTION_POMODORO_DATABASE_ID', null)
+  notionClient = null
 })
 
 ipcMain.on('rest_finished', async () => {
@@ -59,8 +59,12 @@ ipcMain.on('post_pomodoro', async (event) => {
   // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
+  setNotionClient()
+  const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as
+    | string
+    | null
 
-  if (!notionClient || !notionDatabaseId) {
+  if (!notionClient || !databaseId) {
     new Notification({
       title: '🍅 뽀모도로 종료! 고생했어!',
       body: '조금만 쉬었다 해요 🥰',
@@ -75,14 +79,14 @@ ipcMain.on('post_pomodoro', async (event) => {
     // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
     let name = 'name'
     const { properties } = await notionClient.databases.retrieve({
-      database_id: notionDatabaseId,
+      database_id: databaseId,
     })
     if (!properties.name) {
       name = 'Name'
     }
 
     const res = await notionClient.databases.query({
-      database_id: notionDatabaseId,
+      database_id: databaseId,
       filter: {
         created_time: {
           after: today.toISOString(),
@@ -101,6 +105,8 @@ ipcMain.on('post_pomodoro', async (event) => {
 
     if (res.results.length > 0) {
       const page = res.results.find((result: any) => {
+        if (!result.properties[name].title[0]) return false
+
         return result.properties[name].title[0].text.content.startsWith(emoji)
       })
 
@@ -137,7 +143,7 @@ ipcMain.on('post_pomodoro', async (event) => {
     await notionClient.pages.create({
       parent: {
         type: 'database_id',
-        database_id: notionDatabaseId,
+        database_id: databaseId,
       },
       properties: {
         [name]: {
@@ -164,6 +170,14 @@ ipcMain.on('post_pomodoro', async (event) => {
   }
 })
 
+class AppUpdater {
+  constructor() {
+    log.transports.file.level = 'info'
+    autoUpdater.logger = log
+    autoUpdater.checkForUpdatesAndNotify()
+  }
+}
+
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support')
   sourceMapSupport.install()
@@ -182,10 +196,13 @@ const installExtensions = async () => {
     .catch(console.log)
 }
 
+let mainWindow: BrowserWindow | null = null
 const createWindow = async () => {
   if (isDebug) {
     await installExtensions()
   }
+
+  setNotionClient()
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')

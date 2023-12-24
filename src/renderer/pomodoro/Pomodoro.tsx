@@ -40,33 +40,15 @@ export default function Pomodoro() {
     alert(`🍅 사용 가이드 🍅`)
   }
 
-  useEffect(() => {
-    const { NOTION_KEY, NOTION_POMODORO_DATABASE_ID } = window.electron
+  const notionKey = window.electron.store.get('NOTION_KEY')
+  const notionPomodoroDatabaseId = window.electron.store.get(
+    'NOTION_POMODORO_DATABASE_ID',
+  )
 
-    if (NOTION_KEY && NOTION_POMODORO_DATABASE_ID) {
-      localStorage.setItem('notion_key', NOTION_KEY)
-      localStorage.setItem(
-        'notion_pomodoro_database_id',
-        NOTION_POMODORO_DATABASE_ID,
-      )
-      window.electron.ipcRenderer.sendMessage('set_notion_keys', {
-        NOTION_KEY,
-        NOTION_POMODORO_DATABASE_ID,
-      })
+  useEffect(() => {
+    if (notionKey && notionPomodoroDatabaseId) {
       setIsKeySet(true)
     }
-    // const notionKey = localStorage.getItem('notion_key')
-    // const notionPomodoroDatabaseId = localStorage.getItem(
-    //   'notion_pomodoro_database_id',
-    // )
-
-    // if (notionKey && notionPomodoroDatabaseId) {
-    //   window.electron.ipcRenderer.sendMessage('set_notion_keys', [
-    //     notionKey,
-    //     notionPomodoroDatabaseId,
-    //   ])
-    // }
-
     // window.electron.ipcRenderer.send('pomodoro:ready')
     // window.electron.ipcRenderer.on('pomodoro:ready', () => {
     //   window.electron.ipcRenderer.send('pomodoro:load')
@@ -80,11 +62,10 @@ export default function Pomodoro() {
     //     setTodayInfo(found)
     //   },
     // )
-  }, [])
+  }, [notionKey, notionPomodoroDatabaseId])
 
   function resetKeys() {
-    localStorage.removeItem('notion_key')
-    localStorage.removeItem('notion_pomodoro_database_id')
+    window.electron.ipcRenderer.sendMessage('reset_notion_keys')
     setIsKeySet(false)
   }
 
@@ -155,8 +136,8 @@ export default function Pomodoro() {
           className="bottom_btn"
           onClick={() => {
             window.electron.ipcRenderer.sendMessage('set_notion_keys', {
-              NOTION_KEY: '',
-              NOTION_POMODORO_DATABASE_ID: '',
+              notionKey: '',
+              notionPomodoroDatabaseId: '',
             })
             setIsKeySet(true)
           }}

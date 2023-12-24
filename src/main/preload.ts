@@ -7,8 +7,9 @@ export type Channels =
   | 'ipc-example'
   | 'post_pomodoro'
   | 'rest_finished'
-  | 'set_notion_keys'
-  | 'warn_unset_notion_keys'
+  | 'reset_notion_keys'
+  | 'electron-store-get'
+  | 'electron-store-set'
 
 const electronHandler = {
   ipcRenderer: {
@@ -29,8 +30,14 @@ const electronHandler = {
     },
   },
   isDebug: process.env.NODE_ENV === 'development',
-  NOTION_KEY: process.env.NOTION_KEY,
-  NOTION_POMODORO_DATABASE_ID: process.env.NOTION_POMODORO_DATABASE_ID,
+  store: {
+    get(key: string) {
+      return ipcRenderer.sendSync('electron-store-get', key)
+    },
+    set(property: string, val: any) {
+      ipcRenderer.send('electron-store-set', property, val)
+    },
+  },
 }
 
 contextBridge.exposeInMainWorld('electron', electronHandler)

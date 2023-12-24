@@ -8,8 +8,7 @@ import dotenv from 'dotenv'
 import webpackPaths from './webpack.paths'
 import { dependencies as externals } from '../../release/app/package.json'
 
-// TODO, dotenv 대신 입력받아 사용하도록 변경(localStroage에 저장)
-// TODO, 환경변수 미설정 시 에러 발생처리 or 노션 기록 제거
+// When building for production, we want to load the .env file for setting default notion keys
 dotenv.config()
 
 const configuration: webpack.Configuration = {
