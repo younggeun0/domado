@@ -75,6 +75,8 @@ export default function PomodoroTimer({
     let newDuration = duration + min * 60
     if (newDuration < 0) {
       newDuration = isDebug ? 3 : 60 * 5
+      if (!isRest) updateOrCreatePomodoro()
+      setStatus('finished')
     }
     if (newDuration > 60 * 60) {
       newDuration = isDebug ? 3 : 60 * 25
