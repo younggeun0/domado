@@ -1,87 +1,101 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 import dayjs from 'dayjs'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
+import { v4 as uuidv4 } from 'uuid'
 
-export interface PomodoroInfo {
-  date: string
-  count: number
-}
-
-// TODO, 한 사이클 분설정 기능 추가
 const { isDebug } = window.electron
-const MIN_PER_POMODORO = isDebug ? 0.05 : 25
-const MIN_PER_REST = isDebug ? 0.05 : 5
-const DURATIONS = [60 * MIN_PER_POMODORO, 60 * MIN_PER_REST] // 웹앱 특성 상 계속 사용하지 않으므로 15분 쉬는건 우선 제외
-
-interface PomodoroTimerProps {
-  todayInfo: PomodoroInfo | null | undefined
-  setTodayInfo: React.Dispatch<
-    React.SetStateAction<PomodoroInfo | null | undefined>
-  >
-}
+const TIME_INFO = isDebug
+  ? {
+      MIN_PER_POMODORO: 0.05,
+      MIN_PER_REST: 0.03,
+      ADD_MIN: 5,
+    }
+  : {
+      MIN_PER_POMODORO: 25,
+      MIN_PER_REST: 5,
+      ADD_MIN: 5,
+    }
 
 const getStrTowDigitFormat = (num: number) => (num < 10 ? `0${num}` : num)
 
 export default function PomodoroTimer({
-  todayInfo,
-  setTodayInfo,
-}: PomodoroTimerProps) {
-  const [seq, setSeq] = useState(0)
-  const [status, setStatus] = useState<'play' | 'paused' | 'finished'>('paused')
-  const [duration, setDuration] = useState(DURATIONS[seq])
-  const leftTime = useRef(DURATIONS[seq])
-  const isRest = seq === 1
+  updateTodayInfo,
+}: {
+  updateTodayInfo: () => void
+}) {
+  const [status, setStatus] = useState<
+    | 'pomodoro_start'
+    | 'rest_start'
+    | 'restart'
+    | 'paused'
+    | 'pomodoro_finished'
+    | 'rest_finished'
+  >('paused')
+  const [isRest, setIsRest] = useState(false)
+  const [timerKey, setTimerKey] = useState(uuidv4())
+  const [durations, setDurations] = useState({
+    pomodoro: TIME_INFO.MIN_PER_POMODORO * 60,
+    rest: TIME_INFO.MIN_PER_REST * 60,
+  })
 
   useEffect(() => {
-    if (status === 'finished') {
-      if (isRest) window.electron.ipcRenderer.sendMessage('rest_finished')
-
-      setSeq((s) => (s + 1) % 2)
-      setStatus('paused')
+    switch (status) {
+      // paused에서 재시작 시 키값을 조기화하면 새로시작하기 때문에 상태만 변경
+      // rest중에 멈췄다가 다시 시작 시 이슈
+      case 'pomodoro_start':
+        setIsRest((prev) => {
+          if (prev === true) {
+            setTimerKey(uuidv4())
+          }
+          return false
+        })
+        break
+      case 'rest_start':
+        setIsRest(true)
+        break
+      case 'pomodoro_finished':
+        // FIXME, 문제는 뽀모도로 완료 시 휴식 또는 뽀모도로 재시작을 선택할 수 있음
+        // 때문에 두 가지 경우의 duration이 모두 설정될 수 있어야 함(현재는 한 값으로 설정)
+        // setStatus('paused')
+        setIsRest(true)
+        setStatus('paused')
+        setTimerKey(uuidv4())
+        // setTimerKey(uuidv4())
+        window.electron.ipcRenderer.sendMessage('post_pomodoro')
+        updateTodayInfo()
+        break
+      case 'rest_finished':
+        setStatus('paused')
+        setIsRest(false)
+        setTimerKey(uuidv4())
+        window.electron.ipcRenderer.sendMessage('rest_finished')
+        break
+      default:
+        // paused
+        break
     }
-  }, [status, isRest])
+  }, [status])
 
-  async function updateOrCreatePomodoro() {
-    window.electron.ipcRenderer.sendMessage('post_pomodoro')
-
-    if (todayInfo) {
-      setTodayInfo({
-        date: todayInfo.date,
-        count: todayInfo.count + 1,
-      })
-    } else {
-      setTodayInfo({
-        date: dayjs().format('YYYY-MM-DD'),
-        count: 1,
-      })
-    }
-  }
-
-  function start() {
-    setSeq((s) => (s = 0))
-    setStatus('play')
-  }
-
-  function resetTime() {
-    // key값을 갱신하면 새로운 타이머가 시작됨
+  function restart() {
+    // TIMER key값을 갱신하면 새로 시작됨
     // 참고, https://github.com/vydimitrov/react-countdown-circle-timer/tree/master/packages/web#recipes
-    setSeq(seq + 2) // set new seq for restart
-    setStatus('paused')
+    setTimerKey(uuidv4())
   }
 
   function addMin(min: number) {
-    let newDuration = duration + min * 60
+    const newDuration =
+      (isRest ? durations.rest : durations.pomodoro) + min * 60
     if (newDuration < 0) {
-      newDuration = isDebug ? 3 : 60 * 5
-      if (!isRest) updateOrCreatePomodoro()
-      setStatus('finished')
+      setStatus(isRest ? 'rest_finished' : 'pomodoro_finished')
+      return
     }
-    if (newDuration > 60 * 60) {
-      newDuration = isDebug ? 3 : 60 * 25
-    }
-    setDuration(newDuration)
+
+    setDurations({
+      ...durations,
+      ...(isRest ? { rest: newDuration } : { pomodoro: newDuration }),
+    })
   }
 
   return (
@@ -110,13 +124,16 @@ export default function PomodoroTimer({
           </defs>
         </svg>
         <CountdownCircleTimer
-          key={seq}
-          isPlaying={status === 'play'}
-          duration={duration}
+          key={timerKey}
+          isPlaying={status !== 'paused'}
+          duration={durations[isRest ? 'rest' : 'pomodoro']}
           colors="url(#pomodoro-timer)"
-          onComplete={(_totalElapsedTime) => {
-            if (!isRest) updateOrCreatePomodoro()
-            setStatus('finished')
+          onComplete={() => {
+            if (isRest) {
+              setStatus('rest_finished')
+            } else {
+              setStatus('pomodoro_finished')
+            }
           }}
           trailStrokeWidth={30}
           trailColor="#373d47"
@@ -124,28 +141,53 @@ export default function PomodoroTimer({
           size={250}
         >
           {({ remainingTime }) => {
-            leftTime.current = remainingTime
-
             if (status === 'paused') {
               return (
-                <>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignContent: 'center',
+                    lineHeight: 0.8,
+                  }}
+                >
                   {isRest && (
-                    <span
-                      style={{ cursor: 'pointer', marginRight: '1rem' }}
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        marginRight: '1rem',
+                      }}
                       onClick={() => {
-                        setStatus('play')
+                        if (status === 'paused') {
+                          setStatus('rest_start')
+                        } else {
+                          setStatus('paused')
+                        }
                       }}
                     >
                       ☕️
-                    </span>
+                      <br />
+                      <span style={{ fontSize: '1rem' }}>REST</span>
+                    </div>
                   )}
-                  <span style={{ cursor: 'pointer' }} onClick={start}>
+                  <div
+                    style={{ textAlign: 'center', cursor: 'pointer' }}
+                    onClick={() => {
+                      if (status === 'paused') {
+                        setStatus('pomodoro_start')
+                      } else {
+                        setStatus('paused')
+                      }
+                    }}
+                  >
                     🔥
-                  </span>
-                </>
+                    <br />
+                    <span style={{ fontSize: '1rem' }}>START</span>
+                  </div>
+                </div>
               )
             }
-            // TODO, 브라우저 종료 시 remainingTime을 로컬 스토리지에 백업하고 다시 불러오는 기능
             const minutes = Math.floor(remainingTime / 60)
             const seconds = remainingTime % 60
 
@@ -165,20 +207,18 @@ export default function PomodoroTimer({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          visibility: status === 'paused' ? 'hidden' : 'visible',
         }}
       >
         <button
           type="button"
           style={{ marginRight: '2px', height: '29px' }}
-          onClick={() => addMin(5)}
+          onClick={() => addMin(TIME_INFO.ADD_MIN)}
         >
           +5 min
         </button>
-        <button
-          type="button"
-          style={{ marginRight: '2px' }}
-          onClick={() => resetTime()}
-        >
+
+        <button type="button" style={{ marginRight: '2px' }} onClick={restart}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -194,10 +234,11 @@ export default function PomodoroTimer({
             />
           </svg>
         </button>
+
         <button
           type="button"
           style={{ height: '29px' }}
-          onClick={() => addMin(-5)}
+          onClick={() => addMin(-TIME_INFO.ADD_MIN)}
         >
           -5 min
         </button>

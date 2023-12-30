@@ -1,7 +1,13 @@
 // import dayjs from 'dayjs'
 import React, { useEffect } from 'react'
-import PomodoroTimer, { PomodoroInfo } from './PomodoroTimer'
+import dayjs from 'dayjs'
+import PomodoroTimer from './PomodoroTimer'
 import NotionKeySetter from './NotionKeySetter'
+
+export interface PomodoroInfo {
+  date: string
+  count: number
+}
 
 export default function Pomodoro() {
   // const { data: session } = useSession();
@@ -48,6 +54,15 @@ export default function Pomodoro() {
   useEffect(() => {
     if (notionKey && notionPomodoroDatabaseId) {
       setIsKeySet(true)
+
+      // TODO, 최초 실행 시 노션 DB에서 이미 등록된 뽀모도로 페이지가 있는지 확인,
+      // 확인하며 요청, 응답이 정상적으로 이뤄지는지 확인하여 사용자에게 알려줘야 함
+      const count = window.electron.store.get('TODAY_COUNT')
+      console.log("🚀 ~ file: Pomodoro.tsx:59 ~ useEffect ~ count:", count)
+      setTodayInfo({
+        date: dayjs().format('yyyy-mm-dd'),
+        count,
+      })
     }
     // window.electron.ipcRenderer.send('pomodoro:ready')
     // window.electron.ipcRenderer.on('pomodoro:ready', () => {
@@ -69,10 +84,33 @@ export default function Pomodoro() {
     setIsKeySet(false)
   }
 
+  function updateTodayInfo() {
+    if (todayInfo) {
+      setTodayInfo({
+        date: todayInfo.date,
+        count: todayInfo.count + 1,
+      })
+    } else {
+      setTodayInfo({
+        date: dayjs().format('YYYY-MM-DD'),
+        count: 1,
+      })
+    }
+  }
+
   return isKeySet ? (
     <>
       <div style={{ paddingTop: '1px' }}>
-        <PomodoroTimer todayInfo={todayInfo} setTodayInfo={setTodayInfo} />
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'end',
+            marginBottom: '1rem',
+          }}
+        >
+          🍅 : {todayInfo?.count ?? 0}
+        </div>
+        <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} />
 
         {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
                       <div style={{ wimdth: '70%' }}>

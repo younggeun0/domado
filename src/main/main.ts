@@ -20,8 +20,10 @@ import { resolveHtmlPath } from './util'
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
 
+let emoji = '🍅'
 if (isDebug) {
   require('electron-debug')()
+  emoji = '🪲'
 }
 
 const store = new Store()
@@ -36,6 +38,8 @@ ipcMain.on('electron-store-set', async (event, key, val) => {
 let notionClient: Client | null = null
 
 function setNotionClient() {
+  if (notionClient) return
+
   const notionKey = store.get('NOTION_KEY') as string
   if (notionKey)
     notionClient = notionKey ? new Client({ auth: notionKey }) : null
@@ -52,6 +56,72 @@ ipcMain.on('rest_finished', async () => {
     title: '휴식 종료!',
     body: '다시 힘내보자구! 화이팅! 💪',
   }).show()
+})
+
+ipcMain.on('today-count', async (event, val) => {
+  setNotionClient()
+  const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as
+    | string
+    | null
+
+  if (!notionClient || !databaseId) {
+    new Notification({
+      title: '🍅 뽀모도로 종료! 고생했어!',
+      body: '조금만 쉬었다 해요 🥰',
+    }).show()
+    return
+  }
+
+  try {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
+    let name = 'name'
+    const { properties } = await notionClient.databases.retrieve({
+      database_id: databaseId,
+    })
+    if (!properties.name) {
+      name = 'Name'
+    }
+
+    const res = await notionClient.databases.query({
+      database_id: databaseId,
+      filter: {
+        created_time: {
+          after: today.toISOString(),
+        },
+        timestamp: 'created_time',
+      },
+      sorts: [
+        {
+          timestamp: 'created_time',
+          direction: 'ascending',
+        },
+      ],
+    })
+
+    if (res.results.length > 0) {
+      const page = res.results.find((result: any) => {
+        if (!result.properties[name].title[0]) return false
+
+        return result.properties[name].title[0].text.content.startsWith(emoji)
+      })
+
+      if (page) {
+        // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 뽀모도로 횟수 count++
+        const previousTitle = (page as any).properties[name].title[0].text
+          .content
+        const tokens = previousTitle.split(' ')
+        const count = parseInt(tokens[tokens.length - 1], 10)
+        event.returnValue = count
+      }
+    }
+  } catch (e) {
+    console.error(e)
+  }
+
+  event.returnValue = 0
 })
 
 ipcMain.on('post_pomodoro', async (event) => {
@@ -101,8 +171,6 @@ ipcMain.on('post_pomodoro', async (event) => {
       ],
     })
 
-    const emoji = isDebug ? '🪲' : '🍅'
-
     if (res.results.length > 0) {
       const page = res.results.find((result: any) => {
         if (!result.properties[name].title[0]) return false
@@ -115,7 +183,8 @@ ipcMain.on('post_pomodoro', async (event) => {
         const previousTitle = (page as any).properties[name].title[0].text
           .content
         const tokens = previousTitle.split(' ')
-        const count = parseInt(tokens[tokens.length - 1], 10) + 1
+        const count = parseInt(tokens[tokens.length - 1], 10)
+        const newCount = count + 1
         await notionClient.pages.update({
           page_id: page.id as string,
           properties: {
@@ -123,7 +192,7 @@ ipcMain.on('post_pomodoro', async (event) => {
               title: [
                 {
                   text: {
-                    content: `${emoji} * ${count}`,
+                    content: `${emoji} * ${newCount}`,
                   },
                 },
               ],
@@ -131,9 +200,11 @@ ipcMain.on('post_pomodoro', async (event) => {
           },
         })
 
+        store.set('TODAY_COUNT', newCount)
+
         new Notification({
           title: '🍅 뽀모도로 종료! 고생했어!',
-          body: `오늘 ${count}번째 뽀모도로를 완료했어요! 🥰`,
+          body: `오늘 ${newCount}번째 뽀모도로를 완료했어요! 🥰`,
         }).show()
         return
       }
@@ -157,6 +228,7 @@ ipcMain.on('post_pomodoro', async (event) => {
         },
       },
     })
+    store.set('TODAY_COUNT', 1)
     new Notification({
       title: '첫 🍅 뽀모도로 종료!',
       body: '오늘도 화이팅! 🥰',
