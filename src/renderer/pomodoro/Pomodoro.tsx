@@ -45,16 +45,11 @@ export default function Pomodoro() {
     alert(`🍅 사용 가이드 🍅`)
   }
 
-  function setKeys() {
+  function setKeys(notionKey: string, notionPomodoroDatabaseId: string) {
     let result = false
-    const notionKey = window.electron.store.get('NOTION_KEY')
-    const notionPomodoroDatabaseId = window.electron.store.get(
-      'NOTION_POMODORO_DATABASE_ID',
-    )
-
     if (notionKey && notionPomodoroDatabaseId) {
       let count = window.electron.store.get('TODAY_COUNT')
-      console.log("🚀 ~ file: Pomodoro.tsx:57 ~ setKeys ~ count:", count)
+      console.log('🚀 ~ file: Pomodoro.tsx:57 ~ setKeys ~ count:', count)
       if (count === -1) {
         alert('노션 key가 잘못되었습니다. 다시 설정해주세요.')
         setIsKeySet(false)
@@ -73,7 +68,11 @@ export default function Pomodoro() {
   }
 
   useEffect(() => {
-    setKeys()
+    const notionKey = window.electron.store.get('NOTION_KEY')
+    const notionPomodoroDatabaseId = window.electron.store.get(
+      'NOTION_POMODORO_DATABASE_ID',
+    )
+    setKeys(notionKey, notionPomodoroDatabaseId)
     // const notionKey = window.electron.store.get('NOTION_KEY')
     // const notionPomodoroDatabaseId = window.electron.store.get(
     //   'NOTION_POMODORO_DATABASE_ID',
@@ -200,7 +199,11 @@ export default function Pomodoro() {
     </>
   ) : (
     <>
-      <NotionKeySetter setKeys={() => setKeys()} />
+      <NotionKeySetter
+        setKeys={(notionKey, notionPomodoroDatabaseId) =>
+          setKeys(notionKey, notionPomodoroDatabaseId)
+        }
+      />
       <div className="bottom_btns">
         <button
           type="button"

@@ -1,13 +1,14 @@
 export default function NotionKeySetter({
   setKeys,
 }: {
-  setKeys: () => boolean
+  setKeys: (notionKey: string, notionPomodoroDatabaseId: string) => boolean
 }) {
   return (
     <div>
       <div style={{ textAlign: 'center', padding: '0 10px 30px 10px' }}>
-        노션에 뽀모도로(🍅) 횟수를 기록하기 위해 노션 API키와 DB ID를
-        설정해주세요.
+        노션에 뽀모도로(🍅) 횟수를 기록하기 위해
+        <br />
+        노션 API키와 DB ID를 설정해주세요.
       </div>
       <form
         onSubmit={(e) => {
@@ -38,10 +39,9 @@ export default function NotionKeySetter({
             'NOTION_POMODORO_DATABASE_ID',
             notionPomodoroDatabaseId,
           )
-
           window.electron.ipcRenderer.sendMessage('set_notion_keys')
 
-          if (!setKeys()) {
+          if (!setKeys(notionKey, notionPomodoroDatabaseId)) {
             const ids = ['notion_key', 'notion_pomodoro_database_id']
             const inputs = ids.map((id) => document.getElementById(id))
 
