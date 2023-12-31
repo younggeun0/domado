@@ -56,13 +56,9 @@ export default function PomodoroTimer({
         setIsRest(true)
         break
       case 'pomodoro_finished':
-        // FIXME, 문제는 뽀모도로 완료 시 휴식 또는 뽀모도로 재시작을 선택할 수 있음
-        // 때문에 두 가지 경우의 duration이 모두 설정될 수 있어야 함(현재는 한 값으로 설정)
-        // setStatus('paused')
         setIsRest(true)
         setStatus('paused')
         setTimerKey(uuidv4())
-        // setTimerKey(uuidv4())
         window.electron.ipcRenderer.sendMessage('post_pomodoro')
         updateTodayInfo()
         break
@@ -76,7 +72,7 @@ export default function PomodoroTimer({
         // paused
         break
     }
-  }, [status])
+  }, [status, updateTodayInfo])
 
   function restart() {
     // TIMER key값을 갱신하면 새로 시작됨

@@ -7,6 +7,7 @@ export type Channels =
   | 'ipc-example'
   | 'post_pomodoro'
   | 'rest_finished'
+  | 'set_notion_keys'
   | 'reset_notion_keys'
   | 'electron-store-get'
   | 'electron-store-set'

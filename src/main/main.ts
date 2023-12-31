@@ -37,40 +37,11 @@ ipcMain.on('electron-store-set', async (event, key, val) => {
 // pomodoro
 let notionClient: Client | null = null
 
-function setNotionClient() {
-  if (notionClient) return
-
-  const notionKey = store.get('NOTION_KEY') as string
-  if (notionKey)
-    notionClient = notionKey ? new Client({ auth: notionKey }) : null
-}
-
-ipcMain.on('reset_notion_keys', async () => {
-  store.set('NOTION_KEY', null)
-  store.set('NOTION_POMODORO_DATABASE_ID', null)
-  notionClient = null
-})
-
-ipcMain.on('rest_finished', async () => {
-  new Notification({
-    title: '휴식 종료!',
-    body: '다시 힘내보자구! 화이팅! 💪',
-  }).show()
-})
-
-ipcMain.on('today-count', async (event, val) => {
-  setNotionClient()
+async function setInitialTodayCount() {
   const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as
     | string
     | null
-
-  if (!notionClient || !databaseId) {
-    new Notification({
-      title: '🍅 뽀모도로 종료! 고생했어!',
-      body: '조금만 쉬었다 해요 🥰',
-    }).show()
-    return
-  }
+  if (!notionClient || !databaseId) return
 
   try {
     const today = new Date()
@@ -114,14 +85,51 @@ ipcMain.on('today-count', async (event, val) => {
           .content
         const tokens = previousTitle.split(' ')
         const count = parseInt(tokens[tokens.length - 1], 10)
-        event.returnValue = count
+        store.set('TODAY_COUNT', count)
+        return
       }
     }
   } catch (e) {
     console.error(e)
+    // 잘못 입력한 경우 초기화
+    store.set('TODAY_COUNT', -1)
+    notionClient = null
+    resetNotionKeys()
+    return
   }
 
-  event.returnValue = 0
+  store.set('TODAY_COUNT', 0)
+}
+
+async function setNotionClient() {
+  if (notionClient) return
+
+  const notionKey = store.get('NOTION_KEY') as string
+  if (notionKey && notionKey.length > 0) {
+    notionClient = notionKey ? new Client({ auth: notionKey }) : null
+    await setInitialTodayCount()
+  }
+}
+
+ipcMain.on('set_notion_keys', async () => {
+  await setNotionClient()
+})
+
+function resetNotionKeys() {
+  store.set('NOTION_KEY', null)
+  store.set('NOTION_POMODORO_DATABASE_ID', null)
+  notionClient = null
+}
+
+ipcMain.on('reset_notion_keys', async () => {
+  resetNotionKeys()
+})
+
+ipcMain.on('rest_finished', async () => {
+  new Notification({
+    title: '휴식 종료!',
+    body: '다시 힘내보자구! 화이팅! 💪',
+  }).show()
 })
 
 ipcMain.on('post_pomodoro', async (event) => {
@@ -129,7 +137,6 @@ ipcMain.on('post_pomodoro', async (event) => {
   // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
-  setNotionClient()
   const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as
     | string
     | null
@@ -274,7 +281,7 @@ const createWindow = async () => {
     await installExtensions()
   }
 
-  setNotionClient()
+  await setNotionClient()
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')

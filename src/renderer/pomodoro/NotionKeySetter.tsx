@@ -1,9 +1,7 @@
-import React from 'react'
-
 export default function NotionKeySetter({
-  setIsKeySet,
+  setKeys,
 }: {
-  setIsKeySet: React.Dispatch<React.SetStateAction<boolean>>
+  setKeys: () => boolean
 }) {
   return (
     <div>
@@ -40,7 +38,19 @@ export default function NotionKeySetter({
             'NOTION_POMODORO_DATABASE_ID',
             notionPomodoroDatabaseId,
           )
-          setIsKeySet(true)
+
+          window.electron.ipcRenderer.sendMessage('set_notion_keys')
+
+          if (!setKeys()) {
+            const ids = ['notion_key', 'notion_pomodoro_database_id']
+            const inputs = ids.map((id) => document.getElementById(id))
+
+            inputs.forEach((input) => {
+              if (input) {
+                input.value = ''
+              }
+            })
+          }
         }}
         style={{
           display: 'flex',
