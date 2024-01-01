@@ -47,7 +47,9 @@ export default function NotionKeySetter({
 
           if (!setKeys(notionKey, notionPomodoroDatabaseId)) {
             const ids = ['notion_key', 'notion_pomodoro_database_id']
-            const inputs = ids.map((id) => document.getElementById(id))
+            const inputs = ids.map(
+              (id) => document.getElementById(id) as HTMLInputElement | null,
+            )
 
             inputs.forEach((input) => {
               if (input) {
