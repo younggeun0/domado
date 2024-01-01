@@ -2,9 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
-// TODO, 필요한 이벤트 추가예정
 export type Channels =
-  | 'ipc-example'
   | 'post_pomodoro'
   | 'rest_finished'
   | 'set_notion_keys'

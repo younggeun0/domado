@@ -15,6 +15,10 @@ export default function Pomodoro() {
   const [todayInfo, setTodayInfo] = React.useState<
     PomodoroInfo | null | undefined
   >(null)
+
+  const [notionSync, setNotionSync] = React.useState(
+    window.electron.store.get('notion-sync') ?? true,
+  )
   // const [pomodoroInfos, setPomodoroInfos] =
   //   React.useState<PomodoroInfo[]>(allPomodoroInfos);
 
@@ -48,7 +52,6 @@ export default function Pomodoro() {
   function setKeys(notionKey: string, notionPomodoroDatabaseId: string) {
     let result = false
     if (notionKey && notionPomodoroDatabaseId) {
-
       // TODO, api키 설정하는 동안 로딩처리
       if (
         !window.electron.ipcRenderer.sendSync(
@@ -57,7 +60,7 @@ export default function Pomodoro() {
           notionPomodoroDatabaseId,
         )
       ) {
-        alert('노션 key가 잘못되었습니다. 다시 설정해주세요.')
+        alert('노션 API KEY가 잘못되었습니다. 다시 설정해주세요.')
       } else {
         const count = window.electron.store.get('TODAY_COUNT') || 0
 
@@ -66,6 +69,8 @@ export default function Pomodoro() {
           count,
         })
         result = true
+        window.electron.store.set('notion-sync', true)
+        setNotionSync(true)
       }
       setIsKeySet(result)
     }
@@ -73,6 +78,15 @@ export default function Pomodoro() {
   }
 
   useEffect(() => {
+    if (!notionSync) {
+      setIsKeySet(true)
+      setTodayInfo({
+        date: dayjs().format('yyyy-mm-dd'),
+        count: 0,
+      })
+      return
+    }
+
     const notionKey = window.electron.store.get('NOTION_KEY')
     const notionPomodoroDatabaseId = window.electron.store.get(
       'NOTION_POMODORO_DATABASE_ID',
@@ -92,7 +106,7 @@ export default function Pomodoro() {
     //     setTodayInfo(found)
     //   },
     // )
-  }, [])
+  }, [notionSync])
 
   function resetKeys() {
     window.electron.ipcRenderer.sendMessage('reset_notion_keys')
@@ -121,9 +135,12 @@ export default function Pomodoro() {
             display: 'flex',
             justifyContent: 'end',
             marginBottom: '1rem',
+            textAlign: 'end',
           }}
         >
           🍅 : {todayInfo?.count ?? 0}
+          <br />
+          {!notionSync && 'no sync '}
         </div>
         <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} />
 
@@ -162,7 +179,7 @@ export default function Pomodoro() {
           type="button"
           className="bottom_btn"
           onClick={() => {
-            if (window.confirm('노션 key를 초기화하시겠습니까?')) {
+            if (window.confirm('노션 API KEY를 초기화하시겠습니까?')) {
               resetKeys()
             }
           }}
@@ -192,12 +209,13 @@ export default function Pomodoro() {
           type="button"
           className="bottom_btn"
           onClick={() => {
-            // TODO, 노션 키 설정하지 않고 사용하기 위한 플래그 추가
-            // window.electron.ipcRenderer.sendMessage('set_notion_keys', {
-            //   notionKey: '',
-            //   notionPomodoroDatabaseId: '',
-            // })
+            window.electron.store.set('notion-sync', false)
+            setNotionSync(false)
             setIsKeySet(true)
+            setTodayInfo({
+              date: dayjs().format('yyyy-mm-dd'),
+              count: 0,
+            })
           }}
           style={{ marginRight: 10 }}
         >
