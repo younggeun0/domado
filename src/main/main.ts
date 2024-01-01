@@ -43,6 +43,26 @@ function resetNotionKeys() {
   notionClient = null
 }
 
+function getNotionPage(date: Date, databaseId: string) {
+  if (!notionClient) return null
+
+  return notionClient.databases.query({
+    database_id: databaseId,
+    filter: {
+      created_time: {
+        after: date.toISOString(),
+      },
+      timestamp: 'created_time',
+    },
+    sorts: [
+      {
+        timestamp: 'created_time',
+        direction: 'ascending',
+      },
+    ],
+  })
+}
+
 async function setInitialTodayCount(
   notionPomodoroDatabaseId: string | null = null,
 ) {
@@ -63,24 +83,8 @@ async function setInitialTodayCount(
     name = 'Name'
   }
 
-  // TODO, 공통함수 추출
-  const res = await notionClient.databases.query({
-    database_id: databaseId,
-    filter: {
-      created_time: {
-        after: today.toISOString(),
-      },
-      timestamp: 'created_time',
-    },
-    sorts: [
-      {
-        timestamp: 'created_time',
-        direction: 'ascending',
-      },
-    ],
-  })
-
-  if (res.results.length > 0) {
+  const res = await getNotionPage(today, databaseId)
+  if (res && res.results.length > 0) {
     const page = res.results.find((result: any) => {
       if (!result.properties[name].title[0]) return false
 
@@ -169,23 +173,8 @@ ipcMain.on('post_pomodoro', async (event) => {
       name = 'Name'
     }
 
-    const res = await notionClient.databases.query({
-      database_id: databaseId,
-      filter: {
-        created_time: {
-          after: today.toISOString(),
-        },
-        timestamp: 'created_time',
-      },
-      sorts: [
-        {
-          timestamp: 'created_time',
-          direction: 'ascending',
-        },
-      ],
-    })
-
-    if (res.results.length > 0) {
+    const res = await getNotionPage(today, databaseId)
+    if (res && res.results.length > 0) {
       const page = res.results.find((result: any) => {
         if (!result.properties[name].title[0]) return false
 
