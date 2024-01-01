@@ -37,89 +37,96 @@ ipcMain.on('electron-store-set', async (event, key, val) => {
 // pomodoro
 let notionClient: Client | null = null
 
-async function setInitialTodayCount() {
-  const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as
-    | string
-    | null
-  if (!notionClient || !databaseId) return
-
-  try {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
-    let name = 'name'
-    const { properties } = await notionClient.databases.retrieve({
-      database_id: databaseId,
-    })
-    if (!properties.name) {
-      name = 'Name'
-    }
-
-    const res = await notionClient.databases.query({
-      database_id: databaseId,
-      filter: {
-        created_time: {
-          after: today.toISOString(),
-        },
-        timestamp: 'created_time',
-      },
-      sorts: [
-        {
-          timestamp: 'created_time',
-          direction: 'ascending',
-        },
-      ],
-    })
-
-    if (res.results.length > 0) {
-      const page = res.results.find((result: any) => {
-        if (!result.properties[name].title[0]) return false
-
-        return result.properties[name].title[0].text.content.startsWith(emoji)
-      })
-
-      if (page) {
-        // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 뽀모도로 횟수 count++
-        const previousTitle = (page as any).properties[name].title[0].text
-          .content
-        const tokens = previousTitle.split(' ')
-        const count = parseInt(tokens[tokens.length - 1], 10)
-        store.set('TODAY_COUNT', count)
-        return
-      }
-    }
-  } catch (e) {
-    console.error(e)
-    // 잘못 입력한 경우 초기화
-    store.set('TODAY_COUNT', -1)
-    notionClient = null
-    resetNotionKeys()
-    return
-  }
-
-  store.set('TODAY_COUNT', 0)
-}
-
-async function setNotionClient() {
-  if (notionClient) return
-
-  const notionKey = store.get('NOTION_KEY') as string
-  if (notionKey && notionKey.length > 0) {
-    notionClient = notionKey ? new Client({ auth: notionKey }) : null
-    await setInitialTodayCount()
-  }
-}
-
-ipcMain.on('set_notion_keys', async () => {
-  await setNotionClient()
-})
-
 function resetNotionKeys() {
   store.set('NOTION_KEY', null)
   store.set('NOTION_POMODORO_DATABASE_ID', null)
   notionClient = null
 }
+
+async function setInitialTodayCount(
+  notionPomodoroDatabaseId: string | null = null,
+) {
+  const databaseId: string | null =
+    notionPomodoroDatabaseId ||
+    (store.get('NOTION_POMODORO_DATABASE_ID') as string | null)
+  if (!notionClient || !databaseId) return
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
+  let name = 'name'
+  const { properties } = await notionClient.databases.retrieve({
+    database_id: databaseId,
+  })
+  if (!properties.name) {
+    name = 'Name'
+  }
+
+  // TODO, 공통함수 추출
+  const res = await notionClient.databases.query({
+    database_id: databaseId,
+    filter: {
+      created_time: {
+        after: today.toISOString(),
+      },
+      timestamp: 'created_time',
+    },
+    sorts: [
+      {
+        timestamp: 'created_time',
+        direction: 'ascending',
+      },
+    ],
+  })
+
+  if (res.results.length > 0) {
+    const page = res.results.find((result: any) => {
+      if (!result.properties[name].title[0]) return false
+
+      return result.properties[name].title[0].text.content.startsWith(emoji)
+    })
+
+    if (page) {
+      // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 뽀모도로 횟수 count++
+      const previousTitle = (page as any).properties[name].title[0].text.content
+      const tokens = previousTitle.split(' ')
+      const count = parseInt(tokens[tokens.length - 1], 10)
+      store.set('TODAY_COUNT', count)
+      return
+    }
+  }
+
+  store.set('TODAY_COUNT', 0)
+}
+
+async function setNotionClient(
+  apikey: string | null = null,
+  notionPomodoroDatabaseId: string | null = null,
+) {
+  const notionKey = apikey || (store.get('NOTION_KEY') as string)
+
+  if (notionKey && notionKey.length > 0) {
+    notionClient = notionKey ? new Client({ auth: notionKey }) : null
+    try {
+      await setInitialTodayCount(notionPomodoroDatabaseId)
+      return true
+    } catch (e) {
+      console.error(e)
+      resetNotionKeys()
+    }
+  }
+
+  return false
+}
+
+ipcMain.on(
+  'set_notion_keys',
+  async (event, notionKey, notionPomodoroDatabaseId) => {
+    const res = await setNotionClient(notionKey, notionPomodoroDatabaseId)
+    event.returnValue = res
+  },
+)
 
 ipcMain.on('reset_notion_keys', async () => {
   resetNotionKeys()

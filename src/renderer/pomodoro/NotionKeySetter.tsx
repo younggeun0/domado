@@ -39,7 +39,11 @@ export default function NotionKeySetter({
             'NOTION_POMODORO_DATABASE_ID',
             notionPomodoroDatabaseId,
           )
-          window.electron.ipcRenderer.sendMessage('set_notion_keys')
+          window.electron.ipcRenderer.sendMessage(
+            'set_notion_keys',
+            notionKey,
+            notionPomodoroDatabaseId,
+          )
 
           if (!setKeys(notionKey, notionPomodoroDatabaseId)) {
             const ids = ['notion_key', 'notion_pomodoro_database_id']

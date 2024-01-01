@@ -48,21 +48,26 @@ export default function Pomodoro() {
   function setKeys(notionKey: string, notionPomodoroDatabaseId: string) {
     let result = false
     if (notionKey && notionPomodoroDatabaseId) {
-      let count = window.electron.store.get('TODAY_COUNT')
-      console.log('🚀 ~ file: Pomodoro.tsx:57 ~ setKeys ~ count:', count)
-      if (count === -1) {
+
+      // TODO, api키 설정하는 동안 로딩처리
+      if (
+        !window.electron.ipcRenderer.sendSync(
+          'set_notion_keys',
+          notionKey,
+          notionPomodoroDatabaseId,
+        )
+      ) {
         alert('노션 key가 잘못되었습니다. 다시 설정해주세요.')
-        setIsKeySet(false)
-        count = 0
       } else {
-        setIsKeySet(true)
+        const count = window.electron.store.get('TODAY_COUNT') || 0
+
+        setTodayInfo({
+          date: dayjs().format('yyyy-mm-dd'),
+          count,
+        })
         result = true
       }
-
-      setTodayInfo({
-        date: dayjs().format('yyyy-mm-dd'),
-        count,
-      })
+      setIsKeySet(result)
     }
     return result
   }
@@ -73,29 +78,7 @@ export default function Pomodoro() {
       'NOTION_POMODORO_DATABASE_ID',
     )
     setKeys(notionKey, notionPomodoroDatabaseId)
-    // const notionKey = window.electron.store.get('NOTION_KEY')
-    // const notionPomodoroDatabaseId = window.electron.store.get(
-    //   'NOTION_POMODORO_DATABASE_ID',
-    // )
-    // console.log("🚀 ~ file: Pomodoro.tsx:55 ~ useEffect ~ notionKey && notionPomodoroDatabaseId:", notionKey && notionPomodoroDatabaseId)
 
-    // if (notionKey && notionPomodoroDatabaseId) {
-    //   let count = window.electron.store.get('TODAY_COUNT')
-    //   if (count === -1) {
-    //     alert('노션 key가 잘못되었습니다. 다시 설정해주세요.')
-    //     setIsKeySet(false)
-    //     count = 0
-    //     console.log('set false')
-    //   } else {
-    //     console.log('set true')
-    //     setIsKeySet(true)
-    //   }
-
-    //   setTodayInfo({
-    //     date: dayjs().format('yyyy-mm-dd'),
-    //     count,
-    //   })
-    // }
     // window.electron.ipcRenderer.send('pomodoro:ready')
     // window.electron.ipcRenderer.on('pomodoro:ready', () => {
     //   window.electron.ipcRenderer.send('pomodoro:load')
@@ -109,7 +92,7 @@ export default function Pomodoro() {
     //     setTodayInfo(found)
     //   },
     // )
-  }, [isKeySet])
+  }, [])
 
   function resetKeys() {
     window.electron.ipcRenderer.sendMessage('reset_notion_keys')
