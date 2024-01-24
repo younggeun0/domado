@@ -114,14 +114,16 @@ export default function Pomodoro() {
   }
 
   function updateTodayInfo() {
-    if (todayInfo) {
+    const today = dayjs().format('YYYY-MM-DD')
+
+    if (todayInfo && todayInfo.date === today) {
       setTodayInfo({
         date: todayInfo.date,
         count: todayInfo.count + 1,
       })
     } else {
       setTodayInfo({
-        date: dayjs().format('YYYY-MM-DD'),
+        date: today,
         count: 1,
       })
     }
