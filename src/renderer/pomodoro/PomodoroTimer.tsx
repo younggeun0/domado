@@ -71,6 +71,13 @@ export default function PomodoroTimer({
             setStatus('paused')
           }
           break
+        case 'a':
+          window.electron.ipcRenderer.sendMessage(
+            'post_pomodoro',
+            'hello world',
+          )
+          updateTodayInfo()
+          break
         case 'r':
           restart()
           break
@@ -89,7 +96,7 @@ export default function PomodoroTimer({
     return () => {
       document.removeEventListener('keydown', keydownHandler)
     }
-  }, [addMin, isRest, status])
+  }, [addMin, isRest, status, updateTodayInfo])
 
   useEffect(() => {
     switch (status) {
