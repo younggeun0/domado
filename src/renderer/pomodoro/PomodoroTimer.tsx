@@ -44,7 +44,7 @@ export default function PomodoroTimer({
   function addMin(min: number) {
     const newDuration =
       (isRest ? durations.rest : durations.pomodoro) + min * 60
-    if (newDuration < 0) {
+    if (newDuration <= 0) {
       setStatus(isRest ? 'rest_finished' : 'pomodoro_finished')
       return
     }
