@@ -45,8 +45,7 @@ export default function Pomodoro() {
   // }, [pomodoroInfos, todayInfo]);
 
   function showGuide() {
-    // TODO, show summary of pomodoro
-    alert(`🍅 사용 가이드 🍅`)
+    window.open('https://github.com/younggeun0/pomodoro_notion_recorder')
   }
 
   function setKeys(notionKey: string, notionPomodoroDatabaseId: string) {
