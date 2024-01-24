@@ -143,7 +143,7 @@ ipcMain.on('rest_finished', async () => {
   }).show()
 })
 
-ipcMain.on('post_pomodoro', async (event) => {
+ipcMain.on('post_pomodoro', async (event, message) => {
   // const msgTemplate = (pingPong: string) => `post_pomodoro test: ${pingPong}`;
   // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능

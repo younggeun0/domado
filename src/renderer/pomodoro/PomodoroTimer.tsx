@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import dayjs from 'dayjs'
+// import dayjs from 'dayjs'
 import React, { useEffect, useState } from 'react'
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
 import { v4 as uuidv4 } from 'uuid'
@@ -40,46 +40,7 @@ export default function PomodoroTimer({
     rest: TIME_INFO.MIN_PER_REST * 60,
   })
 
-  useEffect(() => {
-    switch (status) {
-      // paused에서 재시작 시 키값을 조기화하면 새로시작하기 때문에 상태만 변경
-      // rest중에 멈췄다가 다시 시작 시 이슈
-      case 'pomodoro_start':
-        setIsRest((prev) => {
-          if (prev === true) {
-            setTimerKey(uuidv4())
-          }
-          return false
-        })
-        break
-      case 'rest_start':
-        setIsRest(true)
-        break
-      case 'pomodoro_finished':
-        setIsRest(true)
-        setStatus('paused')
-        setTimerKey(uuidv4())
-        window.electron.ipcRenderer.sendMessage('post_pomodoro')
-        updateTodayInfo()
-        break
-      case 'rest_finished':
-        setStatus('paused')
-        setIsRest(false)
-        setTimerKey(uuidv4())
-        window.electron.ipcRenderer.sendMessage('rest_finished')
-        break
-      default:
-        // paused
-        break
-    }
-  }, [status, updateTodayInfo])
-
-  function restart() {
-    // TIMER key값을 갱신하면 새로 시작됨
-    // 참고, https://github.com/vydimitrov/react-countdown-circle-timer/tree/master/packages/web#recipes
-    setTimerKey(uuidv4())
-  }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   function addMin(min: number) {
     const newDuration =
       (isRest ? durations.rest : durations.pomodoro) + min * 60
@@ -93,6 +54,77 @@ export default function PomodoroTimer({
       ...(isRest ? { rest: newDuration } : { pomodoro: newDuration }),
     })
   }
+
+  function restart() {
+    // TIMER key값을 갱신하면 새로 시작됨
+    // 참고, https://github.com/vydimitrov/react-countdown-circle-timer/tree/master/packages/web#recipes
+    setTimerKey(uuidv4())
+  }
+
+  useEffect(() => {
+    function keydownHandler(e) {
+      switch (e.key) {
+        case ' ':
+          if (status === 'paused') {
+            setStatus(isRest ? 'rest_start' : 'pomodoro_start')
+          } else {
+            setStatus('paused')
+          }
+          break
+        case 'r':
+          restart()
+          break
+        case 'ArrowUp':
+          addMin(TIME_INFO.ADD_MIN)
+          break
+        case 'ArrowDown':
+          addMin(-TIME_INFO.ADD_MIN)
+          break
+        default:
+          break
+      }
+    }
+
+    document.addEventListener('keydown', keydownHandler)
+    return () => {
+      document.removeEventListener('keydown', keydownHandler)
+    }
+  }, [addMin, isRest, status])
+
+  useEffect(() => {
+    switch (status) {
+      // paused에서 재시작 시 키값을 조기화하면 새로시작하기 때문에 상태만 변경
+      // rest중에 멈췄다가 다시 시작 시 이슈
+      case 'pomodoro_start':
+        setIsRest((prev) => {
+          if (prev === true) restart()
+          return false
+        })
+        break
+      case 'rest_start':
+        setIsRest(true)
+        break
+      case 'pomodoro_finished':
+        setIsRest(true)
+        setStatus('paused')
+        restart()
+
+        // TODO, 무엇을 했는지 입력받아서 노션에 기록
+        // prompt Web API는 Electron에서는 동작하지 않아 방법 찾아야 함
+        window.electron.ipcRenderer.sendMessage('post_pomodoro', 'hello world')
+        updateTodayInfo()
+        break
+      case 'rest_finished':
+        setStatus('paused')
+        setIsRest(false)
+        restart()
+        window.electron.ipcRenderer.sendMessage('rest_finished')
+        break
+      default:
+        // paused
+        break
+    }
+  }, [status, updateTodayInfo])
 
   return (
     <>
