@@ -3,6 +3,7 @@ import React, { useEffect } from 'react'
 import dayjs from 'dayjs'
 import PomodoroTimer from './PomodoroTimer'
 import NotionKeySetter from './NotionKeySetter'
+import PomodoroHeatmap from './PomodoroHeatmap'
 
 export interface PomodoroInfo {
   date: string
@@ -145,6 +146,9 @@ export default function Pomodoro() {
         </div>
         <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} />
 
+        {/* TODO, heatmap 표시 조건 추가 */}
+        <PomodoroHeatmap />
+
         {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
                       <div style={{ wimdth: '70%' }}>
                           <CalendarHeatmap
@@ -212,6 +216,7 @@ export default function Pomodoro() {
           onClick={() => {
             window.electron.store.set('notion-sync', false)
             setNotionSync(false)
+            // TODO, api 키 설정했는지 여부로 히트맵을 보여주기 위해서 그냥 쓸 땐 keySet을 false로 유지하고 다른 플래그로 판단하는게 좋아보임
             setIsKeySet(true)
             setTodayInfo({
               date: dayjs().format('yyyy-mm-dd'),
