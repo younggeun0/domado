@@ -9,6 +9,7 @@ export type Channels =
   | 'reset_notion_keys'
   | 'electron-store-get'
   | 'electron-store-set'
+  | 'get_pomodoro_logs'
 
 const electronHandler = {
   ipcRenderer: {

@@ -16,6 +16,7 @@ import { Client } from '@notionhq/client'
 import Store from 'electron-store'
 import MenuBuilder from './menu'
 import { resolveHtmlPath } from './util'
+import dayjs from 'dayjs'
 
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
@@ -141,6 +142,48 @@ ipcMain.on('rest_finished', async () => {
     title: '휴식 종료!',
     body: '다시 힘내보자구! 화이팅! 💪',
   }).show()
+})
+
+ipcMain.on('get_pomodoro_logs', async (event) => {
+  const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as
+    | string
+    | null
+
+  let result: any[] = []
+  if (!notionClient || !databaseId) {
+    console.log('뽀모도로 데이터를 가져올 수 없습니다.')
+    event.returnValue = result
+    return
+  }
+
+  try {
+    const response = await notionClient.databases.query({
+      database_id: databaseId as string,
+      sorts: [
+        {
+          timestamp: 'created_time',
+          direction: 'descending',
+        },
+      ],
+    })
+
+    if (response.results.length > 0) {
+      result = response.results.map((page: any) => {
+        const titleTokens =
+          page.properties.name.title[0].text.content.split(' ')
+        const value = Number(titleTokens[titleTokens.length - 1])
+
+        return {
+          date: dayjs(page.created_time).format('YYYY-MM-DD'),
+          value,
+        }
+      })
+    }
+  } catch (error) {
+    console.error(error)
+  }
+
+  event.returnValue = result
 })
 
 ipcMain.on('post_pomodoro', async (event, message) => {
