@@ -1,15 +1,8 @@
 {
   "description": "pomodoro app logging to notion",
   "keywords": [
-    "electron",
-    "boilerplate",
-    "react",
-    "typescript",
-    "ts",
-    "sass",
-    "webpack",
-    "hot",
-    "reload"
+    "pomodoro",
+    "notion"
   ],
   "license": "MIT",
   "author": {
@@ -163,8 +156,8 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "뽀모도로 노션 레코더",
-    "appId": "org.erb.ElectronReact",
+    "productName": "PomodoroNotionRecorder",
+    "appId": "PomodoroNotionRecorder",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -219,15 +212,7 @@
     },
     "extraResources": [
       "./assets/**"
-    ],
-    "publish": {
-      "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
-    }
-  },
-  "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
+    ]
   },
   "devEngines": {
     "node": ">=14.x",

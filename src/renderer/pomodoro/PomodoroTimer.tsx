@@ -62,7 +62,7 @@ export default function PomodoroTimer({
   }
 
   useEffect(() => {
-    function keydownHandler(e) {
+    function keydownHandler(e: KeyboardEvent) {
       switch (e.key) {
         case ' ':
           if (status === 'paused') {

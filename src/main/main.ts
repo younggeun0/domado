@@ -236,7 +236,7 @@ ipcMain.on('post_pomodoro', async (event, message) => {
       title: '첫 🍅 뽀모도로 종료!',
       body: '오늘도 화이팅! 🥰',
     }).show()
-  } catch (e) {
+  } catch (e: any) {
     console.error(e)
     new Notification({
       title: '오류 발생!',
