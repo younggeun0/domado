@@ -1,18 +1,26 @@
 import CalHeatmap from 'cal-heatmap'
-import Tooltip from 'cal-heatmap/plugins/Tooltip';
+import Tooltip from 'cal-heatmap/plugins/Tooltip'
 import 'cal-heatmap/cal-heatmap.css'
 import { useEffect } from 'react'
 
 export default function Heatmap() {
   useEffect(() => {
+    // TODO, 뽀모도로 완료 시 히트맵 갱신
     const logs = window.electron.ipcRenderer.sendSync('get_pomodoro_logs')
     if (logs.length === 0) return
+
+    // startdate, 1개월 전 1일을 기준으로 설정(range3 설정 시 기준 이전 이후 1개월간 데이터 표시)
+    const now = new Date()
+    now.setMonth(now.getMonth() - 1)
+    now.setDate(1)
+    const year = now.getFullYear()
+    const month = (now.getMonth() + 1).toString().padStart(2, '0')
+    const day = now.getDate().toString().padStart(2, '0')
 
     new CalHeatmap().paint(
       {
         data: { source: logs, x: 'date', y: 'value' },
-        // TODO, 날짜 기간 설정(현재로부터 3개월)
-        date: { start: new Date('2023-12-01') },
+        date: { start: `${year}-${month}-${day}` },
         range: 3,
         domain: {
           type: 'month',
@@ -52,10 +60,5 @@ export default function Heatmap() {
     )
   }, [])
 
-  return (
-    <div
-      id="pomodoro-heatmap"
-      style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}
-    />
-  )
+  return <div id="pomodoro-heatmap" style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }} />
 }
