@@ -14,12 +14,11 @@ import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
 import { Client } from '@notionhq/client'
 import Store from 'electron-store'
+import dayjs from 'dayjs'
 import MenuBuilder from './menu'
 import { resolveHtmlPath } from './util'
-import dayjs from 'dayjs'
 
-const isDebug =
-  process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
+const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
 
 let emoji = '🍅'
 if (isDebug) {
@@ -64,12 +63,9 @@ function getNotionPage(date: Date, databaseId: string) {
   })
 }
 
-async function setInitialTodayCount(
-  notionPomodoroDatabaseId: string | null = null,
-) {
+async function setInitialTodayCount(notionPomodoroDatabaseId: string | null = null) {
   const databaseId: string | null =
-    notionPomodoroDatabaseId ||
-    (store.get('NOTION_POMODORO_DATABASE_ID') as string | null)
+    notionPomodoroDatabaseId || (store.get('NOTION_POMODORO_DATABASE_ID') as string | null)
   if (!notionClient || !databaseId) return
 
   const today = new Date()
@@ -105,10 +101,7 @@ async function setInitialTodayCount(
   store.set('TODAY_COUNT', 0)
 }
 
-async function setNotionClient(
-  apikey: string | null = null,
-  notionPomodoroDatabaseId: string | null = null,
-) {
+async function setNotionClient(apikey: string | null = null, notionPomodoroDatabaseId: string | null = null) {
   const notionKey = apikey || (store.get('NOTION_KEY') as string)
 
   if (notionKey && notionKey.length > 0) {
@@ -125,13 +118,10 @@ async function setNotionClient(
   return false
 }
 
-ipcMain.on(
-  'set_notion_keys',
-  async (event, notionKey, notionPomodoroDatabaseId) => {
-    const res = await setNotionClient(notionKey, notionPomodoroDatabaseId)
-    event.returnValue = res
-  },
-)
+ipcMain.on('set_notion_keys', async (event, notionKey, notionPomodoroDatabaseId) => {
+  const res = await setNotionClient(notionKey, notionPomodoroDatabaseId)
+  event.returnValue = res
+})
 
 ipcMain.on('reset_notion_keys', async () => {
   resetNotionKeys()
@@ -145,9 +135,7 @@ ipcMain.on('rest_finished', async () => {
 })
 
 ipcMain.on('get_pomodoro_logs', async (event) => {
-  const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as
-    | string
-    | null
+  const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as string | null
 
   let result: any[] = []
   if (!notionClient || !databaseId) {
@@ -191,9 +179,7 @@ ipcMain.on('post_pomodoro', async (event, message) => {
   // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
-  const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as
-    | string
-    | null
+  const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as string | null
 
   if (!notionClient || !databaseId) {
     new Notification({
@@ -226,8 +212,7 @@ ipcMain.on('post_pomodoro', async (event, message) => {
 
       if (page) {
         // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 뽀모도로 횟수 count++
-        const previousTitle = (page as any).properties[name].title[0].text
-          .content
+        const previousTitle = (page as any).properties[name].title[0].text.content
         const tokens = previousTitle.split(' ')
         const count = parseInt(tokens[tokens.length - 1], 10)
         const newCount = count + 1
@@ -333,12 +318,10 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: isDebug ? 1000 : 400,
-    height: 600,
+    height: 700,
     icon: getAssetPath('icon.png'),
     webPreferences: {
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
+      preload: app.isPackaged ? path.join(__dirname, 'preload.js') : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   })
 

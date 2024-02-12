@@ -3,7 +3,7 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   rules: {
     semi: [2, 'never'],
-    'prettier/prettier': ['error', { semi: false }],
+    'prettier/prettier': ['error', { semi: false, printWidth: 120 }],
     // A temporary hack related to IDE not resolving correct package.json
     'import/no-extraneous-dependencies': 'off',
     'react/react-in-jsx-scope': 'off',
