@@ -6,12 +6,8 @@ import { useEffect } from 'react'
 export default function Heatmap() {
   useEffect(() => {
     const logs = window.electron.ipcRenderer.sendSync('get_pomodoro_logs')
-    console.log('🚀 ~ useEffect ~ result:', logs)
-    console.log('==================2')
-
     if (logs.length === 0) return
 
-    // https://cal-heatmap.com/docs/showcase#github-profile-contribution-like
     new CalHeatmap().paint(
       {
         data: { source: logs, x: 'date', y: 'value' },
@@ -35,8 +31,8 @@ export default function Heatmap() {
         scale: {
           color: {
             type: 'threshold',
-            range: ['#14432a', '#166b34', '#37a446', '#4dd05a'],
-            domain: [3, 4, 6],
+            range: ['#FF9353', '#E95100', '#F34200', '#C92100'],
+            domain: [2, 4, 6],
           },
         },
       },
@@ -51,15 +47,15 @@ export default function Heatmap() {
               return `${value} 🍅 ${dayjsDate.format('dddd, MMMM D, YYYY')}`
             },
           },
-        ]
+        ],
       ],
     )
-  })
+  }, [])
 
   return (
     <div
       id="pomodoro-heatmap"
-      style={{ display: 'flex', justifyContent: 'center' }}
+      style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}
     />
   )
 }
