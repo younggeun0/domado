@@ -42,7 +42,7 @@ export default function Heatmap() {
           {
             // eslint-disable-next-line object-shorthand, func-names
             text: function (_date: number, value: string, dayjsDate: any) {
-              if (!value) return ''
+              if (!value) return `${dayjsDate.format('dddd, MMMM D, YYYY')}`
 
               return `${value} 🍅 ${dayjsDate.format('dddd, MMMM D, YYYY')}`
             },
