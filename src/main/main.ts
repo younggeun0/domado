@@ -156,16 +156,17 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
     })
 
     if (response.results.length > 0) {
-      result = response.results.map((page: any) => {
-        const titleTokens =
-          page.properties.name.title[0].text.content.split(' ')
-        const value = Number(titleTokens[titleTokens.length - 1])
+      result = response.results
+        .filter((page: any) => page.properties.name.title[0].text.content.startsWith(emoji))
+        .map((page: any) => {
+          const titleTokens = page.properties.name.title[0].text.content.split(' ')
+          const value = Number(titleTokens[titleTokens.length - 1])
 
-        return {
-          date: dayjs(page.created_time).format('YYYY-MM-DD'),
-          value,
-        }
-      })
+          return {
+            date: dayjs(page.created_time).format('YYYY-MM-DD'),
+            value,
+          }
+        })
     }
   } catch (error) {
     console.error(error)
