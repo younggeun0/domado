@@ -16,8 +16,8 @@ export default function Main() {
   const [notionSync, setNotionSync] = React.useState(window.electron.store.get('notion-sync') ?? true)
   const [useLog, setUseLog] = React.useState(false)
   const [taskMemo, setTaskMemo] = React.useState({
-    task: '',
-    memo: '',
+    task: '도마도',
+    memo: '설당 도마도',
   })
 
   function showGuide() {
@@ -104,10 +104,10 @@ export default function Main() {
 
   if (!isKeySet) {
     return (
-       <>
+      <>
         <NotionKeySetter
           setKeys={(notionKey, notionPomodoroDatabaseId) => setKeys(notionKey, notionPomodoroDatabaseId)}
-          logState={{useLog, setUseLog}}
+          logState={{ useLog, setUseLog }}
         />
         <div className="mt-3 d-flex justify-content-end align-items-center">
           <button
@@ -135,20 +135,28 @@ export default function Main() {
     )
   }
 
-  return useLog ? (<><h1>hello log mode</h1><button
-          type="button"
-          className="default_btn me-2"
-          onClick={() => {
-            if (window.confirm('노션 API KEY를 초기화하시겠습니까?')) {
-              resetKeys()
-            }
-          }}
-        >
-          notion key 재설정 ✏️
-        </button></>
+  return useLog ? (
+    <>
+      <h1>hello log mode</h1>
+      <button
+        type="button"
+        className="default_btn me-2"
+        onClick={() => {
+          if (window.confirm('노션 API KEY를 초기화하시겠습니까?')) {
+            resetKeys()
+          }
+        }}
+      >
+        notion key 재설정 ✏️
+      </button>
+    </>
   ) : (
     <>
       <div>
+        <details>
+          <summary>🎯 {taskMemo.task}</summary>
+          <textarea value={taskMemo.memo} onInput={(e) => setTaskMemo((prev) => ({ ...prev, memo: e.target.value }))} />
+        </details>
         <div className="d-flex justify-content-end mb-3 text-end">
           🍅 : {todayInfo?.count ?? 0}
           <br />
