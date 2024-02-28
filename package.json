@@ -75,6 +75,7 @@
   },
   "dependencies": {
     "@notionhq/client": "^2.2.14",
+    "bootstrap": "^5.3.3",
     "cal-heatmap": "^4.2.4",
     "dayjs": "^1.11.10",
     "dotenv": "^16.3.1",
