@@ -11,39 +11,9 @@ export interface PomodoroInfo {
 }
 
 export default function Pomodoro() {
-  // const allPomodoroInfos: any[] = [];
   const [isKeySet, setIsKeySet] = React.useState(false)
-  const [todayInfo, setTodayInfo] = React.useState<
-    PomodoroInfo | null | undefined
-  >(null)
-
-  const [notionSync, setNotionSync] = React.useState(
-    window.electron.store.get('notion-sync') ?? true,
-  )
-  // const [pomodoroInfos, setPomodoroInfos] =
-  //   React.useState<PomodoroInfo[]>(allPomodoroInfos);
-
-  // React.useEffect(() => {
-  //   const today = dayjs().format('YYYY-MM-DD');
-  //   const found = pomodoroInfos.find((info) => info.date === today);
-  //   setTodayInfo(found);
-  // }, [pomodoroInfos]);
-
-  // React.useEffect(() => {
-  //   if (!todayInfo) return;
-
-  //   const idx = pomodoroInfos.findIndex(
-  //     (info) => info.date === todayInfo?.date,
-  //   );
-
-  //   if (idx !== -1) {
-  //     const newPomodoroInfos = [...pomodoroInfos];
-  //     newPomodoroInfos[idx] = todayInfo;
-  //     setPomodoroInfos(newPomodoroInfos);
-  //   } else {
-  //     setPomodoroInfos([...pomodoroInfos, todayInfo]);
-  //   }
-  // }, [pomodoroInfos, todayInfo]);
+  const [todayInfo, setTodayInfo] = React.useState<PomodoroInfo | null | undefined>(null)
+  const [notionSync, setNotionSync] = React.useState(window.electron.store.get('notion-sync') ?? true)
 
   function showGuide() {
     window.open('https://github.com/younggeun0/pomodoro_notion_recorder')
@@ -53,13 +23,7 @@ export default function Pomodoro() {
     let result = false
     if (notionKey && notionPomodoroDatabaseId) {
       // TODO, api키 설정하는 동안 로딩처리
-      if (
-        !window.electron.ipcRenderer.sendSync(
-          'set_notion_keys',
-          notionKey,
-          notionPomodoroDatabaseId,
-        )
-      ) {
+      if (!window.electron.ipcRenderer.sendSync('set_notion_keys', notionKey, notionPomodoroDatabaseId)) {
         alert('노션 API KEY가 잘못되었습니다. 다시 설정해주세요.')
       } else {
         const count = window.electron.store.get('TODAY_COUNT') || 0
@@ -88,9 +52,7 @@ export default function Pomodoro() {
     }
 
     const notionKey = window.electron.store.get('NOTION_KEY')
-    const notionPomodoroDatabaseId = window.electron.store.get(
-      'NOTION_POMODORO_DATABASE_ID',
-    )
+    const notionPomodoroDatabaseId = window.electron.store.get('NOTION_POMODORO_DATABASE_ID')
     setKeys(notionKey, notionPomodoroDatabaseId)
 
     // window.electron.ipcRenderer.send('pomodoro:ready')
@@ -148,36 +110,6 @@ export default function Pomodoro() {
 
         {/* TODO, heatmap 표시 조건 추가 */}
         <PomodoroHeatmap />
-
-        {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <div style={{ wimdth: '70%' }}>
-                          <CalendarHeatmap
-                              startDate={new Date('2023-04-30')}
-                              endDate={new Date('2023-08-01')}
-                              onClick={(value: any) => {
-                                  if (!value || !isYoung) return
-
-                                  alert(`${value.date}  🍅 * ${value.count}`)
-                              }}
-                              classForValue={(value: any) => {
-                                  let selectorNumber = 0
-                                  if (!value || value.count === 0) {
-                                  } else if (value.count > 8) {
-                                      selectorNumber = 4
-                                  } else if (value.count > 6) {
-                                      selectorNumber = 3
-                                  } else if (value.count > 4) {
-                                      selectorNumber = 2
-                                  } else if (value.count > 0) {
-                                      selectorNumber = 1
-                                  }
-
-                                  return `color-github-${selectorNumber}`
-                              }}
-                              values={pomodoroInfos}
-                          />
-                      </div>
-                  </div> */}
       </div>
       <div className="bottom_btns">
         <button
@@ -192,12 +124,7 @@ export default function Pomodoro() {
         >
           notion key 재설정 ✏️
         </button>
-        <button
-          type="button"
-          className="bottom_btn"
-          onClick={showGuide}
-          style={{ borderRadius: '100%' }}
-        >
+        <button type="button" className="bottom_btn" onClick={showGuide} style={{ borderRadius: '100%' }}>
           ?
         </button>
       </div>
@@ -205,9 +132,7 @@ export default function Pomodoro() {
   ) : (
     <>
       <NotionKeySetter
-        setKeys={(notionKey, notionPomodoroDatabaseId) =>
-          setKeys(notionKey, notionPomodoroDatabaseId)
-        }
+        setKeys={(notionKey, notionPomodoroDatabaseId) => setKeys(notionKey, notionPomodoroDatabaseId)}
       />
       <div className="bottom_btns">
         <button
@@ -227,12 +152,7 @@ export default function Pomodoro() {
         >
           그냥 쓰기
         </button>
-        <button
-          type="button"
-          className="bottom_btn"
-          onClick={showGuide}
-          style={{ borderRadius: '100%' }}
-        >
+        <button type="button" className="bottom_btn" onClick={showGuide} style={{ borderRadius: '100%' }}>
           ?
         </button>
       </div>

@@ -14,14 +14,9 @@ export default function NotionKeySetter({
         onSubmit={(e) => {
           e.preventDefault()
 
-          const notionKey = (
-            document.getElementById('notion_key') as HTMLInputElement
-          ).value
-          const notionPomodoroDatabaseId = (
-            document.getElementById(
-              'notion_pomodoro_database_id',
-            ) as HTMLInputElement
-          ).value
+          const notionKey = (document.getElementById('notion_key') as HTMLInputElement).value
+          const notionPomodoroDatabaseId = (document.getElementById('notion_pomodoro_database_id') as HTMLInputElement)
+            .value
 
           // TODO, validate inputs
           if (!notionKey.trim() || !notionPomodoroDatabaseId.trim()) {
@@ -29,27 +24,17 @@ export default function NotionKeySetter({
             return
           }
 
-          window.electron.ipcRenderer.sendMessage(
-            'electron-store-set',
-            'NOTION_KEY',
-            notionKey,
-          )
+          window.electron.ipcRenderer.sendMessage('electron-store-set', 'NOTION_KEY', notionKey)
           window.electron.ipcRenderer.sendMessage(
             'electron-store-set',
             'NOTION_POMODORO_DATABASE_ID',
             notionPomodoroDatabaseId,
           )
-          window.electron.ipcRenderer.sendMessage(
-            'set_notion_keys',
-            notionKey,
-            notionPomodoroDatabaseId,
-          )
+          window.electron.ipcRenderer.sendMessage('set_notion_keys', notionKey, notionPomodoroDatabaseId)
 
           if (!setKeys(notionKey, notionPomodoroDatabaseId)) {
             const ids = ['notion_key', 'notion_pomodoro_database_id']
-            const inputs = ids.map(
-              (id) => document.getElementById(id) as HTMLInputElement | null,
-            )
+            const inputs = ids.map((id) => document.getElementById(id) as HTMLInputElement | null)
 
             inputs.forEach((input) => {
               if (input) {
@@ -66,12 +51,7 @@ export default function NotionKeySetter({
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <input type="text" id="notion_key" placeholder="노션 API KEY" />
-          <input
-            type="text"
-            id="notion_pomodoro_database_id"
-            placeholder="노션 DB ID"
-            style={{ marginTop: 10 }}
-          />
+          <input type="text" id="notion_pomodoro_database_id" placeholder="노션 DB ID" style={{ marginTop: 10 }} />
         </div>
         <div>
           <button

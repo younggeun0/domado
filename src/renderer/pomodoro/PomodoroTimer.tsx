@@ -20,18 +20,9 @@ const TIME_INFO = isDebug
 
 const getStrTowDigitFormat = (num: number) => (num < 10 ? `0${num}` : num)
 
-export default function PomodoroTimer({
-  updateTodayInfo,
-}: {
-  updateTodayInfo: () => void
-}) {
+export default function PomodoroTimer({ updateTodayInfo }: { updateTodayInfo: () => void }) {
   const [status, setStatus] = useState<
-    | 'pomodoro_start'
-    | 'rest_start'
-    | 'restart'
-    | 'paused'
-    | 'pomodoro_finished'
-    | 'rest_finished'
+    'pomodoro_start' | 'rest_start' | 'restart' | 'paused' | 'pomodoro_finished' | 'rest_finished'
   >('paused')
   const [isRest, setIsRest] = useState(false)
   const [timerKey, setTimerKey] = useState(uuidv4())
@@ -42,8 +33,7 @@ export default function PomodoroTimer({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   function addMin(min: number) {
-    const newDuration =
-      (isRest ? durations.rest : durations.pomodoro) + min * 60
+    const newDuration = (isRest ? durations.rest : durations.pomodoro) + min * 60
     if (newDuration <= 0) {
       setStatus(isRest ? 'rest_finished' : 'pomodoro_finished')
       return
@@ -72,10 +62,7 @@ export default function PomodoroTimer({
           }
           break
         case 'a':
-          window.electron.ipcRenderer.sendMessage(
-            'post_pomodoro',
-            'hello world',
-          )
+          window.electron.ipcRenderer.sendMessage('post_pomodoro', 'hello world')
           updateTodayInfo()
           break
         case 'r':
@@ -227,10 +214,7 @@ export default function PomodoroTimer({
             const seconds = remainingTime % 60
 
             return (
-              <span
-                style={{ cursor: 'pointer' }}
-                onClick={() => setStatus('paused')}
-              >
+              <span style={{ cursor: 'pointer' }} onClick={() => setStatus('paused')}>
                 {`${minutes}:${getStrTowDigitFormat(seconds)}`}
               </span>
             )
@@ -245,11 +229,7 @@ export default function PomodoroTimer({
           visibility: status === 'paused' ? 'hidden' : 'visible',
         }}
       >
-        <button
-          type="button"
-          style={{ marginRight: '2px', height: '29px' }}
-          onClick={() => addMin(TIME_INFO.ADD_MIN)}
-        >
+        <button type="button" style={{ marginRight: '2px', height: '29px' }} onClick={() => addMin(TIME_INFO.ADD_MIN)}>
           +5 min
         </button>
 
@@ -270,11 +250,7 @@ export default function PomodoroTimer({
           </svg>
         </button>
 
-        <button
-          type="button"
-          style={{ height: '29px' }}
-          onClick={() => addMin(-TIME_INFO.ADD_MIN)}
-        >
+        <button type="button" style={{ height: '29px' }} onClick={() => addMin(-TIME_INFO.ADD_MIN)}>
           -5 min
         </button>
       </div>
