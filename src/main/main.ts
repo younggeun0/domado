@@ -145,7 +145,7 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
   }
 
   try {
-    const response = await notionClient.databases.query({
+    const { results } = await notionClient.databases.query({
       database_id: databaseId as string,
       sorts: [
         {
@@ -155,11 +155,18 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
       ],
     })
 
-    if (response.results.length > 0) {
-      result = response.results
-        .filter((page: any) => page.properties.name.title[0].text.content.startsWith(emoji))
+    if (results.length > 0) {
+      // TODO, when name is capitalized? why? need research
+      let name = 'name'
+      result = results
+        .filter(({ properties }: any) => {
+          if (!properties[name]) {
+            name = 'Name'
+          }
+          return properties[name].title[0].text.content.startsWith(emoji)
+        })
         .map((page: any) => {
-          const titleTokens = page.properties.name.title[0].text.content.split(' ')
+          const titleTokens = page.properties[name].title[0].text.content.split(' ')
           const value = Number(titleTokens[titleTokens.length - 1])
 
           return {
