@@ -15,24 +15,34 @@ export default function NotionKeySetter({
           e.preventDefault()
 
           const notionKey = (document.getElementById('notion_key') as HTMLInputElement).value
-          const notionPomodoroDatabaseId = (document.getElementById('notion_pomodoro_database_id') as HTMLInputElement)
-            .value
+          let notionDatabaseId = (document.getElementById('notion_pomodoro_database_id') as HTMLInputElement).value
 
           // TODO, validate inputs
-          if (!notionKey.trim() || !notionPomodoroDatabaseId.trim()) {
+          if (!notionKey.trim() || !notionDatabaseId.trim()) {
             alert('노션 API키와 페이지를 기록할 노션 DB ID를 입력해주세요.')
             return
+          }
+
+          const NOTION_URL = 'https://www.notion.so/'
+          if (notionDatabaseId.startsWith(NOTION_URL)) {
+            notionDatabaseId = notionDatabaseId.split(NOTION_URL)[1] as string
+            const hasWorkspace = notionDatabaseId.split('/').length > 1
+
+            if (hasWorkspace) {
+              notionDatabaseId = notionDatabaseId.split('/')[1] as string
+            }
+            notionDatabaseId = notionDatabaseId.substring(0, notionDatabaseId.indexOf('?'))
           }
 
           window.electron.ipcRenderer.sendMessage('electron-store-set', 'NOTION_KEY', notionKey)
           window.electron.ipcRenderer.sendMessage(
             'electron-store-set',
             'NOTION_POMODORO_DATABASE_ID',
-            notionPomodoroDatabaseId,
+            notionDatabaseId,
           )
-          window.electron.ipcRenderer.sendMessage('set_notion_keys', notionKey, notionPomodoroDatabaseId)
+          window.electron.ipcRenderer.sendMessage('set_notion_keys', notionKey, notionDatabaseId)
 
-          if (!setKeys(notionKey, notionPomodoroDatabaseId)) {
+          if (!setKeys(notionKey, notionDatabaseId)) {
             const ids = ['notion_key', 'notion_pomodoro_database_id']
             const inputs = ids.map((id) => document.getElementById(id) as HTMLInputElement | null)
 
