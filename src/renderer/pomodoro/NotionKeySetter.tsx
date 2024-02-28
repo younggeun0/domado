@@ -5,7 +5,7 @@ export default function NotionKeySetter({
 }) {
   return (
     <div>
-      <div style={{ textAlign: 'center', padding: '0 10px 30px 10px' }}>
+      <div className="text-center mb-3">
         노션에 뽀모도로(🍅) 횟수를 기록하기 위해
         <br />
         노션 API키와 DB ID를 설정해주세요.

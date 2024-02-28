@@ -97,15 +97,8 @@ export default function Main() {
 
   return isKeySet ? (
     <>
-      <div style={{ paddingTop: '1px' }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'end',
-            marginBottom: '1rem',
-            textAlign: 'end',
-          }}
-        >
+      <div>
+        <div className="d-flex justify-content-end mb-3 text-end">
           🍅 : {todayInfo?.count ?? 0}
           <br />
           {!notionSync && 'no sync '}
@@ -115,20 +108,20 @@ export default function Main() {
         {/* TODO, heatmap 표시 조건 추가 */}
         <PomodoroHeatmap />
       </div>
-      <div className="bottom_btns">
+
+      <div className="mt-3 d-flex justify-content-end align-items-center">
         <button
           type="button"
-          className="bottom_btn"
+          className="default_btn me-2"
           onClick={() => {
             if (window.confirm('노션 API KEY를 초기화하시겠습니까?')) {
               resetKeys()
             }
           }}
-          style={{ marginRight: 10 }}
         >
           notion key 재설정 ✏️
         </button>
-        <button type="button" className="bottom_btn" onClick={showGuide} style={{ borderRadius: '100%' }}>
+        <button type="button" className="default_btn rounded-pill" onClick={showGuide}>
           ?
         </button>
       </div>
@@ -138,10 +131,10 @@ export default function Main() {
       <NotionKeySetter
         setKeys={(notionKey, notionPomodoroDatabaseId) => setKeys(notionKey, notionPomodoroDatabaseId)}
       />
-      <div className="bottom_btns">
+      <div className="mt-3 d-flex justify-content-end align-items-center">
         <button
           type="button"
-          className="bottom_btn"
+          className="default_btn"
           onClick={() => {
             window.electron.store.set('notion-sync', false)
             setNotionSync(false)
@@ -156,7 +149,7 @@ export default function Main() {
         >
           그냥 쓰기
         </button>
-        <button type="button" className="bottom_btn" onClick={showGuide} style={{ borderRadius: '100%' }}>
+        <button type="button" className="default_btn" onClick={showGuide} style={{ borderRadius: '100%' }}>
           ?
         </button>
       </div>

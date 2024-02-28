@@ -4,9 +4,9 @@
  */
 body {
   position: relative;
-  color: white;
+  color: white !important;
   height: 100vh;
-  background: #21252B;
+  background: #21252B !important;
   font-family: sans-serif;
   overflow-y: hidden;
   display: flex;
@@ -14,15 +14,7 @@ body {
   align-items: center;
 }
 
-.bottom_btns {
-  position: absolute;
-  bottom: 20px;
-  right: 5px;
-  display: flex;
-  justify-content: end;
-  align-items: center;
-}
-.bottom_btn {
+.default_btn {
   color: white;
   background: transparent;
   cursor: pointer;
