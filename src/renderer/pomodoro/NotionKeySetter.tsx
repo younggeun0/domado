@@ -1,8 +1,15 @@
 export default function NotionKeySetter({
   setKeys,
+  logState,
 }: {
   setKeys: (notionKey: string, notionPomodoroDatabaseId: string) => boolean
+  logState: {
+    useLog: boolean
+    setUseLog: (useLog: boolean) => void
+  }
 }) {
+  const { useLog, setUseLog } = logState
+
   return (
     <div>
       <div className="text-center mb-3">
@@ -69,11 +76,17 @@ export default function NotionKeySetter({
             style={{
               marginLeft: 10,
               background: 'transparent',
-              fontSize: '3rem',
+              fontSize: '2.5rem',
+              margin: '0px',
+              lineHeight: '1',
             }}
           >
             💾
           </button>
+          <div className="form-check form-switch">
+            <input className="form-check-input" type="checkbox" id="use-log" checked={useLog} onChange={() => setUseLog(!useLog)} />
+            <label className="form-check-label" htmlFor="use-log">기록하기</label>
+          </div>
         </div>
       </form>
     </div>

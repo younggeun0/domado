@@ -14,6 +14,7 @@ export default function Main() {
   const [isKeySet, setIsKeySet] = React.useState(false)
   const [todayInfo, setTodayInfo] = React.useState<PomodoroInfo | null | undefined>(null)
   const [notionSync, setNotionSync] = React.useState(window.electron.store.get('notion-sync') ?? true)
+  const [useLog, setUseLog] = React.useState(false)
   const [taskMemo, setTaskMemo] = React.useState({
     task: '',
     memo: '',
@@ -95,7 +96,51 @@ export default function Main() {
     }
   }
 
-  return isKeySet ? (
+  if (!isKeySet) {
+    return (
+       <>
+        <NotionKeySetter
+          setKeys={(notionKey, notionPomodoroDatabaseId) => setKeys(notionKey, notionPomodoroDatabaseId)}
+          logState={{useLog, setUseLog}}
+        />
+        <div className="mt-3 d-flex justify-content-end align-items-center">
+          <button
+            type="button"
+            className="default_btn"
+            onClick={() => {
+              window.electron.store.set('notion-sync', false)
+              setNotionSync(false)
+              // TODO, api 키 설정했는지 여부로 히트맵을 보여주기 위해서 그냥 쓸 땐 keySet을 false로 유지하고 다른 플래그로 판단하는게 좋아보임
+              setIsKeySet(true)
+              setTodayInfo({
+                date: dayjs().format('yyyy-mm-dd'),
+                count: 0,
+              })
+            }}
+            style={{ marginRight: 10 }}
+          >
+            그냥 쓰기
+          </button>
+          <button type="button" className="default_btn" onClick={showGuide} style={{ borderRadius: '100%' }}>
+            ?
+          </button>
+        </div>
+      </>
+    )
+  }
+
+  return useLog ? (<><h1>hello log mode</h1><button
+          type="button"
+          className="default_btn me-2"
+          onClick={() => {
+            if (window.confirm('노션 API KEY를 초기화하시겠습니까?')) {
+              resetKeys()
+            }
+          }}
+        >
+          notion key 재설정 ✏️
+        </button></>
+  ) : (
     <>
       <div>
         <div className="d-flex justify-content-end mb-3 text-end">
@@ -122,34 +167,6 @@ export default function Main() {
           notion key 재설정 ✏️
         </button>
         <button type="button" className="default_btn rounded-pill" onClick={showGuide}>
-          ?
-        </button>
-      </div>
-    </>
-  ) : (
-    <>
-      <NotionKeySetter
-        setKeys={(notionKey, notionPomodoroDatabaseId) => setKeys(notionKey, notionPomodoroDatabaseId)}
-      />
-      <div className="mt-3 d-flex justify-content-end align-items-center">
-        <button
-          type="button"
-          className="default_btn"
-          onClick={() => {
-            window.electron.store.set('notion-sync', false)
-            setNotionSync(false)
-            // TODO, api 키 설정했는지 여부로 히트맵을 보여주기 위해서 그냥 쓸 땐 keySet을 false로 유지하고 다른 플래그로 판단하는게 좋아보임
-            setIsKeySet(true)
-            setTodayInfo({
-              date: dayjs().format('yyyy-mm-dd'),
-              count: 0,
-            })
-          }}
-          style={{ marginRight: 10 }}
-        >
-          그냥 쓰기
-        </button>
-        <button type="button" className="default_btn" onClick={showGuide} style={{ borderRadius: '100%' }}>
           ?
         </button>
       </div>
