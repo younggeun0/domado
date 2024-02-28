@@ -10,7 +10,7 @@ export interface PomodoroInfo {
   count: number
 }
 
-export default function Pomodoro() {
+export default function Main() {
   const [isKeySet, setIsKeySet] = React.useState(false)
   const [todayInfo, setTodayInfo] = React.useState<PomodoroInfo | null | undefined>(null)
   const [notionSync, setNotionSync] = React.useState(window.electron.store.get('notion-sync') ?? true)
