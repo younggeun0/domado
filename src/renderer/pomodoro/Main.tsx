@@ -95,6 +95,12 @@ export default function Main() {
       })
     }
   }
+  // 0. isKeySet false -> setter show
+  // 1. when isKeySet true, notionSync true
+  //   - useLog true - memo and timer (최초기록은 타이머 없이 / 타이머 있고 메모는 상단 노출 / 최후기록은 타이머 없이 / 타이머 있고 최초기록을 위에, 최후기록을 하단에)
+  //   - useLog false - normal timer
+  // 2. when isKeySet true, notionSync false << 그냥 쓰기
+  //   - useLog no matter - normal timer
 
   if (!isKeySet) {
     return (
