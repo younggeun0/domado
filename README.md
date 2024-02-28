@@ -1,10 +1,6 @@
 # 노션 뽀모도로 레코더 🍅
 
-<p align="center">
-  <img src="https://github.com/younggeun0/pomodoro_notion_recorder/assets/34850791/fbad6ca8-30c5-4363-bd33-aa0d52700c38" width="150" />
-</p>
-
-노션 DB에 뽀모도로 개수를 기록하기 위한 용도의 일렉트론 앱
+노션 페이지에 뽀모도로를 기록하기 위한 용도의 일렉트론 앱
 
 <p align="center">
   <img src="https://github.com/younggeun0/pomodoro_notion_recorder/assets/34850791/bc688c09-a3b4-49b6-972f-ab4f7342fcc5" width="300" />
