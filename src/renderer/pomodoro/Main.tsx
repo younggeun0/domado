@@ -14,6 +14,10 @@ export default function Main() {
   const [isKeySet, setIsKeySet] = React.useState(false)
   const [todayInfo, setTodayInfo] = React.useState<PomodoroInfo | null | undefined>(null)
   const [notionSync, setNotionSync] = React.useState(window.electron.store.get('notion-sync') ?? true)
+  const [taskMemo, setTaskMemo] = React.useState({
+    task: '',
+    memo: '',
+  })
 
   function showGuide() {
     window.open('https://github.com/younggeun0/pomodoro_notion_recorder')
