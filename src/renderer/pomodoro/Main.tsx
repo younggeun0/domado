@@ -16,8 +16,8 @@ export default function Main() {
   const [notionSync, setNotionSync] = React.useState(window.electron.store.get('notion-sync') ?? true)
   const [useLog, setUseLog] = React.useState(false)
   const [taskMemo, setTaskMemo] = React.useState({
-    task: '도마도',
-    memo: '설당 도마도',
+    task: '',
+    memo: '',
   })
 
   function showGuide() {
@@ -27,9 +27,8 @@ export default function Main() {
   function setKeys(notionKey: string, notionPomodoroDatabaseId: string) {
     let result = false
     if (notionKey && notionPomodoroDatabaseId) {
-      // TODO, api키 설정하는 동안 로딩처리
       if (!window.electron.ipcRenderer.sendSync('set_notion_keys', notionKey, notionPomodoroDatabaseId)) {
-        alert('노션 API KEY가 잘못되었습니다. 다시 설정해주세요.')
+        alert('노션 API KEY 또는 Database ID가 잘못 입력됐습니다. 다시 설정해주세요.')
       } else {
         const count = window.electron.store.get('TODAY_COUNT') || 0
 
@@ -76,8 +75,10 @@ export default function Main() {
   }, [notionSync])
 
   function resetKeys() {
-    window.electron.ipcRenderer.sendMessage('reset_notion_keys')
     setIsKeySet(false)
+    setUseLog(false)
+    setTaskMemo({ task: '', memo: '' })
+    window.electron.ipcRenderer.sendMessage('reset_notion_keys')
   }
 
   function updateTodayInfo() {
@@ -95,6 +96,16 @@ export default function Main() {
       })
     }
   }
+
+  function taskInputHandler(value) {
+    if (value === '') {
+      alert('목표를 설정해주세요')
+      return
+    }
+
+    setTaskMemo((prev) => ({ ...prev, task: value }))
+  }
+
   // 0. isKeySet false -> setter show
   // 1. when isKeySet true, notionSync true
   //   - useLog true - memo and timer (최초기록은 타이머 없이 / 타이머 있고 메모는 상단 노출 / 최후기록은 타이머 없이 / 타이머 있고 최초기록을 위에, 최후기록을 하단에)
@@ -115,6 +126,7 @@ export default function Main() {
             className="default_btn"
             onClick={() => {
               window.electron.store.set('notion-sync', false)
+              setUseLog(false)
               setNotionSync(false)
               // TODO, api 키 설정했는지 여부로 히트맵을 보여주기 위해서 그냥 쓸 땐 keySet을 false로 유지하고 다른 플래그로 판단하는게 좋아보임
               setIsKeySet(true)
@@ -132,6 +144,32 @@ export default function Main() {
           </button>
         </div>
       </>
+    )
+  }
+
+  if (useLog && taskMemo.task === '') {
+    return (
+      <div>
+        <h1>🍅 목표를 설정해주세요</h1>
+        <input
+          id="task-input"
+          type="text"
+          className="w-100"
+          placeholder="오늘의 목표를 설정해주세요"
+          onKeyUp={(e) => {
+            if (e.key === 'Enter') {
+              taskInputHandler(e.target.value)
+            }
+          }}
+        />
+        <button
+          type="button"
+          className="default_btn mt-3 w-100"
+          onClick={() => taskInputHandler((document.getElementById('task-input') as HTMLInputElement)?.value ?? '')}
+        >
+          목표 설정
+        </button>
+      </div>
     )
   }
 
@@ -153,15 +191,25 @@ export default function Main() {
   ) : (
     <>
       <div>
-        <details>
-          <summary>🎯 {taskMemo.task}</summary>
-          <textarea value={taskMemo.memo} onInput={(e) => setTaskMemo((prev) => ({ ...prev, memo: e.target.value }))} />
-        </details>
+        {taskMemo.memo !== '' && (
+          <details>
+            <summary>
+              <strong>🎯 {taskMemo.task}</strong>
+            </summary>
+            <textarea
+              className="w-100"
+              value={taskMemo.memo}
+              onInput={(e) => setTaskMemo((prev) => ({ ...prev, memo: e.target.value }))}
+            />
+          </details>
+        )}
+
         <div className="d-flex justify-content-end mb-3 text-end">
           🍅 : {todayInfo?.count ?? 0}
           <br />
           {!notionSync && 'no sync '}
         </div>
+
         <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} />
 
         {/* TODO, heatmap 표시 조건 추가 */}
