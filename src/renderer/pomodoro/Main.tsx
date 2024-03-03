@@ -14,11 +14,9 @@ export default function Main() {
   const [isKeySet, setIsKeySet] = React.useState(false)
   const [todayInfo, setTodayInfo] = React.useState<PomodoroInfo | null | undefined>(null)
   const [notionSync, setNotionSync] = React.useState(window.electron.store.get('notion-sync') ?? true)
-  const [useLog, setUseLog] = React.useState(false)
-  const [taskMemo, setTaskMemo] = React.useState({
-    task: '',
-    memo: '',
-  })
+  const [useLog, setUseLog] = React.useState(true)
+  const [task, setTask] = React.useState('')
+  const [isDone, setIsDone] = React.useState(false)
 
   function showGuide() {
     window.open('https://github.com/younggeun0/pomodoro_notion_recorder')
@@ -76,8 +74,8 @@ export default function Main() {
 
   function resetKeys() {
     setIsKeySet(false)
-    setUseLog(false)
-    setTaskMemo({ task: '', memo: '' })
+    setUseLog(true)
+    setTask('')
     window.electron.ipcRenderer.sendMessage('reset_notion_keys')
   }
 
@@ -97,13 +95,13 @@ export default function Main() {
     }
   }
 
-  function taskInputHandler(value) {
-    if (value === '') {
-      alert('목표를 설정해주세요')
-      return
-    }
-
-    setTaskMemo((prev) => ({ ...prev, task: value }))
+  function setMemo(value: string) {
+    window.electron.ipcRenderer.sendMessage('log_task_memo', {
+      task,
+      memo: value,
+    })
+    setIsDone(false)
+    setTask('')
   }
 
   // 0. isKeySet false -> setter show
@@ -147,25 +145,40 @@ export default function Main() {
     )
   }
 
-  if (useLog && taskMemo.task === '') {
+  if (useLog && task === '') {
     return (
       <div>
-        <h1>🍅 목표를 설정해주세요</h1>
         <input
           id="task-input"
           type="text"
           className="w-100"
-          placeholder="오늘의 목표를 설정해주세요"
+          placeholder="🍅 작업 목표를 설정해주세요."
           onKeyUp={(e) => {
             if (e.key === 'Enter') {
-              taskInputHandler(e.target.value)
+              if (e.target.value === '') {
+                alert('목표를 설정해주세요')
+                return
+              }
+
+              setTask(e.target.value)
+              e.target.value = ''
             }
           }}
         />
         <button
           type="button"
-          className="default_btn mt-3 w-100"
-          onClick={() => taskInputHandler((document.getElementById('task-input') as HTMLInputElement)?.value ?? '')}
+          className="default_btn mt-2 w-100"
+          onClick={() => {
+            const input = document.getElementById('task-input') as HTMLInputElement
+
+            if (input?.value === '') {
+              alert('목표를 설정해주세요')
+              return
+            }
+
+            setTask(input?.value ?? '')
+            input.value = ''
+          }}
         >
           목표 설정
         </button>
@@ -173,36 +186,41 @@ export default function Main() {
     )
   }
 
-  return useLog ? (
-    <>
-      <h1>hello log mode</h1>
-      <button
-        type="button"
-        className="default_btn me-2"
-        onClick={() => {
-          if (window.confirm('노션 API KEY를 초기화하시겠습니까?')) {
-            resetKeys()
-          }
-        }}
-      >
-        notion key 재설정 ✏️
-      </button>
-    </>
-  ) : (
+  if (useLog && isDone) {
+    return (
+      <div>
+        <textarea
+          id="memo-input"
+          className="w-100 rounded"
+          placeholder={`📝 '${task}' 작업 내용을 기록해주세요.`}
+          rows={5}
+          onKeyUp={(e) => {
+            // cmd + enter
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+              setMemo(e.target.value)
+              e.target.value = ''
+            }
+          }}
+        />
+        <button
+          type="button"
+          className="default_btn mt-2 w-100"
+          onClick={() => {
+            const textarea = document.getElementById('memo-input') as HTMLInputElement
+            setMemo(textarea?.value ?? '')
+            textarea.value = ''
+          }}
+        >
+          메모 기록
+        </button>
+      </div>
+    )
+  }
+
+  return (
     <>
       <div>
-        {taskMemo.memo !== '' && (
-          <details>
-            <summary>
-              <strong>🎯 {taskMemo.task}</strong>
-            </summary>
-            <textarea
-              className="w-100"
-              value={taskMemo.memo}
-              onInput={(e) => setTaskMemo((prev) => ({ ...prev, memo: e.target.value }))}
-            />
-          </details>
-        )}
+        {useLog && <strong>🎯 {task}</strong>}
 
         <div className="d-flex justify-content-end mb-3 text-end">
           🍅 : {todayInfo?.count ?? 0}
@@ -210,9 +228,8 @@ export default function Main() {
           {!notionSync && 'no sync '}
         </div>
 
-        <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} />
+        <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} setIsDone={setIsDone} />
 
-        {/* TODO, heatmap 표시 조건 추가 */}
         <PomodoroHeatmap />
       </div>
 

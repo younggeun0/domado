@@ -182,6 +182,92 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
   event.returnValue = result
 })
 
+ipcMain.on('log_task_memo', async (event, taskMemo) => {
+  if (taskMemo.task === '' && taskMemo.memo === '') return
+
+  const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as string | null
+
+  if (!notionClient || !databaseId) {
+    return
+  }
+
+  try {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
+    let name = 'name'
+    const { properties } = await notionClient.databases.retrieve({
+      database_id: databaseId,
+    })
+    if (!properties.name) {
+      name = 'Name'
+    }
+
+    const res = await getNotionPage(today, databaseId)
+    if (res && res.results.length > 0) {
+      const page = res.results.find((result: any) => {
+        if (!result.properties[name].title[0]) return false
+
+        return result.properties[name].title[0].text.content.startsWith(emoji)
+      })
+
+      if (page) {
+        const blockId = page.id
+        const { results } = await notionClient.blocks.children.list({
+          block_id: blockId,
+          page_size: 50,
+        })
+
+        const dayjsInstance = dayjs()
+        const date = dayjsInstance.format('YYYY-MM-DD')
+        const endTime = dayjsInstance.format('HH:mm')
+        const startTime = dayjsInstance.set('minute', dayjsInstance.minute() - 25).format('HH:mm')
+
+        await notionClient.blocks.children.append({
+          block_id: blockId,
+          after: results[0].id,
+          children: [
+            {
+              heading_2: {
+                rich_text: [
+                  {
+                    text: {
+                      content: `${date} ${startTime}~${endTime} ${taskMemo.task}`,
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              paragraph: {
+                rich_text: [
+                  {
+                    text: {
+                      content: taskMemo.memo,
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        })
+
+        new Notification({
+          title: '🍅 작업 기록 완료!',
+          body: `${taskMemo.task} 메로를 기록했어요! 📝`,
+        }).show()
+      }
+    }
+  } catch (e: any) {
+    console.error(e)
+    new Notification({
+      title: '오류 발생!',
+      body: `노션에 뽀모도로를 등록하지 못했어요 😭, ${e.message}`,
+    }).show()
+  }
+})
+
 ipcMain.on('post_pomodoro', async (event, message) => {
   // const msgTemplate = (pingPong: string) => `post_pomodoro test: ${pingPong}`;
   // console.log(msgTemplate(_arg));
@@ -250,7 +336,7 @@ ipcMain.on('post_pomodoro', async (event, message) => {
     }
 
     // 새로운 페이지가 없으면 새로 생성
-    await notionClient.pages.create({
+    const createdPage = await notionClient.pages.create({
       parent: {
         type: 'database_id',
         database_id: databaseId,
@@ -267,6 +353,17 @@ ipcMain.on('post_pomodoro', async (event, message) => {
         },
       },
     })
+
+    // add TOC
+    await notionClient.blocks.children.append({
+      block_id: createdPage.id,
+      children: [
+        {
+          table_of_contents: {},
+        },
+      ],
+    })
+
     store.set('TODAY_COUNT', 1)
     new Notification({
       title: '첫 🍅 뽀모도로 종료!',
@@ -371,9 +468,10 @@ const createWindow = async () => {
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  // if (process.platform !== 'darwin') {
+  // console.log('all closed?')
+  app.quit() // TODO, app 닫을 때 제거되도록 수록
+  // }
 })
 
 app

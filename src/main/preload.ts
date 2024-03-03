@@ -10,6 +10,7 @@ export type Channels =
   | 'electron-store-get'
   | 'electron-store-set'
   | 'get_pomodoro_logs'
+  | 'log_task_memo'
 
 const electronHandler = {
   ipcRenderer: {

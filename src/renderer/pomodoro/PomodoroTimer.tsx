@@ -39,7 +39,13 @@ const TIME_INFO = isDebug
 
 const getStrTowDigitFormat = (num: number) => (num < 10 ? `0${num}` : num)
 
-export default function PomodoroTimer({ updateTodayInfo }: { updateTodayInfo: () => void }) {
+export default function PomodoroTimer({
+  updateTodayInfo,
+  setIsDone,
+}: {
+  updateTodayInfo: () => void
+  setIsDone: (isDone: boolean) => void
+}) {
   const [status, setStatus] = useState<
     'pomodoro_start' | 'rest_start' | 'restart' | 'paused' | 'pomodoro_finished' | 'rest_finished'
   >('paused')
@@ -118,6 +124,7 @@ export default function PomodoroTimer({ updateTodayInfo }: { updateTodayInfo: ()
         setIsRest(true)
         break
       case 'pomodoro_finished':
+        setIsDone(true)
         setIsRest(true)
         setStatus('paused')
         restart()
