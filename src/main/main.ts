@@ -222,6 +222,7 @@ ipcMain.on('log_task_memo', async (event, taskMemo) => {
         const dayjsInstance = dayjs()
         const date = dayjsInstance.format('YYYY-MM-DD')
         const endTime = dayjsInstance.format('HH:mm')
+        // TODO, duration도 전달해서 시간 변경한 경우 시간차 계산해서 기록하도록 개선필요
         const startTime = dayjsInstance.set('minute', dayjsInstance.minute() - 25).format('HH:mm')
 
         await notionClient.blocks.children.append({

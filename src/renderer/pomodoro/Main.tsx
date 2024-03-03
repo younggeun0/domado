@@ -95,11 +95,12 @@ export default function Main() {
     }
   }
 
-  function setMemo(value: string) {
+  function logTask(value: string) {
     window.electron.ipcRenderer.sendMessage('log_task_memo', {
       task,
       memo: value,
     })
+    // TODO, 기록기능이 들어가면서 쉬는 타이머를 쓸 수 없게됨, 상태 정보를 PomodoroTimer내부에서 핸들링하는 대신 Main에서 관리하도록 변경 필요
     setIsDone(false)
     setTask('')
   }
@@ -195,9 +196,9 @@ export default function Main() {
           placeholder={`📝 '${task}' 작업 내용을 기록해주세요.`}
           rows={5}
           onKeyUp={(e) => {
-            // cmd + enter
+            // cmd + enter or ctrl + enter
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-              setMemo(e.target.value)
+              logTask(e.target.value)
               e.target.value = ''
             }
           }}
@@ -207,7 +208,7 @@ export default function Main() {
           className="default_btn mt-2 w-100"
           onClick={() => {
             const textarea = document.getElementById('memo-input') as HTMLInputElement
-            setMemo(textarea?.value ?? '')
+            logTask(textarea?.value ?? '')
             textarea.value = ''
           }}
         >
