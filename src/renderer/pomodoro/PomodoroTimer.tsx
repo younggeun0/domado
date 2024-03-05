@@ -42,9 +42,11 @@ const getStrTowDigitFormat = (num: number) => (num < 10 ? `0${num}` : num)
 export default function PomodoroTimer({
   updateTodayInfo,
   setIsDone,
+  editTask,
 }: {
   updateTodayInfo: () => void
   setIsDone: (isDone: boolean) => void
+  editTask: boolean
 }) {
   const [status, setStatus] = useState<
     'pomodoro_start' | 'rest_start' | 'restart' | 'paused' | 'pomodoro_finished' | 'rest_finished'
@@ -78,6 +80,8 @@ export default function PomodoroTimer({
 
   useEffect(() => {
     function keydownHandler(e: KeyboardEvent) {
+      if (editTask) return
+
       switch (e.key) {
         case ' ':
           if (status === 'paused') {

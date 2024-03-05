@@ -17,6 +17,7 @@ export default function Main() {
   const [useLog, setUseLog] = React.useState(true)
   const [task, setTask] = React.useState('')
   const [isDone, setIsDone] = React.useState(false)
+  const [editTask, setEditTask] = React.useState(false)
 
   function showGuide() {
     window.open('https://github.com/younggeun0/pomodoro_notion_recorder')
@@ -221,7 +222,42 @@ export default function Main() {
   return (
     <>
       <div>
-        {useLog && <strong>🎯 {task}</strong>}
+        {/* TODO, no sync인데 task값 설정이 되는 문제 */}
+        {useLog && editTask && (
+          <input
+            id="task-edit-input"
+            type="input"
+            className="w-100 mb-2"
+            value={task}
+            onInput={(e) => {
+              e.stopPropagation()
+              if (e.target.value === '') {
+                alert('목표를 설정해주세요')
+                return
+              }
+
+              setTask(e.target.value)
+            }}
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') {
+                setEditTask(false)
+              }
+            }}
+            onBlur={() => {
+              setEditTask(false)
+            }}
+          />
+        )}
+        {useLog && !editTask && (
+          <div className="text-wrap" style={{ maxWidth: '250px' }}>
+            <strong onClick={() => {
+              setEditTask(true)
+              setTimeout(() => {
+                document.getElementById('task-edit-input')?.focus()
+              }, 0)
+            }}>🎯 {task}</strong>
+          </div>
+        )}
 
         <div className="d-flex justify-content-end mb-3 text-end">
           🍅 : {todayInfo?.count ?? 0}
@@ -229,7 +265,7 @@ export default function Main() {
           {!notionSync && 'no sync '}
         </div>
 
-        <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} setIsDone={setIsDone} />
+        <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} setIsDone={setIsDone} editTask={editTask} />
 
         <PomodoroHeatmap />
       </div>
