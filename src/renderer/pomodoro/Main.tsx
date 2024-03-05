@@ -195,7 +195,7 @@ export default function Main() {
           id="memo-input"
           className="w-100 rounded"
           placeholder={`📝 '${task}' 작업 내용을 기록해주세요.`}
-          rows={5}
+          rows={8}
           onKeyUp={(e) => {
             // cmd + enter or ctrl + enter
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
