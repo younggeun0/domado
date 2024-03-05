@@ -18,6 +18,7 @@ export default function Main() {
   const [task, setTask] = React.useState('')
   const [isDone, setIsDone] = React.useState(false)
   const [editTask, setEditTask] = React.useState(false)
+  const [previousTask, setPreviousTask] = React.useState('')
 
   function showGuide() {
     window.open('https://github.com/younggeun0/pomodoro_notion_recorder')
@@ -103,6 +104,7 @@ export default function Main() {
     })
     // TODO, 기록기능이 들어가면서 쉬는 타이머를 쓸 수 없게됨, 상태 정보를 PomodoroTimer내부에서 핸들링하는 대신 Main에서 관리하도록 변경 필요
     setIsDone(false)
+    setPreviousTask(task)
     setTask('')
   }
 
@@ -164,6 +166,8 @@ export default function Main() {
 
               setTask(e.target.value)
               e.target.value = ''
+            } else if (e.key === 'ArrowUp' && previousTask !== '') {
+              e.target.value = previousTask
             }
           }}
         />
