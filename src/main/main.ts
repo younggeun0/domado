@@ -317,7 +317,7 @@ ipcMain.on('post_pomodoro', async (event, message) => {
               title: [
                 {
                   text: {
-                    content: `${emoji} * ${newCount}`,
+                    content: `* ${newCount}`,
                   },
                 },
               ],
@@ -341,12 +341,16 @@ ipcMain.on('post_pomodoro', async (event, message) => {
         type: 'database_id',
         database_id: databaseId,
       },
+      icon: {
+        type: 'emoji',
+        emoji,
+      },
       properties: {
         [name]: {
           title: [
             {
               text: {
-                content: `${emoji} * 1`,
+                content: `* 1`,
               },
             },
           ],
