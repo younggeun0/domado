@@ -63,6 +63,10 @@ function getNotionPage(date: Date, databaseId: string) {
   })
 }
 
+function isPageCreated(title: string) {
+  return title.startsWith(emoji) || title.startsWith('*')
+}
+
 async function setInitialTodayCount(notionPomodoroDatabaseId: string | null = null) {
   const databaseId: string | null =
     notionPomodoroDatabaseId || (store.get('NOTION_POMODORO_DATABASE_ID') as string | null)
@@ -85,7 +89,7 @@ async function setInitialTodayCount(notionPomodoroDatabaseId: string | null = nu
     const page = res.results.find((result: any) => {
       if (!result.properties[name].title[0]) return false
 
-      return result.properties[name].title[0].text.content.startsWith(emoji)
+      return isPageCreated(result.properties[name].title[0].text.content)
     })
 
     if (page) {
@@ -163,7 +167,7 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
           if (!properties[name]) {
             name = 'Name'
           }
-          return properties[name].title[0].text.content.startsWith(emoji)
+          return isPageCreated(properties[name].title[0].text.content)
         })
         .map((page: any) => {
           const titleTokens = page.properties[name].title[0].text.content.split(' ')
@@ -209,7 +213,7 @@ ipcMain.on('log_task_memo', async (event, taskMemo) => {
       const page = res.results.find((result: any) => {
         if (!result.properties[name].title[0]) return false
 
-        return result.properties[name].title[0].text.content.startsWith(emoji)
+        return isPageCreated(result.properties[name].title[0].text.content)
       })
 
       if (page) {
@@ -301,7 +305,7 @@ ipcMain.on('post_pomodoro', async (event, message) => {
       const page = res.results.find((result: any) => {
         if (!result.properties[name].title[0]) return false
 
-        return result.properties[name].title[0].text.content.startsWith(emoji)
+        return isPageCreated(result.properties[name].title[0].text.content)
       })
 
       if (page) {
