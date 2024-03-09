@@ -476,10 +476,9 @@ const createWindow = async () => {
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
-  // if (process.platform !== 'darwin') {
-  // console.log('all closed?')
-  app.quit() // TODO, app 닫을 때 제거되도록 수록
-  // }
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
 })
 
 app
