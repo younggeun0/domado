@@ -31,7 +31,7 @@ const store = new Store()
 ipcMain.on('electron-store-get', async (event, val) => {
   event.returnValue = store.get(val)
 })
-ipcMain.on('electron-store-set', async (event, key, val) => {
+ipcMain.on('electron-store-set', async (_event, key, val) => {
   store.set(key, val)
 })
 
@@ -187,7 +187,7 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
   event.returnValue = result
 })
 
-ipcMain.on('log_task_memo', async (event, taskMemo) => {
+ipcMain.on('log_task_memo', async (_event, taskMemo) => {
   if (taskMemo.task === '' && taskMemo.memo === '') return
 
   const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as string | null
@@ -273,7 +273,7 @@ ipcMain.on('log_task_memo', async (event, taskMemo) => {
   }
 })
 
-ipcMain.on('post_pomodoro', async (event, message) => {
+ipcMain.on('post_pomodoro', async (_event, _message) => {
   // const msgTemplate = (pingPong: string) => `post_pomodoro test: ${pingPong}`;
   // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능
@@ -348,6 +348,7 @@ ipcMain.on('post_pomodoro', async (event, message) => {
       },
       icon: {
         type: 'emoji',
+        // @ts-ignore
         emoji,
       },
       properties: {
