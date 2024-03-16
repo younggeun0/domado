@@ -10,14 +10,19 @@ export interface PomodoroInfo {
 }
 
 export default function Main() {
-  const [isKeySet, setIsKeySet] = React.useState(false)
+  // 동기화 여부 상관없이 쓰는 플래그, 오늘 작업 내역
   const [todayInfo, setTodayInfo] = React.useState<PomodoroInfo | null | undefined>(null)
-  const [notionSync, setNotionSync] = React.useState(window.electron.store.get('notion-sync') ?? true)
-  const [useLog, setUseLog] = React.useState(true)
-  const [task, setTask] = React.useState('')
-  const [isDone, setIsDone] = React.useState(false)
-  const [editTask, setEditTask] = React.useState(false)
-  const [previousTask, setPreviousTask] = React.useState('')
+
+  // 동기화 쓸 때 사용할 플래그들
+  const [useLog, setUseLog] = React.useState(true) // 기록 사용 여부
+  const [task, setTask] = React.useState('') // 현재 작업명
+  const [isDone, setIsDone] = React.useState(false) // 작업 완료 여부(Timer 완료 시 전달하는용도) << TODO, 타이머 합치고 제거 예정
+  const [editTask, setEditTask] = React.useState(false) // task 편집모드
+  // 이거 리스트로 만들어두면 여러개의 task를 기록할 수 있을 것 같은데
+  const [previousTask, setPreviousTask] = React.useState('') // 이전 작업명
+
+  // 동기화 사용 안할 때 사용하는 플래그들
+  const [notionSync, setNotionSync] = React.useState<boolean | null>(window.electron.store.get('notion-sync') ?? null)
 
   function showGuide() {
     window.open('https://github.com/younggeun0/pomodoro_notion_recorder')
@@ -28,25 +33,22 @@ export default function Main() {
     if (notionKey && notionPomodoroDatabaseId) {
       if (!window.electron.ipcRenderer.sendSync('set_notion_keys', notionKey, notionPomodoroDatabaseId)) {
         alert('노션 API KEY 또는 DB ID가 잘못 입력됐습니다. 다시 설정해주세요.')
-      } else {
-        const count = window.electron.store.get('TODAY_COUNT') || 0
-
-        setTodayInfo({
-          date: dayjs().format('yyyy-mm-dd'),
-          count,
-        })
-        result = true
-        window.electron.store.set('notion-sync', true)
-        setNotionSync(true)
+        return result
       }
-      setIsKeySet(result)
+
+      result = true
+      window.electron.store.set('notion-sync', result)
+      setNotionSync(result)
+      setTodayInfo({
+        date: dayjs().format('yyyy-mm-dd'),
+        count: window.electron.store.get('TODAY_COUNT') || 0,
+      })
     }
     return result
   }
 
   useEffect(() => {
-    if (!notionSync) {
-      setIsKeySet(true)
+    if (notionSync === false) {
       setTodayInfo({
         date: dayjs().format('yyyy-mm-dd'),
         count: 0,
@@ -60,7 +62,7 @@ export default function Main() {
   }, [notionSync])
 
   function resetKeys() {
-    setIsKeySet(false)
+    setNotionSync(null)
     setUseLog(true)
     setTask('')
     window.electron.ipcRenderer.sendMessage('reset_notion_keys')
@@ -100,13 +102,14 @@ export default function Main() {
   // 2. when isKeySet true, notionSync false << 그냥 쓰기
   //   - useLog no matter - normal timer
 
-  if (!isKeySet) {
+  if (notionSync === null) {
     return (
       <>
         <NotionKeySetter
           setKeys={(notionKey, notionPomodoroDatabaseId) => setKeys(notionKey, notionPomodoroDatabaseId)}
           logState={{ useLog, setUseLog }}
         />
+
         <div className="mt-3 d-flex justify-content-end align-items-center">
           <button
             type="button"
@@ -115,8 +118,6 @@ export default function Main() {
               window.electron.store.set('notion-sync', false)
               setUseLog(false)
               setNotionSync(false)
-              // TODO, api 키 설정했는지 여부로 히트맵을 보여주기 위해서 그냥 쓸 땐 keySet을 false로 유지하고 다른 플래그로 판단하는게 좋아보임
-              setIsKeySet(true)
               setTodayInfo({
                 date: dayjs().format('yyyy-mm-dd'),
                 count: 0,
