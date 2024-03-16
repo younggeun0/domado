@@ -1,4 +1,5 @@
 import CalHeatmap from 'cal-heatmap'
+// @ts-ignore
 import Tooltip from 'cal-heatmap/plugins/Tooltip'
 import 'cal-heatmap/cal-heatmap.css'
 import { useEffect } from 'react'

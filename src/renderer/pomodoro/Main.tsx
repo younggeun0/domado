@@ -1,4 +1,6 @@
-// import dayjs from 'dayjs'
+/* eslint-disable no-alert */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { useEffect } from 'react'
 import dayjs from 'dayjs'
 import PomodoroTimer from './PomodoroTimer'
@@ -28,7 +30,7 @@ export default function Main() {
     let result = false
     if (notionKey && notionPomodoroDatabaseId) {
       if (!window.electron.ipcRenderer.sendSync('set_notion_keys', notionKey, notionPomodoroDatabaseId)) {
-        alert('노션 API KEY 또는 Database ID가 잘못 입력됐습니다. 다시 설정해주세요.')
+        alert('노션 API KEY 또는 DB ID가 잘못 입력됐습니다. 다시 설정해주세요.')
       } else {
         const count = window.electron.store.get('TODAY_COUNT') || 0
 
@@ -58,20 +60,6 @@ export default function Main() {
     const notionKey = window.electron.store.get('NOTION_KEY')
     const notionPomodoroDatabaseId = window.electron.store.get('NOTION_POMODORO_DATABASE_ID')
     setKeys(notionKey, notionPomodoroDatabaseId)
-
-    // window.electron.ipcRenderer.send('pomodoro:ready')
-    // window.electron.ipcRenderer.on('pomodoro:ready', () => {
-    //   window.electron.ipcRenderer.send('pomodoro:load')
-    // })
-    // window.electron.ipcRenderer.on(
-    //   'pomodoro:load',
-    //   (event: any, pomodoroInfos: PomodoroInfo[]) => {
-    //     // setPomodoroInfos(pomodoroInfos);
-    //     const today = new Date().toLocaleDateString()
-    //     const found = pomodoroInfos.find((info) => info.date === today)
-    //     setTodayInfo(found)
-    //   },
-    // )
   }, [notionSync])
 
   function resetKeys() {
@@ -151,44 +139,63 @@ export default function Main() {
 
   if (useLog && task === '') {
     return (
-      <div>
-        <input
-          id="task-input"
-          type="text"
-          className="w-100"
-          placeholder="🍅 작업 목표를 설정해주세요."
-          onKeyUp={(e) => {
-            if (e.key === 'Enter') {
-              if (e.target.value === '') {
+      <>
+        <div className="py-5">
+          <input
+            id="task-input"
+            type="text"
+            className="w-100"
+            placeholder="🍅 작업 목표를 설정해주세요."
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') {
+                if (e.target.value === '') {
+                  alert('목표를 설정해주세요')
+                  return
+                }
+
+                setTask(e.target.value)
+                e.target.value = ''
+              } else if (e.key === 'ArrowUp' && previousTask !== '') {
+                e.target.value = previousTask
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="default_btn mt-2 w-100"
+            onClick={() => {
+              const input = document.getElementById('task-input') as HTMLInputElement
+
+              if (input?.value === '') {
                 alert('목표를 설정해주세요')
                 return
               }
 
-              setTask(e.target.value)
-              e.target.value = ''
-            } else if (e.key === 'ArrowUp' && previousTask !== '') {
-              e.target.value = previousTask
-            }
-          }}
-        />
-        <button
-          type="button"
-          className="default_btn mt-2 w-100"
-          onClick={() => {
-            const input = document.getElementById('task-input') as HTMLInputElement
+              setTask(input?.value ?? '')
+              input.value = ''
+            }}
+          >
+            목표 설정
+          </button>
+        </div>
 
-            if (input?.value === '') {
-              alert('목표를 설정해주세요')
-              return
-            }
-
-            setTask(input?.value ?? '')
-            input.value = ''
-          }}
-        >
-          목표 설정
-        </button>
-      </div>
+        <div className="mt-3 d-flex justify-content-end align-items-center">
+          <button
+            type="button"
+            className="default_btn me-2"
+            onClick={() => {
+              if (window.confirm('노션 API KEY를 초기화하시겠습니까?')) {
+                resetKeys()
+              }
+            }}
+          >
+            notion key 재설정 ✏️
+          </button>
+          <button type="button" className="default_btn rounded-pill" onClick={showGuide}>
+            ?
+          </button>
+        </div>
+      </>
     )
   }
 
@@ -254,19 +261,22 @@ export default function Main() {
         )}
         {useLog && !editTask && (
           <div className="text-wrap" style={{ maxWidth: '250px' }}>
-            <strong onClick={() => {
-              setEditTask(true)
-              setTimeout(() => {
-                document.getElementById('task-edit-input')?.focus()
-              }, 0)
-            }}>🎯 {task}</strong>
+            <strong
+              onClick={() => {
+                setEditTask(true)
+                setTimeout(() => {
+                  document.getElementById('task-edit-input')?.focus()
+                }, 0)
+              }}
+            >
+              🎯 {task}
+            </strong>
           </div>
         )}
 
         <div className="d-flex justify-content-end mb-3 text-end">
           🍅 : {todayInfo?.count ?? 0}
           <br />
-          {!notionSync && 'no sync '}
         </div>
 
         <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} setIsDone={setIsDone} editTask={editTask} />

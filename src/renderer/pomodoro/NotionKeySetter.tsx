@@ -42,11 +42,7 @@ export default function NotionKeySetter({
           }
 
           window.electron.ipcRenderer.sendMessage('electron-store-set', 'NOTION_KEY', notionKey)
-          window.electron.ipcRenderer.sendMessage(
-            'electron-store-set',
-            'NOTION_POMODORO_DATABASE_ID',
-            notionDatabaseId,
-          )
+          window.electron.ipcRenderer.sendMessage('electron-store-set', 'NOTION_POMODORO_DATABASE_ID', notionDatabaseId)
           window.electron.ipcRenderer.sendMessage('set_notion_keys', notionKey, notionDatabaseId)
 
           if (!setKeys(notionKey, notionDatabaseId)) {
@@ -84,8 +80,16 @@ export default function NotionKeySetter({
             💾
           </button>
           <div className="form-check form-switch">
-            <input className="form-check-input" type="checkbox" id="use-log" checked={useLog} onChange={() => setUseLog(!useLog)} />
-            <label className="form-check-label" htmlFor="use-log">기록하기</label>
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="use-log"
+              checked={useLog}
+              onChange={() => setUseLog(!useLog)}
+            />
+            <label className="form-check-label" htmlFor="use-log">
+              기록하기
+            </label>
           </div>
         </div>
       </form>
