@@ -1,6 +1,3 @@
-/* eslint-disable no-alert */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { useEffect } from 'react'
 import dayjs from 'dayjs'
 import PomodoroTimer from './PomodoroTimer'

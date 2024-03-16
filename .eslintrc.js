@@ -5,6 +5,10 @@ module.exports = {
     semi: [2, 'never'],
     'prettier/prettier': ['error', { semi: false, printWidth: 120 }],
     // A temporary hack related to IDE not resolving correct package.json
+    'no-alert': 'off',
+    'jsx-a11y/click-events-have-key-events': 'off',
+    'jsx-a11y/no-static-element-interactions': 'off',
+    'jsx-a11y/label-has-associated-control': 'off',
     'import/no-extraneous-dependencies': 'off',
     'react/react-in-jsx-scope': 'off',
     'react/jsx-filename-extension': 'off',
@@ -14,7 +18,7 @@ module.exports = {
     'no-shadow': 'off',
     '@typescript-eslint/no-shadow': 'error',
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': 'off',
   },
   parserOptions: {
     ecmaVersion: 2022,

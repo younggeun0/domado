@@ -1,6 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-// import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
 import { v4 as uuidv4 } from 'uuid'
