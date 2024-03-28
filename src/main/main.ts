@@ -9,12 +9,13 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path'
-import { app, BrowserWindow, shell, ipcMain, Notification } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, Notification, Tray, Menu, nativeImage, globalShortcut } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
 import { Client } from '@notionhq/client'
 import Store from 'electron-store'
 import dayjs from 'dayjs'
+import Timer from './Timer'
 import MenuBuilder from './menu'
 import { resolveHtmlPath } from './util'
 
@@ -413,6 +414,43 @@ const installExtensions = async () => {
 }
 
 let mainWindow: BrowserWindow | null = null
+let tray: Tray
+
+function updateIcon() {
+  const iconPath = path.join(__dirname, '../..', 'assets', 'icon_22x22.png')
+  const icon = nativeImage.createFromPath(iconPath)
+  tray.setImage(icon)
+  console.log('icon updated')
+}
+const timer = new Timer(updateIcon)
+
+function createTrayIcon() {
+  const iconPath = path.join(__dirname, '../..', 'assets', 'icon_22x22.png')
+  const icon = nativeImage.createFromPath(iconPath)
+  tray = new Tray(icon)
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: '5 sec', click() { timer.start(5 / 60) } },
+      { label: '30 sec', click() { timer.start(.5) } },
+      { label: '1 min', click() { timer.start(1)  } },
+      { label: '5 min', click() { timer.start(5) } },
+      { label: '10 min', click() { timer.start(10) } },
+      { label: '15 min', click() { timer.start(15) } },
+      { label: '20 min', click() { timer.start(20) } },
+      { label: 'exit', click() { app.quit() } }
+    ]),
+  )
+
+  tray.on('click', () => timer.toggle())
+  tray.on('double-click', () => timer.start(20))
+  console.log('tray created')
+}
+
+function registerShortcuts() {
+  globalShortcut.register('Super+Y', () => mainWindow.toggle())
+  globalShortcut.register('Super+Shift+Y', () => mainWindow.start(20))
+}
+
 const createWindow = async () => {
   if (isDebug) {
     await installExtensions()
@@ -485,6 +523,8 @@ app
   .whenReady()
   .then(() => {
     createWindow()
+    createTrayIcon()
+    registerShortcuts()
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
