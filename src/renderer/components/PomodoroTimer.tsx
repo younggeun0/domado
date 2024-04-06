@@ -19,11 +19,9 @@ const getStrTowDigitFormat = (num: number) => (num < 10 ? `0${num}` : num)
 
 export default function PomodoroTimer({
   updateTodayInfo,
-  setIsDone,
   editTask,
 }: {
   updateTodayInfo: () => void
-  setIsDone: (isDone: boolean) => void
   editTask: boolean
 }) {
   const [status, setStatus] = useState<
@@ -106,7 +104,6 @@ export default function PomodoroTimer({
         setIsRest(true)
         break
       case 'pomodoro_finished':
-        setIsDone(true)
         setIsRest(true)
         setStatus('paused')
         restart()
@@ -143,7 +140,7 @@ export default function PomodoroTimer({
           <defs>
             <linearGradient id="pomodoro-timer" x1="1" y1="0" x2="0" y2="0">
               {isRest ? (
-                <stop offset="100%" stopColor="#478476" />
+                <stop offset="95%" stopColor="#1ed14b" />
               ) : (
                 <>
                   <stop offset="5%" stopColor="gold" />
@@ -166,7 +163,7 @@ export default function PomodoroTimer({
             }
           }}
           trailStrokeWidth={30}
-          trailColor="#373d47"
+          trailColor="#ededed"
           strokeWidth={20}
           size={250}
         >

@@ -1,13 +1,17 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom'
-import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
-import Main from './pomodoro/Main'
+import Layout from './pages/Layout'
+import Pomodoro from './pages/Pomodoro'
+import SetKeys from './pages/SetKeys'
 
 export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Main />} />
+        <Route path="/" element={<Layout />}>
+          <Route path="pomodoro" element={<Pomodoro />} />
+          <Route path="set_keys" element={<SetKeys />} />
+        </Route>
       </Routes>
     </Router>
   )
