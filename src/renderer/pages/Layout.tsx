@@ -1,12 +1,11 @@
 import { useAtom } from 'jotai'
 import { useEffect } from 'react'
-import { Link, Outlet, useNavigate } from 'react-router-dom'
-import { notionKeys, useNotionSync } from '../jotaiStore'
+import { Outlet, useNavigate } from 'react-router-dom'
+import { useNotionSync } from '../jotaiStore'
 import Footer from '../components/Footer'
 
 export default function Layout() {
   const navigate = useNavigate()
-  // const [keys] = useAtom(notionKeys)
   const [useSync] = useAtom(useNotionSync)
   const {
     electron: { store: electronStore, ipcRenderer },

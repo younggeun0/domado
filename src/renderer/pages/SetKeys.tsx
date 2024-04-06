@@ -17,19 +17,6 @@ export default function SetKeys() {
     return classes.filter(Boolean).join(' ')
   }
 
-  function setKeys(notionKey: string, notionPomodoroDatabaseId: string) {
-    let result = false
-    if (notionKey && notionPomodoroDatabaseId) {
-      if (!ipcRenderer.sendSync('set_notion_keys', notionKey, notionPomodoroDatabaseId)) {
-        alert('노션 API KEY 또는 DB ID가 잘못 입력됐습니다. 다시 설정해주세요.')
-        return result
-      }
-      result = true
-      electronStore.set('notion-sync', result)
-    }
-    return result
-  }
-
   useEffect(() => {
     console.log('visit set keys')
   }, [])
@@ -49,14 +36,14 @@ export default function SetKeys() {
           const formData = new FormData(e.currentTarget)
           const data = Object.fromEntries(formData)
 
-          let notionKey = data.notion_api_key
-          console.log('🚀 ~ notionKey:', notionKey)
+          let notionAPIKey = data.notion_api_key
+          console.log('🚀 ~ notionKey:', notionAPIKey)
           let notionDatabaseId = data.notion_pomodoro_database_id
           console.log('🚀 ~ notionDatabaseId:', notionDatabaseId)
 
 
           // TODO, validate inputs
-          if (!notionKey.trim() || !notionDatabaseId.trim()) {
+          if (!notionAPIKey.trim() || !notionDatabaseId.trim()) {
             alert('노션 API키와 페이지를 기록할 노션 DB ID를 입력해주세요.')
             return
           }
@@ -72,21 +59,14 @@ export default function SetKeys() {
             notionDatabaseId = notionDatabaseId.substring(0, notionDatabaseId.indexOf('?'))
           }
 
-          window.electron.ipcRenderer.sendMessage('electron-store-set', 'NOTION_KEY', notionKey)
-          window.electron.ipcRenderer.sendMessage('electron-store-set', 'NOTION_POMODORO_DATABASE_ID', notionDatabaseId)
-          window.electron.ipcRenderer.sendMessage('set_notion_keys', notionKey, notionDatabaseId)
-
-          if (!setKeys(notionKey, notionDatabaseId)) {
-            const ids = ['notion_api_key', 'notion_pomodoro_database_id']
-            const inputs = ids.map((id) => document.getElementById(id) as HTMLInputElement | null)
-
-            inputs.forEach((input) => {
-              if (input) {
-                input.value = ''
-              }
-            })
+          if (notionAPIKey && notionDatabaseId) {
+            if (!ipcRenderer.sendSync('set_notion_keys', notionAPIKey, notionDatabaseId)) {
+              alert('노션 API KEY 또는 DB ID가 잘못 입력됐습니다. 다시 설정해주세요.')
+              document.getElementById('notion_api_key')?.focus()
+              return
+            }
           }
-
+          setUseSync(true)
           navigate('/pomodoro')
         }}
       >
