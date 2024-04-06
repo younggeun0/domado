@@ -3,8 +3,12 @@ import CalHeatmap from 'cal-heatmap'
 import Tooltip from 'cal-heatmap/plugins/Tooltip'
 import 'cal-heatmap/cal-heatmap.css'
 import { useEffect } from 'react'
+import { useAtom } from 'jotai'
+import { useNotionSync } from '../jotaiStore'
 
 export default function Heatmap() {
+  const [useSync] = useAtom(useNotionSync)
+
   useEffect(() => {
     // TODO, 뽀모도로 완료 시 히트맵 갱신
     const logs = window.electron.ipcRenderer.sendSync('get_pomodoro_logs')
@@ -36,11 +40,11 @@ export default function Heatmap() {
           gutter: 4,
         },
         itemSelector: '#pomodoro-heatmap',
-        theme: 'dark',
+        // theme: 'dark', // TODO, dark theme
         scale: {
           color: {
             type: 'threshold',
-            range: ['#FF9353', '#E95100', '#F34200', '#C92100'],
+            range: ['rgb(187 247 208)', 'rgb(134 239 172)', 'rgb(74 222 128)', 'rgb(34 197 94)'],
             domain: [2, 4, 6],
           },
         },
@@ -61,5 +65,5 @@ export default function Heatmap() {
     )
   }, [])
 
-  return <div id="pomodoro-heatmap" style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }} />
+  return useSync && <div id="pomodoro-heatmap" className="flex justify-center mt-1" />
 }
