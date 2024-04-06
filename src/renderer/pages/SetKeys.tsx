@@ -61,6 +61,7 @@ export default function SetKeys() {
               return
             }
           }
+          // TODO, 키 설정시 노션 페이지에 등록된 뽀모도로 횟수를 가져와서 표시
           setUseSync(true)
           navigate('/pomodoro')
         }}
