@@ -9,31 +9,43 @@ export default function Footer() {
   const [useSync, setUseSync] = useAtom(useNotionSync)
 
   return (
-    <div className="p-3 w-full flex justify-between">
+    <div className="p-3 w-full flex justify-between items-center">
       <div>오늘 🍅 {todayInfo.count}</div>
-      <div>
-        {useSync !== null && (
+      <div className="flex justify-between items-center">
+        {useSync && (
           <button
             type="button"
             className="me-2 underline text-blue-500"
             onClick={() => {
-              if (window.confirm('노션 API KEY를 초기화하시겠습니까?')) {
-                setUseSync(null)
-                setTodayInfo({
-                  date: dayjs().format('YYYY-MM-DD'),
-                  count: 0,
-                })
-                navigate('/set_keys')
-              }
+              navigate('/statistic')
             }}
           >
-            KEY 설정 ⚙️
+            통계 📊
           </button>
         )}
 
+        <button
+          type="button"
+          className="mx-2 underline text-blue-500"
+          onClick={() => {
+            if (useSync) {
+              if (!window.confirm('노션 API KEY를 초기화하시겠습니까?')) return
+
+              setTodayInfo({
+                date: dayjs().format('YYYY-MM-DD'),
+                count: 0,
+              })
+            }
+            setUseSync(null)
+            navigate('/set_keys')
+          }}
+        >
+          KEY설정 ⚙️
+        </button>
+
         <button type="button" className="" onClick={() => window.open('https://github.com/younggeun0/domado')}>
           <div className="ms-2 inline-flex underline text-blue-500">
-            <span>HELP</span>
+            HELP
             <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6 fill-blue-500">
               <path
                 fillRule="evenodd"

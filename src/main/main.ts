@@ -107,10 +107,11 @@ async function setInitialTodayCount(notionPomodoroDatabaseId: string | null = nu
 }
 
 async function setNotionClient(apikey: string | null = null, notionPomodoroDatabaseId: string | null = null) {
-  const notionKey = apikey || (store.get('NOTION_KEY') as string)
+  const notionKey = apikey // || (store.get('NOTION_KEY') as string)
 
   if (notionKey && notionKey.length > 0) {
     notionClient = notionKey ? new Client({ auth: notionKey }) : null
+    console.log("🚀 ~ setNotionClient ~ notionClient:", notionClient)
     try {
       await setInitialTodayCount(notionPomodoroDatabaseId)
       return true
@@ -124,7 +125,11 @@ async function setNotionClient(apikey: string | null = null, notionPomodoroDatab
 }
 
 ipcMain.on('set_notion_keys', async (event, notionKey, notionPomodoroDatabaseId) => {
+  store.set('NOTION_KEY', notionKey)
+  store.set('NOTION_POMODORO_DATABASE_ID', notionPomodoroDatabaseId)
+  
   const res = await setNotionClient(notionKey, notionPomodoroDatabaseId)
+  console.log("🚀 ~ ipcMain.on ~ res:", res)
   event.returnValue = res
 })
 

@@ -3,6 +3,7 @@ import './App.css'
 import Layout from './pages/Layout'
 import Pomodoro from './pages/Pomodoro'
 import SetKeys from './pages/SetKeys'
+import Statistic from './pages/Statistic'
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
         <Route path="/" element={<Layout />}>
           <Route path="pomodoro" element={<Pomodoro />} />
           <Route path="set_keys" element={<SetKeys />} />
+          <Route path="statistic" element={<Statistic />} />
         </Route>
       </Routes>
     </Router>

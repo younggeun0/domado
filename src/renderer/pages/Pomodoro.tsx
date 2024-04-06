@@ -15,7 +15,7 @@ export default function Pomodoro() {
   const [todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
 
   const {
-    electron: { store: electronStore, ipcRenderer },
+    electron: { ipcRenderer },
   } = window
 
   // 동기화 쓸 때 사용할 플래그들
@@ -24,10 +24,6 @@ export default function Pomodoro() {
 
   // TODO, previousTasks로 변경(이력관리)
   const [previousTask, setPreviousTask] = React.useState('')
-
-  useEffect(() => {
-    console.log('visit pomodoro')
-  }, [])
 
   function logTask(value: string) {
     ipcRenderer.sendMessage('log_task_memo', {
@@ -41,44 +37,38 @@ export default function Pomodoro() {
 
   return (
     <div>
-      {/* TODO, no sync인데 task값 설정이 되는 문제 */}
       {useSync && syncMemo && (
-        <input
-          id="task-edit-input"
-          type="input"
-          className="w-100 mb-2"
-          value={task}
-          onInput={(e) => {
-            e.stopPropagation()
-            if (e.target.value === '') {
-              alert('목표를 설정해주세요')
-              return
-            }
-
-            setTask(e.target.value)
-          }}
-          onKeyUp={(e) => {
-            if (e.key === 'Enter') {
-              setEditTask(false)
-            }
-          }}
-          onBlur={() => {
-            setEditTask(false)
-          }}
-        />
-      )}
-      {useSync && syncMemo && !editTask && (
-        <div className="text-wrap" style={{ maxWidth: '250px' }}>
-          <strong
-            onClick={() => {
-              setEditTask(true)
-              setTimeout(() => {
-                document.getElementById('task-edit-input')?.focus()
-              }, 0)
-            }}
-          >
-            🎯 {task}
-          </strong>
+        <div className="mb-5">
+          <div>
+            <label htmlFor="doing_task" className="block text-sm font-medium leading-6 text-gray-900">
+              🎯 FOCUS ON...
+            </label>
+            <div className="mt-1">
+              <input
+                id="doing_task"
+                name="doing_task"
+                type="text"
+                className="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
+              />
+            </div>
+          </div>
+          <div className="mt-2">
+            <textarea
+              id="memo_textarea"
+              name="memo_textarea"
+              rows={8}
+              className="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              placeholder="작업 내용(내부, 외부 방해 요인, 중간 작업 기록)을 기록해주세요."
+              defaultValue=""
+              onKeyUp={(e) => {
+                // cmd + enter or ctrl + enter
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  logTask(e.target.value)
+                  e.target.value = ''
+                }
+              }}
+            />
+          </div>
         </div>
       )}
 
@@ -91,8 +81,6 @@ export default function Pomodoro() {
         }
         editTask={editTask}
       />
-
-      {useSync && <PomodoroHeatmap />}
     </div>
   )
 }

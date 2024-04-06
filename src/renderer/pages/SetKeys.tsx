@@ -1,7 +1,6 @@
 import { Switch } from '@headlessui/react'
 import { useAtom } from 'jotai'
 import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
 import { useMemoSync, useNotionSync } from '../jotaiStore'
 
 export default function SetKeys() {
@@ -10,16 +9,12 @@ export default function SetKeys() {
   const [memoSync, setMemoSync] = useAtom(useMemoSync)
 
   const {
-    electron: { store: electronStore, ipcRenderer },
+    electron: { ipcRenderer },
   } = window
 
   function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
   }
-
-  useEffect(() => {
-    console.log('visit set keys')
-  }, [])
 
   return (
     <div className="w-full p-5 sm:p-10">
@@ -81,7 +76,7 @@ export default function SetKeys() {
                 name="notion_api_key"
                 type="text"
                 required
-                className="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
               />
             </div>
           </div>
@@ -95,7 +90,7 @@ export default function SetKeys() {
                 id="notion_pomodoro_database_id"
                 name="notion_pomodoro_database_id"
                 required
-                className="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
               />
             </div>
           </div>
