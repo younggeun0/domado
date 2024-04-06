@@ -1,5 +1,5 @@
 {
-  "description": "pomodoro app logging to notion",
+  "description": "pomodoro app for logging on notion",
   "keywords": [
     "pomodoro",
     "notion"
@@ -161,8 +161,8 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "PomodoroNotionRecorder",
-    "appId": "PomodoroNotionRecorder",
+    "productName": "domado",
+    "appId": "domado",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
