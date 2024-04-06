@@ -1,14 +1,12 @@
 import { Switch } from '@headlessui/react'
 import { useAtom } from 'jotai'
 import { useNavigate } from 'react-router-dom'
-import dayjs from 'dayjs'
 import { useEffect } from 'react'
-import { useMemoSync, pomodoroInfos, useNotionSync } from '../jotaiStore'
+import { useMemoSync, useNotionSync } from '../jotaiStore'
 
 export default function SetKeys() {
   const navigate = useNavigate()
   const [_useSync, setUseSync] = useAtom(useNotionSync)
-  const [_todayInfo, setTodayInfo] = useAtom(pomodoroInfos)
   const [memoSync, setMemoSync] = useAtom(useMemoSync)
 
   const {
@@ -136,12 +134,6 @@ export default function SetKeys() {
               type="button"
               className="flex w-full justify-center rounded-md bg-neutral-700 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-700"
               onClick={() => {
-                setTodayInfo([
-                  {
-                    date: dayjs().format('yyyy-mm-dd'),
-                    count: 0,
-                  },
-                ])
                 setUseSync(false)
                 navigate('/pomodoro')
               }}

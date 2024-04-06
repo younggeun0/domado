@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react'
-import dayjs from 'dayjs'
+import { useAtom } from 'jotai'
 import PomodoroTimer from '../components/PomodoroTimer'
 import PomodoroHeatmap from '../components/PomodoroHeatmap'
+import { todayPomodoroInfo, useMemoSync, useNotionSync } from '../jotaiStore'
 
 export interface PomodoroInfo {
   date: string
@@ -9,12 +10,13 @@ export interface PomodoroInfo {
 }
 
 export default function Pomodoro() {
+  const [useSync] = useAtom(useNotionSync)
+  const [syncMemo] = useAtom(useMemoSync)
+  const [todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
+
   const {
     electron: { store: electronStore, ipcRenderer },
   } = window
-
-  // 동기화 여부 상관없이 쓰는 플래그, 오늘 작업 내역
-  const [todayInfo, setTodayInfo] = React.useState<PomodoroInfo | null | undefined>(null)
 
   // 동기화 쓸 때 사용할 플래그들
   const [task, setTask] = React.useState('') // 현재 작업명
@@ -26,22 +28,6 @@ export default function Pomodoro() {
   useEffect(() => {
     console.log('visit pomodoro')
   }, [])
-
-  function updateTodayInfo() {
-    const today = dayjs().format('YYYY-MM-DD')
-
-    if (todayInfo && todayInfo.date === today) {
-      setTodayInfo({
-        date: todayInfo.date,
-        count: todayInfo.count + 1,
-      })
-    } else {
-      setTodayInfo({
-        date: today,
-        count: 1,
-      })
-    }
-  }
 
   function logTask(value: string) {
     ipcRenderer.sendMessage('log_task_memo', {
@@ -56,7 +42,7 @@ export default function Pomodoro() {
   return (
     <div>
       {/* TODO, no sync인데 task값 설정이 되는 문제 */}
-      {editTask && (
+      {useSync && syncMemo && (
         <input
           id="task-edit-input"
           type="input"
@@ -81,7 +67,7 @@ export default function Pomodoro() {
           }}
         />
       )}
-      {!editTask && (
+      {useSync && syncMemo && !editTask && (
         <div className="text-wrap" style={{ maxWidth: '250px' }}>
           <strong
             onClick={() => {
@@ -101,9 +87,17 @@ export default function Pomodoro() {
         <br />
       </div>
 
-      <PomodoroTimer updateTodayInfo={() => updateTodayInfo()} editTask={editTask} />
+      <PomodoroTimer
+        updateTodayInfo={() =>
+          setTodayInfo({
+            date: todayInfo.date,
+            count: todayInfo.count + 1,
+          })
+        }
+        editTask={editTask}
+      />
 
-      <PomodoroHeatmap />
+      {useSync && <PomodoroHeatmap />}
     </div>
   )
 }
