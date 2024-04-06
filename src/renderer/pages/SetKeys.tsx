@@ -163,7 +163,7 @@ export default function SetKeys() {
                   />
                 </Switch>
               </div>
-              <Switch.Label className="text-sm leading-6 text-gray-600">
+              <Switch.Label className="text-sm leading-6">
                 <div className="group flex relative">
                   <span
                     className="text-sm group-hover:opacity-100 w-80 transition-opacity bg-gray-700 px-1 text-sm text-gray-100 rounded-md absolute left-1/2 

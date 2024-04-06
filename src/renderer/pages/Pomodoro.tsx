@@ -82,11 +82,6 @@ export default function Pomodoro() {
         </div>
       )}
 
-      <div className="d-flex justify-content-end mb-3 text-end">
-        🍅 : {todayInfo?.count ?? 0}
-        <br />
-      </div>
-
       <PomodoroTimer
         updateTodayInfo={() =>
           setTodayInfo({
