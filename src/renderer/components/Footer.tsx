@@ -39,9 +39,11 @@ export default function Footer() {
           </button>
         )}
 
-        <button type="button" className="mx-2 underline text-blue-500" onClick={() => resetKeys()}>
-          KEY설정 ⚙️
-        </button>
+        {useSync !== null && (
+          <button type="button" className="mx-2 underline text-blue-500" onClick={() => resetKeys()}>
+            KEY설정 ⚙️
+          </button>
+        )}
 
         <button type="button" className="" onClick={() => window.open('https://github.com/younggeun0/domado')}>
           <div className="ms-2 inline-flex underline text-blue-500">
