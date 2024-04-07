@@ -17,13 +17,7 @@ const TIME_INFO = isDebug
 
 const getStrTowDigitFormat = (num: number) => (num < 10 ? `0${num}` : num)
 
-export default function PomodoroTimer({
-  updateTodayInfo,
-  editTask,
-}: {
-  updateTodayInfo: () => void
-  editTask: boolean
-}) {
+export default function PomodoroTimer({ updateTodayInfo }: { updateTodayInfo: () => void }) {
   const [status, setStatus] = useState<
     'pomodoro_start' | 'rest_start' | 'restart' | 'paused' | 'pomodoro_finished' | 'rest_finished'
   >('paused')
@@ -54,41 +48,42 @@ export default function PomodoroTimer({
     setTimerKey(uuidv4())
   }
 
-  useEffect(() => {
-    function keydownHandler(e: KeyboardEvent) {
-      if (editTask) return
+  // TODO, keydown 이벤트처리 보완
+  // useEffect(() => {
+  //   function keydownHandler(e: KeyboardEvent) {
+  //     if (editTask) return
 
-      switch (e.key) {
-        case ' ':
-          if (status === 'paused') {
-            setStatus(isRest ? 'rest_start' : 'pomodoro_start')
-          } else {
-            setStatus('paused')
-          }
-          break
-        case 'a':
-          window.electron.ipcRenderer.sendMessage('post_pomodoro', 'hello world')
-          updateTodayInfo()
-          break
-        case 'r':
-          restart()
-          break
-        case 'ArrowUp':
-          addMin(TIME_INFO.ADD_MIN)
-          break
-        case 'ArrowDown':
-          addMin(-TIME_INFO.ADD_MIN)
-          break
-        default:
-          break
-      }
-    }
+  //     switch (e.key) {
+  //       case ' ':
+  //         if (status === 'paused') {
+  //           setStatus(isRest ? 'rest_start' : 'pomodoro_start')
+  //         } else {
+  //           setStatus('paused')
+  //         }
+  //         break
+  //       case 'a':
+  //         window.electron.ipcRenderer.sendMessage('post_pomodoro', 'hello world')
+  //         updateTodayInfo()
+  //         break
+  //       case 'r':
+  //         restart()
+  //         break
+  //       case 'ArrowUp':
+  //         addMin(TIME_INFO.ADD_MIN)
+  //         break
+  //       case 'ArrowDown':
+  //         addMin(-TIME_INFO.ADD_MIN)
+  //         break
+  //       default:
+  //         break
+  //     }
+  //   }
 
-    document.addEventListener('keydown', keydownHandler)
-    return () => {
-      document.removeEventListener('keydown', keydownHandler)
-    }
-  }, [addMin, isRest, status, updateTodayInfo])
+  //   document.addEventListener('keydown', keydownHandler)
+  //   return () => {
+  //     document.removeEventListener('keydown', keydownHandler)
+  //   }
+  // }, [addMin, isRest, status, updateTodayInfo])
 
   useEffect(() => {
     switch (status) {
@@ -107,11 +102,8 @@ export default function PomodoroTimer({
         setIsRest(true)
         setStatus('paused')
         restart()
-
-        // TODO, 무엇을 했는지 입력받아서 노션에 기록
-        // prompt Web API는 Electron에서는 동작하지 않아 방법 찾아야 함
-        window.electron.ipcRenderer.sendMessage('post_pomodoro', 'hello world')
         updateTodayInfo()
+        window.electron.ipcRenderer.sendMessage('post_pomodoro')
         break
       case 'rest_finished':
         setStatus('paused')
