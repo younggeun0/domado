@@ -8,6 +8,21 @@ export default function Footer() {
   const [todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
   const [useSync, setUseSync] = useAtom(useNotionSync)
 
+  function resetKeys() {
+    if (useSync) {
+      if (!window.confirm('노션 API KEY를 초기화하시겠습니까?')) return
+
+      setTodayInfo({
+        date: dayjs().format('YYYY-MM-DD'),
+        count: 0,
+      })
+    }
+    setUseSync(null)
+    navigate('/set_keys')
+    window.electron.ipcRenderer.sendMessage('reset_notion_keys')
+    localStorage.clear()
+  }
+
   return (
     <div className="p-3 w-full flex justify-between items-center">
       <div>오늘 🍅 {todayInfo.count}</div>
@@ -24,23 +39,7 @@ export default function Footer() {
           </button>
         )}
 
-        <button
-          type="button"
-          className="mx-2 underline text-blue-500"
-          onClick={() => {
-            if (useSync) {
-              if (!window.confirm('노션 API KEY를 초기화하시겠습니까?')) return
-
-              setTodayInfo({
-                date: dayjs().format('YYYY-MM-DD'),
-                count: 0,
-              })
-            }
-            setUseSync(null)
-            navigate('/set_keys')
-            window.electron.ipcRenderer.sendMessage('reset_notion_keys')
-          }}
-        >
+        <button type="button" className="mx-2 underline text-blue-500" onClick={() => resetKeys()}>
           KEY설정 ⚙️
         </button>
 

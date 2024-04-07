@@ -1,6 +1,8 @@
+/* eslint-disable no-param-reassign */
 import { Switch } from '@headlessui/react'
 import { useAtom } from 'jotai'
 import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect } from 'react'
 import { todayPomodoroInfo, useMemoSync, useNotionSync } from '../jotaiStore'
 
 export default function SetKeys() {
@@ -16,6 +18,54 @@ export default function SetKeys() {
   function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
   }
+
+  const setNotionKeys = useCallback(
+    (notionAPIKey: string, notionDatabaseId: string) => {
+      // TODO, validate inputs
+      if (!notionAPIKey.trim() || !notionDatabaseId.trim()) {
+        alert('노션 API키와 페이지를 기록할 노션 DB ID를 입력해주세요.')
+        return
+      }
+
+      const NOTION_URL = 'https://www.notion.so/'
+      if (notionDatabaseId.startsWith(NOTION_URL)) {
+        notionDatabaseId = notionDatabaseId.split(NOTION_URL)[1] as string
+        const hasWorkspace = notionDatabaseId.split('/').length > 1
+
+        if (hasWorkspace) {
+          notionDatabaseId = notionDatabaseId.split('/')[1] as string
+        }
+        notionDatabaseId = notionDatabaseId.substring(0, notionDatabaseId.indexOf('?'))
+      }
+
+      if (notionAPIKey && notionDatabaseId) {
+        if (!ipcRenderer.sendSync('set_notion_keys', notionAPIKey, notionDatabaseId)) {
+          alert('노션 API KEY 또는 DB ID가 잘못 입력됐습니다. 다시 설정해주세요.')
+          document.getElementById('notion_api_key')?.focus()
+          return
+        }
+      }
+      localStorage.setItem('NOTION_API_KEY', notionAPIKey)
+      localStorage.setItem('NOTION_POMODORO_DATABASE_ID', notionDatabaseId)
+
+      setUseSync(true)
+      setTodayInfo({
+        date: todayInfo.date,
+        count: electronStore.get('TODAY_COUNT'),
+      })
+      navigate('/pomodoro')
+    },
+    [setUseSync, setTodayInfo, todayInfo.date, electronStore, ipcRenderer, navigate],
+  )
+
+  useEffect(() => {
+    const notionAPIKey = localStorage.getItem('NOTION_API_KEY') as string
+    const notionDatabaseId = localStorage.getItem('NOTION_POMODORO_DATABASE_ID') as string
+
+    if (!notionAPIKey && !notionDatabaseId) return
+
+    setNotionKeys(notionAPIKey, notionDatabaseId)
+  }, [setNotionKeys])
 
   return (
     <div className="w-full p-5 sm:p-10">
@@ -33,42 +83,8 @@ export default function SetKeys() {
           const data = Object.fromEntries(formData)
 
           let notionAPIKey = data.notion_api_key
-          console.log('🚀 ~ notionKey:', notionAPIKey)
           let notionDatabaseId = data.notion_pomodoro_database_id
-          console.log('🚀 ~ notionDatabaseId:', notionDatabaseId)
-
-
-          // TODO, validate inputs
-          if (!notionAPIKey.trim() || !notionDatabaseId.trim()) {
-            alert('노션 API키와 페이지를 기록할 노션 DB ID를 입력해주세요.')
-            return
-          }
-
-          const NOTION_URL = 'https://www.notion.so/'
-          if (notionDatabaseId.startsWith(NOTION_URL)) {
-            notionDatabaseId = notionDatabaseId.split(NOTION_URL)[1] as string
-            const hasWorkspace = notionDatabaseId.split('/').length > 1
-
-            if (hasWorkspace) {
-              notionDatabaseId = notionDatabaseId.split('/')[1] as string
-            }
-            notionDatabaseId = notionDatabaseId.substring(0, notionDatabaseId.indexOf('?'))
-          }
-
-          if (notionAPIKey && notionDatabaseId) {
-            if (!ipcRenderer.sendSync('set_notion_keys', notionAPIKey, notionDatabaseId)) {
-              alert('노션 API KEY 또는 DB ID가 잘못 입력됐습니다. 다시 설정해주세요.')
-              document.getElementById('notion_api_key')?.focus()
-              return
-            }
-          }
-
-          setUseSync(true)
-          setTodayInfo({
-            date: todayInfo.date,
-            count: electronStore.get('TODAY_COUNT'),
-          })
-          navigate('/pomodoro')
+          setNotionKeys(notionAPIKey, notionDatabaseId)
         }}
       >
         <div className="flex flex-col">

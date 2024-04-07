@@ -7,13 +7,6 @@ import Footer from '../components/Footer'
 export default function Layout() {
   const navigate = useNavigate()
   const [useSync] = useAtom(useNotionSync)
-  const {
-    electron: { store: electronStore, ipcRenderer },
-  } = window
-
-  useEffect(() => {
-    console.log('visit index')
-  }, [])
 
   useEffect(() => {
     if (useSync === null) {
