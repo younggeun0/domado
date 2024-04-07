@@ -1,15 +1,16 @@
 import { Switch } from '@headlessui/react'
 import { useAtom } from 'jotai'
 import { useNavigate } from 'react-router-dom'
-import { useMemoSync, useNotionSync } from '../jotaiStore'
+import { todayPomodoroInfo, useMemoSync, useNotionSync } from '../jotaiStore'
 
 export default function SetKeys() {
   const navigate = useNavigate()
   const [_useSync, setUseSync] = useAtom(useNotionSync)
   const [memoSync, setMemoSync] = useAtom(useMemoSync)
+  const [todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
 
   const {
-    electron: { ipcRenderer },
+    electron: { store: electronStore, ipcRenderer },
   } = window
 
   function classNames(...classes: string[]) {
@@ -61,8 +62,12 @@ export default function SetKeys() {
               return
             }
           }
-          // TODO, 키 설정시 노션 페이지에 등록된 뽀모도로 횟수를 가져와서 표시
+
           setUseSync(true)
+          setTodayInfo({
+            date: todayInfo.date,
+            count: electronStore.get('TODAY_COUNT'),
+          })
           navigate('/pomodoro')
         }}
       >
