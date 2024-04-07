@@ -2,11 +2,11 @@
 
 노션 페이지에 뽀모도로를 기록하기 위한 용도의 일렉트론 앱
 
-<p align="center">
+<!-- <p align="center">
   <img src="https://github.com/younggeun0/domado/assets/34850791/bc688c09-a3b4-49b6-972f-ab4f7342fcc5" width="300" />
   <br />
   <img src="https://github.com/younggeun0/domado/assets/34850791/757511b0-8712-4d1b-82ab-eaee82f4e342" width="500" />
-</p>
+</p> -->
 
 ## 사용 방법
 
@@ -28,11 +28,11 @@
 2. 우측 하단 '그냥 쓰기' 버튼 선택
 3. 뽀모도로 앱 사용
 
-### 뽀모도로 단축키
+<!-- ### 뽀모도로 단축키
 
 | 단축키 | 설명 |
 | --- | --- |
 | `Space` | 뽀모도로 시작/중지 |
 | `ArrowUp / ArrowDown` | 타이머 5분 증가/감소 |
 | `a` | 뽀모도로++(타이머 사용을 잊은 경우 유용) |
-| `r` | 타이머 재시작 |
+| `r` | 타이머 재시작 | -->
