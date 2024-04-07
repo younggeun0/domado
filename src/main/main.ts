@@ -192,14 +192,12 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
   event.returnValue = result
 })
 
-ipcMain.on('log_task_memo', async (_event, taskMemo) => {
-  if (taskMemo.task === '' && taskMemo.memo === '') return
+ipcMain.on('log_task_memo', async (_event, { task, memo, pomodoroTime }) => {
+  if (task === '' && memo === '') return
 
   const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as string | null
 
-  if (!notionClient || !databaseId) {
-    return
-  }
+  if (!notionClient || !databaseId) return
 
   try {
     const today = new Date()
@@ -229,10 +227,8 @@ ipcMain.on('log_task_memo', async (_event, taskMemo) => {
           page_size: 50,
         })
 
-        const dayjsInstance = dayjs()
-        const endTime = dayjsInstance.format('HH:mm')
-        // TODO, duration도 전달해서 시간 변경한 경우 시간차 계산해서 기록하도록 개선필요
-        const startTime = dayjsInstance.set('minute', dayjsInstance.minute() - 25).format('HH:mm')
+        const endTime = dayjs(pomodoroTime.end).format('HH:mm')
+        const startTime = dayjs(pomodoroTime.start).format('HH:mm')
 
         await notionClient.blocks.children.append({
           block_id: blockId,
@@ -243,7 +239,7 @@ ipcMain.on('log_task_memo', async (_event, taskMemo) => {
                 rich_text: [
                   {
                     text: {
-                      content: `${startTime}~${endTime} ${taskMemo.task}`,
+                      content: `${startTime}~${endTime} ${task}`,
                     },
                   },
                 ],
@@ -254,7 +250,7 @@ ipcMain.on('log_task_memo', async (_event, taskMemo) => {
                 rich_text: [
                   {
                     text: {
-                      content: taskMemo.memo,
+                      content: memo,
                     },
                   },
                 ],
@@ -265,7 +261,7 @@ ipcMain.on('log_task_memo', async (_event, taskMemo) => {
 
         new Notification({
           title: '🍅 작업 기록 완료!',
-          body: `${taskMemo.task} 메로를 기록했어요! 📝`,
+          body: `${task} 메모를 기록했어요! 📝`,
         }).show()
       }
     }
@@ -436,14 +432,54 @@ function createTrayIcon() {
   tray = new Tray(icon)
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: '5 sec', click() { timer.start(5 / 60) } },
-      { label: '30 sec', click() { timer.start(.5) } },
-      { label: '1 min', click() { timer.start(1)  } },
-      { label: '5 min', click() { timer.start(5) } },
-      { label: '10 min', click() { timer.start(10) } },
-      { label: '15 min', click() { timer.start(15) } },
-      { label: '20 min', click() { timer.start(20) } },
-      { label: 'exit', click() { app.quit() } }
+      {
+        label: '5 sec',
+        click() {
+          timer.start(5 / 60)
+        },
+      },
+      {
+        label: '30 sec',
+        click() {
+          timer.start(0.5)
+        },
+      },
+      {
+        label: '1 min',
+        click() {
+          timer.start(1)
+        },
+      },
+      {
+        label: '5 min',
+        click() {
+          timer.start(5)
+        },
+      },
+      {
+        label: '10 min',
+        click() {
+          timer.start(10)
+        },
+      },
+      {
+        label: '15 min',
+        click() {
+          timer.start(15)
+        },
+      },
+      {
+        label: '20 min',
+        click() {
+          timer.start(20)
+        },
+      },
+      {
+        label: 'exit',
+        click() {
+          app.quit()
+        },
+      },
     ]),
   )
 
