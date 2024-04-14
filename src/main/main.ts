@@ -19,6 +19,9 @@ import Timer from './Timer'
 import MenuBuilder from './menu'
 import { resolveHtmlPath } from './util'
 
+let mainWindow: BrowserWindow | null = null
+let tray: Tray
+
 const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
 
 let emoji = '🍅'
@@ -111,7 +114,6 @@ async function setNotionClient(apikey: string | null = null, notionPomodoroDatab
 
   if (notionKey && notionKey.length > 0) {
     notionClient = notionKey ? new Client({ auth: notionKey }) : null
-    console.log("🚀 ~ setNotionClient ~ notionClient:", notionClient)
     try {
       await setInitialTodayCount(notionPomodoroDatabaseId)
       return true
@@ -127,9 +129,8 @@ async function setNotionClient(apikey: string | null = null, notionPomodoroDatab
 ipcMain.on('set_notion_keys', async (event, notionKey, notionPomodoroDatabaseId) => {
   store.set('NOTION_KEY', notionKey)
   store.set('NOTION_POMODORO_DATABASE_ID', notionPomodoroDatabaseId)
-  
+
   const res = await setNotionClient(notionKey, notionPomodoroDatabaseId)
-  console.log("🚀 ~ ipcMain.on ~ res:", res)
   event.returnValue = res
 })
 
@@ -274,11 +275,30 @@ ipcMain.on('log_task_memo', async (_event, { task, memo, pomodoroTime }) => {
   }
 })
 
+function getDefaultTrayIcon() {
+  const iconPath = path.join(__dirname, '../..', 'assets', 'icon_22x22.png')
+  return nativeImage.createFromPath(iconPath)
+}
+
+ipcMain.on('update_tray', async (_event, imageUrl) => {
+  tray.setImage(imageUrl ? nativeImage.createFromDataURL(imageUrl) : getDefaultTrayIcon())
+})
+
+function createTrayIcon() {
+  tray = new Tray(getDefaultTrayIcon())
+  tray.on('click', () => {
+    if (mainWindow) {
+      mainWindow.show()
+    }
+  })
+}
+
 ipcMain.on('post_pomodoro', async (_event, _message) => {
   // const msgTemplate = (pingPong: string) => `post_pomodoro test: ${pingPong}`;
-  // console.log(msgTemplate(_arg));
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
+  tray.setImage(getDefaultTrayIcon())
+
   const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as string | null
 
   if (!notionClient || !databaseId) {
@@ -415,83 +435,10 @@ const installExtensions = async () => {
     .catch(console.log)
 }
 
-let mainWindow: BrowserWindow | null = null
-let tray: Tray
-
-function updateIcon() {
-  const iconPath = path.join(__dirname, '../..', 'assets', 'icon_22x22.png')
-  const icon = nativeImage.createFromPath(iconPath)
-  tray.setImage(icon)
-  console.log('icon updated')
-}
-const timer = new Timer(updateIcon)
-
-function createTrayIcon() {
-  const iconPath = path.join(__dirname, '../..', 'assets', 'icon_22x22.png')
-  const icon = nativeImage.createFromPath(iconPath)
-  tray = new Tray(icon)
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      {
-        label: '5 sec',
-        click() {
-          timer.start(5 / 60)
-        },
-      },
-      {
-        label: '30 sec',
-        click() {
-          timer.start(0.5)
-        },
-      },
-      {
-        label: '1 min',
-        click() {
-          timer.start(1)
-        },
-      },
-      {
-        label: '5 min',
-        click() {
-          timer.start(5)
-        },
-      },
-      {
-        label: '10 min',
-        click() {
-          timer.start(10)
-        },
-      },
-      {
-        label: '15 min',
-        click() {
-          timer.start(15)
-        },
-      },
-      {
-        label: '20 min',
-        click() {
-          timer.start(20)
-        },
-      },
-      {
-        label: 'exit',
-        click() {
-          app.quit()
-        },
-      },
-    ]),
-  )
-
-  tray.on('click', () => timer.toggle())
-  tray.on('double-click', () => timer.start(20))
-  console.log('tray created')
-}
-
-function registerShortcuts() {
-  globalShortcut.register('Super+Y', () => mainWindow.toggle())
-  globalShortcut.register('Super+Shift+Y', () => mainWindow.start(20))
-}
+// function registerShortcuts() {
+//   globalShortcut.register('Super+Y', () => mainWindow.toggle())
+//   globalShortcut.register('Super+Shift+Y', () => mainWindow.start(20))
+// }
 
 const createWindow = async () => {
   if (isDebug) {
@@ -566,7 +513,7 @@ app
   .then(() => {
     createWindow()
     createTrayIcon()
-    registerShortcuts()
+    // registerShortcuts()
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 import React, { useEffect, useState } from 'react'
 import { useAtom } from 'jotai'
 import { CountdownCircleTimer } from 'react-countdown-circle-timer'
@@ -82,7 +83,6 @@ export default function Pomodoro() {
 
     focusInput?.addEventListener('keydown', keydownHandler)
 
-    // eslint-disable-next-line consistent-return
     return () => {
       focusInput?.removeEventListener('keydown', keydownHandler)
     }
@@ -117,19 +117,19 @@ export default function Pomodoro() {
           date: todayInfo.date,
           count: todayInfo.count + 1,
         })
-        window.electron.ipcRenderer.sendMessage('post_pomodoro')
+        ipcRenderer.sendMessage('post_pomodoro')
         break
       case 'rest_finished':
         setStatus('paused')
         setIsRest(false)
         restart()
-        window.electron.ipcRenderer.sendMessage('rest_finished')
+        ipcRenderer.sendMessage('rest_finished')
         break
       default:
         // paused
         break
     }
-  }, [status, todayInfo, setTodayInfo])
+  }, [status, todayInfo, setTodayInfo, ipcRenderer])
 
   function logTaskMemo(e) {
     e.preventDefault()
@@ -147,6 +147,42 @@ export default function Pomodoro() {
 
     setPomodoroTime({ start: null, end: null })
   }
+
+  function throttle(fn: any, delay: number = 1000) {
+    let lastCall = 0
+    return (...args: any) => {
+      const now = new Date().getTime()
+      if (now - lastCall < delay) return
+
+      lastCall = now
+      return fn(...args)
+    }
+  }
+
+  function createGuageIcon(remainingTime: number) {
+    const canvas = document.createElement('canvas')
+    canvas.width = 16
+    canvas.height = 16
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+
+    // background
+    ctx.fillStyle = '#555'
+    ctx.fillRect(0, 0, 16, 16)
+
+    // show remaining time
+    const level = Math.floor((remainingTime / durations.pomodoro) * 100)
+    const height = Math.floor((level / 100) * 14)
+    ctx.fillStyle = level > 20 ? '#0f0' : '#f00'
+    ctx.fillRect(1, 15 - height, 14, height)
+
+    return canvas.toDataURL()
+  }
+
+  const updateTray = throttle((remainingTime: number) => {
+    ipcRenderer.sendMessage('update_tray', createGuageIcon(remainingTime))
+  })
 
   return (
     <div>
@@ -267,6 +303,8 @@ export default function Pomodoro() {
             }
             const minutes = Math.floor(remainingTime / 60)
             const seconds = remainingTime % 60
+
+            updateTray(remainingTime)
 
             return (
               <div className="flex flex-col items-center cursor-pointer" onClick={() => setStatus('paused')}>
