@@ -29,8 +29,7 @@ export default function Pomodoro() {
     electron: { ipcRenderer },
   } = window
 
-  // TODO, taskHistory로 변경(이력관리)
-  const [taskHistory, setTaskHistory] = React.useState([])
+  const [taskHistory, setTaskHistory] = React.useState<string[]>([])
 
   const [status, setStatus] = useState<
     'pomodoro_start' | 'rest_start' | 'restart' | 'paused' | 'pomodoro_finished' | 'rest_finished'
@@ -41,6 +40,8 @@ export default function Pomodoro() {
     pomodoro: TIME_INFO.MIN_PER_POMODORO * 60,
     rest: TIME_INFO.MIN_PER_REST * 60,
   })
+
+  const showTaskMemo = useSync && syncMemo && pomodoroTime.start
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   function addMin(min: number) {
@@ -62,45 +63,30 @@ export default function Pomodoro() {
     setTimerKey(uuidv4())
   }
 
-  // TODO, keydown 이벤트처리 보완
-  // useEffect(() => {
-  //   function keydownHandler(e: KeyboardEvent) {
-  //     if (editTask) return
+  useEffect(() => {
+    if (!showTaskMemo) return
 
-  //     switch (e.key) {
-  //       case ' ':
-  //         if (status === 'paused') {
-  //           setStatus(isRest ? 'rest_start' : 'pomodoro_start')
-  //         } else {
-  //           setStatus('paused')
-  //         }
-  //         break
-  //       case 'a':
-  //         window.electron.ipcRenderer.sendMessage('post_pomodoro', 'hello world')
-  //         setTodayInfo({
-  // date: todayInfo.date,
-  // count: todayInfo.count + 1,
-  // })
-  //         break
-  //       case 'r':
-  //         restart()
-  //         break
-  //       case 'ArrowUp':
-  //         addMin(TIME_INFO.ADD_MIN)
-  //         break
-  //       case 'ArrowDown':
-  //         addMin(-TIME_INFO.ADD_MIN)
-  //         break
-  //       default:
-  //         break
-  //     }
-  //   }
+    const focusInput = document.getElementById('task') as HTMLInputElement
 
-  //   document.addEventListener('keydown', keydownHandler)
-  //   return () => {
-  //     document.removeEventListener('keydown', keydownHandler)
-  //   }
-  // }, [addMin, isRest, status])
+    // eslint-disable-next-line no-inner-declarations
+    function keydownHandler(e: KeyboardEvent) {
+      switch (e.key) {
+        case 'ArrowUp':
+          focusInput.value = taskHistory[taskHistory.length - 1] ?? ''
+          setTaskHistory(taskHistory.slice(0, taskHistory.length - 1))
+          break
+        default:
+          break
+      }
+    }
+
+    focusInput?.addEventListener('keydown', keydownHandler)
+
+    // eslint-disable-next-line consistent-return
+    return () => {
+      focusInput?.removeEventListener('keydown', keydownHandler)
+    }
+  }, [taskHistory, showTaskMemo])
 
   useEffect(() => {
     switch (status) {
@@ -164,7 +150,7 @@ export default function Pomodoro() {
 
   return (
     <div>
-      {useSync && syncMemo && pomodoroTime.start && (
+      {showTaskMemo && (
         <div className="mb-5">
           <form onSubmit={logTaskMemo}>
             <div>
