@@ -174,7 +174,7 @@ export default function Pomodoro() {
     // show remaining time
     const level = Math.floor((remainingTime / durations.pomodoro) * 100)
     const height = Math.floor((level / 100) * 14)
-    ctx.fillStyle = level > 20 ? '#0f0' : '#f00'
+    ctx.fillStyle = level > 10 ? '#0f0' : '#f00'
     ctx.fillRect(1, 15 - height, 14, height)
 
     return canvas.toDataURL()
