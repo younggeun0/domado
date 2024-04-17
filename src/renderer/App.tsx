@@ -10,9 +10,8 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route path="pomodoro" element={<Pomodoro />} />
           <Route path="set_keys" element={<SetKeys />} />
-          {/* TODO, 타이머에서 통계보기 눌렀을 때 바로 이동안되는 현상 */}
+          <Route path="pomodoro" element={<Pomodoro />} />
           <Route path="statistic" element={<Statistic />} />
         </Route>
       </Routes>

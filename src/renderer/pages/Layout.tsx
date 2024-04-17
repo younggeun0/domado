@@ -9,11 +9,7 @@ export default function Layout() {
   const [useSync] = useAtom(useNotionSync)
 
   useEffect(() => {
-    if (useSync === null) {
-      navigate('/set_keys')
-    } else {
-      navigate('/pomodoro')
-    }
+    if (useSync === null) navigate('/set_keys')
   }, [navigate, useSync])
 
   return (
