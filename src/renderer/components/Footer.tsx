@@ -24,9 +24,17 @@ export default function Footer() {
     localStorage.clear()
   }
 
+  const isPomodoroPage = location.pathname === '/pomodoro'
+
   return (
     <div className="p-3 w-full flex justify-between items-center">
-      <div>{useSync !== null && <span title="오늘의 기록">🍅 : {todayInfo.count}</span>}</div>
+      <div>
+        {useSync !== null && (
+          <span title="오늘의 기록" className={isPomodoroPage ? 'text-white' : ''}>
+            🍅 : {todayInfo.count}
+          </span>
+        )}
+      </div>
       <div className="flex justify-between items-center">
         {useSync && location.pathname !== '/pomodoro' && (
           <button
@@ -41,7 +49,7 @@ export default function Footer() {
           </button>
         )}
 
-        {useSync && location.pathname !== '/statistic' && (
+        {useSync && isPomodoroPage && (
           <button
             type="button"
             title="통계"
@@ -61,7 +69,7 @@ export default function Footer() {
         )}
 
         <button type="button" title="README" onClick={() => window.open('https://github.com/younggeun0/domado')}>
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6">
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6" fill={isPomodoroPage ? 'white' : ''}>
             <path
               fillRule="evenodd"
               clipRule="evenodd"
