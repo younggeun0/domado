@@ -70,9 +70,9 @@ export default function SetKeys() {
   return (
     <div className="w-full p-5 sm:p-10">
       <div className="font-extrabold text-3xl text-center text-red-600" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
-        domado 🍅
+        domado
       </div>
-      <div className="text-center my-3">
+      <div className="text-sm text-center my-3">
         노션에 🍅를 기록하기 위해 <br /> 노션 키값을 설정해주세요.
       </div>
       <form
@@ -88,33 +88,25 @@ export default function SetKeys() {
         }}
       >
         <div className="flex flex-col">
-          <div>
-            <label htmlFor="notion_api_key" className="block text-sm font-medium leading-6 text-gray-900">
-              노션 API KEY
-            </label>
-            <div className="mt-1">
-              <input
-                id="notion_api_key"
-                name="notion_api_key"
-                type="text"
-                required
-                className="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
-              />
-            </div>
+          <div className="mt-1">
+            <input
+              id="notion_api_key"
+              name="notion_api_key"
+              placeholder="노션 API KEY"
+              type="text"
+              required
+              className="text-sm block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
+            />
           </div>
 
           <div className="mt-2">
-            <label htmlFor="notion_pomodoro_database_id" className="block text-sm font-medium leading-6 text-gray-900">
-              노션 DB ID
-            </label>
-            <div className="mt-1">
-              <input
-                id="notion_pomodoro_database_id"
-                name="notion_pomodoro_database_id"
-                required
-                className="block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
-              />
-            </div>
+            <input
+              id="notion_pomodoro_database_id"
+              name="notion_pomodoro_database_id"
+              placeholder="노션 DB ID"
+              required
+              className="text-sm block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
+            />
           </div>
 
           <div className="mt-3">
@@ -163,12 +155,12 @@ export default function SetKeys() {
               <Switch.Label className="text-sm leading-6">
                 <div className="group flex relative">
                   <span
-                    className="text-sm group-hover:opacity-100 w-80 transition-opacity bg-gray-700 px-1 text-sm text-gray-100 rounded-md absolute left-1/2 
+                    className="text-xs group-hover:opacity-100 w-80 transition-opacity bg-gray-700 p-1 text-sm text-gray-100 rounded-md absolute left-1/2 
                     -translate-x-1/3 translate-y-2 opacity-0 m-4 mx-auto"
                   >
                     메모하기를 활성화하면 뽀모도로 횟수 뿐만 아니라 메모 내용도 동기화합니다.
                   </span>
-                  <span>메모하기</span>
+                  <span className="text-sm">메모하기</span>
                   <div className="inline ms-1 opacity-50">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

@@ -193,12 +193,15 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
   event.returnValue = result
 })
 
-ipcMain.on('log_task_memo', async (_event, { task, memo, pomodoroTime }) => {
-  if (task === '' && memo === '') return
+ipcMain.on('log_task_memo', async (_event, { taskAndMemo, pomodoroTime }) => {
+  if (taskAndMemo === '') return
 
   const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as string | null
-
   if (!notionClient || !databaseId) return
+
+const splited = taskAndMemo.split('\n')
+  const task = splited[0]
+  const memo = splited.slice(1).join('\n')
 
   try {
     const today = new Date()
@@ -457,8 +460,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: isDebug ? 1000 : 400,
-    height: 700,
+    width: 400,
+    height: 600,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged ? path.join(__dirname, 'preload.js') : path.join(__dirname, '../../.erb/dll/preload.js'),
