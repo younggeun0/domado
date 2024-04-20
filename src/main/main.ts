@@ -195,7 +195,7 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
           return isPageCreated(Name.title[0].text.content)
         })
         .map((page: any) => {
-          const titleTokens = page.Name.title[0].text.content.split(' ')
+          const titleTokens = page.properties.Name.title[0].text.content.split(' ')
           const value = Number(titleTokens[titleTokens.length - 1])
 
           return {
