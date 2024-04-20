@@ -66,8 +66,12 @@ function getNotionPage(date: Date, databaseId: string) {
   })
 }
 
-function isPageCreated(title: string) {
-  return title.startsWith(emoji) || title.startsWith('*')
+function getDomadoPage(pages: any) {
+  return pages.find(({ properties: { Name }, icon }: any) => {
+    if (!Name.title[0]) return false
+
+    return icon && icon.emoji === emoji && Name.title[0].text.content.startsWith('*')
+  })
 }
 
 async function setInitialTodayCount(notionPomodoroDatabaseId: string | null = null) {
@@ -78,26 +82,13 @@ async function setInitialTodayCount(notionPomodoroDatabaseId: string | null = nu
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
-  let name = 'name'
-  const { properties } = await notionClient.databases.retrieve({
-    database_id: databaseId,
-  })
-  if (!properties.name) {
-    name = 'Name'
-  }
-
   const res = await getNotionPage(today, databaseId)
   if (res && res.results.length > 0) {
-    const page = res.results.find((result: any) => {
-      if (!result.properties[name].title[0]) return false
-
-      return isPageCreated(result.properties[name].title[0].text.content)
-    })
+    const page = getDomadoPage(res.results)
 
     if (page) {
       // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 뽀모도로 횟수 count++
-      const previousTitle = (page as any).properties[name].title[0].text.content
+      const previousTitle = page.properties.Name.title[0].text.content
       const tokens = previousTitle.split(' ')
       const count = parseInt(tokens[tokens.length - 1], 10)
       store.set('TODAY_COUNT', count)
@@ -190,19 +181,15 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
     })
 
     if (results.length > 0) {
-      result = results
-        .filter(({ properties: { Name } }: any) => {
-          return isPageCreated(Name.title[0].text.content)
-        })
-        .map((page: any) => {
-          const titleTokens = page.properties.Name.title[0].text.content.split(' ')
-          const value = Number(titleTokens[titleTokens.length - 1])
+      result = getDomadoPage(results).map((page: any) => {
+        const titleTokens = page.properties.Name.title[0].text.content.split(' ')
+        const value = Number(titleTokens[titleTokens.length - 1])
 
-          return {
-            date: dayjs(page.created_time).format('YYYY-MM-DD'),
-            value,
-          }
-        })
+        return {
+          date: dayjs(page.created_time).format('YYYY-MM-DD'),
+          value,
+        }
+      })
     }
   } catch (error) {
     console.error(error)
@@ -227,11 +214,7 @@ ipcMain.on('log_task_memo', async (_event, { taskAndMemo, pomodoroTime }) => {
 
     const res = await getNotionPage(today, databaseId)
     if (res && res.results.length > 0) {
-      const page = res.results.find((result: any) => {
-        if (!result.properties.Name.title[0]) return false
-
-        return isPageCreated(result.properties.Name.title[0].text.content)
-      })
+      const page = getDomadoPage(res.results)
 
       if (page) {
         const blockId = page.id
@@ -327,11 +310,7 @@ ipcMain.on('post_pomodoro', async (_event, _message) => {
 
     const res = await getNotionPage(today, databaseId)
     if (res && res.results.length > 0) {
-      const page = res.results.find((result: any) => {
-        if (!result.properties.Name.title[0]) return false
-
-        return isPageCreated(result.properties.Name.title[0].text.content)
-      })
+      const page = getDomadoPage(res.results)
 
       if (page) {
         // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 뽀모도로 횟수 count++
