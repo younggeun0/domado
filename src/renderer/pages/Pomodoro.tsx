@@ -202,13 +202,6 @@ export default function Pomodoro() {
     }
   }, [remainingTime])
 
-  function getGuageClassByStatus() {
-    if (isRest) {
-      return 'rest'
-    }
-    return 'running'
-  }
-
   const minutes = Math.floor(remainingTime / 60)
   const seconds = remainingTime % 60
 
