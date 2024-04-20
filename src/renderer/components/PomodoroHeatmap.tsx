@@ -12,7 +12,6 @@ export default function Heatmap() {
   useEffect(() => {
     // TODO, 뽀모도로 완료 시 히트맵 갱신
     const logs = window.electron.ipcRenderer.sendSync('get_pomodoro_logs')
-    if (logs.length === 0) return
 
     // startdate, 1개월 전 1일을 기준으로 설정(range3 설정 시 기준 이전 이후 1개월간 데이터 표시)
     const now = new Date()
