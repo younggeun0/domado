@@ -26,7 +26,7 @@ export default function Pomodoro() {
   const [pomodoroTime, setPomodoroTime] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null })
 
   const {
-    electron: { ipcRenderer },
+    electron: { store: electronStore, ipcRenderer },
   } = window
 
   const [taskHistory, setTaskHistory] = React.useState<string[]>([])
@@ -157,17 +157,19 @@ export default function Pomodoro() {
       if (isRest) {
         ipcRenderer.sendMessage('rest_finished')
         setRemainingTime(durations.pomodoro)
+        setTodayInfo({
+          count: useSync ? electronStore.get('TODAY_COUNT') : todayInfo.count,
+        })
       } else {
         setPomodoroTime((prev) => ({
           start: prev.start,
           end: new Date(),
         }))
-        setTodayInfo({
-          date: todayInfo.date,
-          count: todayInfo.count + 1,
-        })
-        ipcRenderer.sendMessage('post_pomodoro')
+        ipcRenderer.sendSync('post_pomodoro')
         setRemainingTime(durations.rest)
+        setTodayInfo({
+          count: useSync ? electronStore.get('TODAY_COUNT') : todayInfo.count + 1,
+        })
       }
       setIsRest((prev) => !prev)
       setStatus('paused')
@@ -177,7 +179,18 @@ export default function Pomodoro() {
     return () => {
       clearInterval(countInterval.current)
     }
-  }, [status, todayInfo, setTodayInfo, ipcRenderer, isRest, durations.rest, durations.pomodoro, countInterval])
+  }, [
+    status,
+    todayInfo,
+    setTodayInfo,
+    ipcRenderer,
+    isRest,
+    durations.rest,
+    durations.pomodoro,
+    countInterval,
+    electronStore,
+    useSync,
+  ])
 
   function logTaskMemo() {
     const taskAndMemo = (document.getElementById('task_and_memo') as HTMLInputElement)!.value

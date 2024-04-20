@@ -10,7 +10,6 @@ export default function Heatmap() {
   const [useSync] = useAtom(useNotionSync)
 
   useEffect(() => {
-    // TODO, 뽀모도로 완료 시 히트맵 갱신
     const logs = window.electron.ipcRenderer.sendSync('get_pomodoro_logs')
 
     // startdate, 1개월 전 1일을 기준으로 설정(range3 설정 시 기준 이전 이후 1개월간 데이터 표시)
@@ -39,7 +38,6 @@ export default function Heatmap() {
           gutter: 4,
         },
         itemSelector: '#pomodoro-heatmap',
-        // theme: 'dark', // TODO, dark theme
         scale: {
           color: {
             type: 'threshold',
@@ -52,6 +50,7 @@ export default function Heatmap() {
         [
           Tooltip,
           {
+            // @ts-ignore
             // eslint-disable-next-line object-shorthand, func-names
             text: function (_date: number, value: string, dayjsDate: any) {
               if (!value) return `${dayjsDate.format('dddd, MMMM D, YYYY')}`

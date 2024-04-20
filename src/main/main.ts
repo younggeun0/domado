@@ -90,8 +90,7 @@ async function setInitialTodayCount(notionPomodoroDatabaseId: string | null = nu
       // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 뽀모도로 횟수 count++
       const previousTitle = page.properties.Name.title[0].text.content
       const tokens = previousTitle.split(' ')
-      const count = parseInt(tokens[tokens.length - 1], 10)
-      store.set('TODAY_COUNT', count)
+      store.set('TODAY_COUNT', parseInt(tokens[tokens.length - 1], 10))
       return
     }
   }
@@ -288,7 +287,7 @@ function createTrayIcon() {
   })
 }
 
-ipcMain.on('post_pomodoro', async (_event, _message) => {
+ipcMain.on('post_pomodoro', async (event, _message) => {
   // const msgTemplate = (pingPong: string) => `post_pomodoro test: ${pingPong}`;
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_post_pomodoro', msgTemplate('post_pomodoro pong'));
@@ -301,6 +300,7 @@ ipcMain.on('post_pomodoro', async (_event, _message) => {
       title: '🍅 뽀모도로 종료! 고생했어!',
       body: '조금만 쉬었다 해요 🥰',
     }).show()
+    event.returnValue = true
     return
   }
 
@@ -339,6 +339,7 @@ ipcMain.on('post_pomodoro', async (_event, _message) => {
           title: '🍅 뽀모도로 종료! 고생했어!',
           body: `오늘 ${newCount}번째 뽀모도로를 완료했어요! 🥰`,
         }).show()
+        event.returnValue = true
         return
       }
     }
@@ -389,6 +390,7 @@ ipcMain.on('post_pomodoro', async (_event, _message) => {
       body: `노션에 뽀모도로를 등록하지 못했어요 😭, ${e.message}`,
     }).show()
   }
+  event.returnValue = true
 })
 
 class AppUpdater {

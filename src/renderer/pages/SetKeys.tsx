@@ -8,7 +8,7 @@ import { todayPomodoroInfo, useNotionSync } from '../jotaiStore'
 export default function SetKeys() {
   const navigate = useNavigate()
   const [_useSync, setUseSync] = useAtom(useNotionSync)
-  const [todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
+  const [_todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
 
   const {
     electron: { store: electronStore, ipcRenderer },
@@ -42,12 +42,11 @@ export default function SetKeys() {
 
       setUseSync(true)
       setTodayInfo({
-        date: todayInfo.date,
         count: electronStore.get('TODAY_COUNT'),
       })
       navigate('/pomodoro')
     },
-    [setUseSync, setTodayInfo, todayInfo.date, electronStore, ipcRenderer, navigate],
+    [setUseSync, setTodayInfo, electronStore, ipcRenderer, navigate],
   )
 
   useEffect(() => {
@@ -114,7 +113,6 @@ export default function SetKeys() {
               onClick={() => {
                 setUseSync(false)
                 setTodayInfo({
-                  date: todayInfo.date,
                   count: 0,
                 })
                 navigate('/pomodoro')

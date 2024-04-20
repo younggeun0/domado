@@ -1,6 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAtom } from 'jotai'
-import dayjs from 'dayjs'
 import { todayPomodoroInfo, useNotionSync } from '../jotaiStore'
 
 export default function Footer() {
@@ -14,7 +13,6 @@ export default function Footer() {
       if (!window.confirm('노션 API KEY를 초기화하시겠습니까?')) return
 
       setTodayInfo({
-        date: dayjs().format('YYYY-MM-DD'),
         count: 0,
       })
     }
