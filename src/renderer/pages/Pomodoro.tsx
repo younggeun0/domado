@@ -98,7 +98,7 @@ export default function Pomodoro() {
   }, [animationRef, durations.pomodoro, durations.rest, isRest])
 
   useEffect(() => {
-    function handleAnimation() {
+    function toggleAnimation() {
       if (!animationRef.current) return
 
       if (status === 'running') {
@@ -149,10 +149,10 @@ export default function Pomodoro() {
         })
       }, 1000)
       countInterval.current = interval
-      handleAnimation()
+      toggleAnimation()
     } else if (status === 'paused') {
       clearInterval(countInterval.current)
-      handleAnimation()
+      toggleAnimation()
     } else if (status === 'finish') {
       if (isRest) {
         ipcRenderer.sendMessage('rest_finished')
