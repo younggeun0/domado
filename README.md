@@ -13,20 +13,15 @@
 ### 노션 연동 시
 1. [notion API KEY 발급](https://www.notion.so/my-integrations)
 2. notion DB 페이지 생성, 생성한 API 연결
-    <p align="center">
-        <img src="https://github.com/younggeun0/domado/assets/34850791/47edfe13-d85b-4358-b334-353b914c4190" width="300" />
-    </p>
-3. notion DB 페이지에 Created Time 프로퍼티 추가
-    <p align="center">
-        <img src="https://github.com/younggeun0/domado/assets/34850791/5cd6826b-5509-48e3-9b61-3b06157827b3" width="200" />
-    </p>
-4. 노션 뽀모도로 레코더 앱 실행 API KEY, DB ID를 입행
-5. 뽀모도로 앱 사용
+3. notion DB Created Time 프로퍼티 추가
+4. notion DB 페이지를 캘린더 형태로 변경, 표시기준 Created Time으로 설정
+4. domado 실행 API KEY, DB URL을 입력
+5. 앱 사용
 
 ### 뽀모도로 앱으로만 사용 시
-1. 노션 뽀모도로 레코더 앱 실행
-2. 우측 하단 '그냥 쓰기' 버튼 선택
-3. 뽀모도로 앱 사용
+1. domado 실행
+2. '그냥 쓰기' 버튼 선택
+3. 앱 사용
 
 <!-- ### 뽀모도로 단축키
 
