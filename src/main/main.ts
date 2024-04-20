@@ -9,13 +9,12 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path'
-import { app, BrowserWindow, shell, ipcMain, Notification, Tray, Menu, nativeImage, globalShortcut } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, Notification, Tray, nativeImage } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
 import { Client } from '@notionhq/client'
 import Store from 'electron-store'
 import dayjs from 'dayjs'
-import Timer from './Timer'
 import MenuBuilder from './menu'
 import { resolveHtmlPath } from './util'
 
@@ -110,10 +109,33 @@ async function setInitialTodayCount(notionPomodoroDatabaseId: string | null = nu
 }
 
 async function setNotionClient(apikey: string | null = null, notionPomodoroDatabaseId: string | null = null) {
-  const notionKey = apikey // || (store.get('NOTION_KEY') as string)
+  const notionKey = apikey || (store.get('NOTION_KEY') as string)
 
-  if (notionKey && notionKey.length > 0) {
+  if (notionKey && notionPomodoroDatabaseId && notionKey.length > 0) {
     notionClient = notionKey ? new Client({ auth: notionKey }) : null
+
+    if (notionClient) {
+      const { properties } = await notionClient!.databases.retrieve({
+        database_id: notionPomodoroDatabaseId as string,
+      })
+
+      // HACK, notion의 properties는 대소문자 구분하여 DB Properties 중 name이 소문자인경우 파스칼 케이스로 변경
+      if (properties.name && !properties.Name) {
+        try {
+          await notionClient!.databases.update({
+            properties: {
+              name: {
+                name: 'Name',
+              },
+            },
+            database_id: notionPomodoroDatabaseId,
+          })
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+
     try {
       await setInitialTodayCount(notionPomodoroDatabaseId)
       return true
@@ -167,17 +189,12 @@ ipcMain.on('get_pomodoro_logs', async (event) => {
     })
 
     if (results.length > 0) {
-      // TODO, when name is capitalized? why? need research
-      let name = 'name'
       result = results
-        .filter(({ properties }: any) => {
-          if (!properties[name]) {
-            name = 'Name'
-          }
-          return isPageCreated(properties[name].title[0].text.content)
+        .filter(({ properties: { Name } }: any) => {
+          return isPageCreated(Name.title[0].text.content)
         })
         .map((page: any) => {
-          const titleTokens = page.properties[name].title[0].text.content.split(' ')
+          const titleTokens = page.Name.title[0].text.content.split(' ')
           const value = Number(titleTokens[titleTokens.length - 1])
 
           return {
@@ -199,7 +216,7 @@ ipcMain.on('log_task_memo', async (_event, { taskAndMemo, pomodoroTime }) => {
   const databaseId: string | null = store.get('NOTION_POMODORO_DATABASE_ID') as string | null
   if (!notionClient || !databaseId) return
 
-const splited = taskAndMemo.split('\n')
+  const splited = taskAndMemo.split('\n')
   const task = splited[0]
   const memo = splited.slice(1).join('\n')
 
@@ -207,21 +224,12 @@ const splited = taskAndMemo.split('\n')
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
-    let name = 'name'
-    const { properties } = await notionClient.databases.retrieve({
-      database_id: databaseId,
-    })
-    if (!properties.name) {
-      name = 'Name'
-    }
-
     const res = await getNotionPage(today, databaseId)
     if (res && res.results.length > 0) {
       const page = res.results.find((result: any) => {
-        if (!result.properties[name].title[0]) return false
+        if (!result.properties.Name.title[0]) return false
 
-        return isPageCreated(result.properties[name].title[0].text.content)
+        return isPageCreated(result.properties.Name.title[0].text.content)
       })
 
       if (page) {
@@ -243,7 +251,7 @@ const splited = taskAndMemo.split('\n')
                 rich_text: [
                   {
                     text: {
-                      content: `${startTime}~${endTime} ${task}`,
+                      content: `${startTime}~${endTime} ${task} 🍅`,
                     },
                   },
                 ],
@@ -316,33 +324,24 @@ ipcMain.on('post_pomodoro', async (_event, _message) => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // HACK, notion의 properties는 대소문자 구분하여 체크 후 사용
-    let name = 'name'
-    const { properties } = await notionClient.databases.retrieve({
-      database_id: databaseId,
-    })
-    if (!properties.name) {
-      name = 'Name'
-    }
-
     const res = await getNotionPage(today, databaseId)
     if (res && res.results.length > 0) {
       const page = res.results.find((result: any) => {
-        if (!result.properties[name].title[0]) return false
+        if (!result.properties.Name.title[0]) return false
 
-        return isPageCreated(result.properties[name].title[0].text.content)
+        return isPageCreated(result.properties.Name.title[0].text.content)
       })
 
       if (page) {
         // 이미 등록된 오늘자 포모도로 페이지가 있으면 기존 페이지에 뽀모도로 횟수 count++
-        const previousTitle = (page as any).properties[name].title[0].text.content
+        const previousTitle = (page as any).properties.Name.title[0].text.content
         const tokens = previousTitle.split(' ')
         const count = parseInt(tokens[tokens.length - 1], 10)
         const newCount = count + 1
         await notionClient.pages.update({
           page_id: page.id as string,
           properties: {
-            [name]: {
+            Name: {
               title: [
                 {
                   text: {
@@ -376,7 +375,7 @@ ipcMain.on('post_pomodoro', async (_event, _message) => {
         emoji,
       },
       properties: {
-        [name]: {
+        Name: {
           title: [
             {
               text: {

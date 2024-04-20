@@ -21,7 +21,6 @@ export default function SetKeys() {
 
   const setNotionKeys = useCallback(
     (notionAPIKey: string, notionDatabaseId: string) => {
-      // TODO, validate inputs
       if (!notionAPIKey.trim() || !notionDatabaseId.trim()) {
         alert('노션 API키와 페이지를 기록할 노션 DB ID를 입력해주세요.')
         return
@@ -103,7 +102,7 @@ export default function SetKeys() {
             <input
               id="notion_pomodoro_database_id"
               name="notion_pomodoro_database_id"
-              placeholder="노션 DB ID"
+              placeholder="노션 DB URL"
               required
               className="text-sm block w-full rounded-md border-0 p-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
             />
