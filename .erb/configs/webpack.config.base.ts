@@ -57,7 +57,7 @@ const configuration: webpack.Configuration = {
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
       NOTION_POMODORO_DATABASE_ID: process.env.NOTION_POMODORO_DATABASE_ID || null,
-      NOTION_KEY: process.env.NOTION_KEY || null,
+      NOTION_API_KEY: process.env.NOTION_API_KEY || null,
     }),
   ],
 }

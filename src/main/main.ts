@@ -41,7 +41,7 @@ ipcMain.on('electron-store-set', async (_event, key, val) => {
 let notionClient: Client | null = null
 
 function resetNotionKeys() {
-  store.set('NOTION_KEY', null)
+  store.set('NOTION_API_KEY', null)
   store.set('NOTION_POMODORO_DATABASE_ID', null)
   notionClient = null
 }
@@ -99,7 +99,7 @@ async function setInitialTodayCount(notionPomodoroDatabaseId: string | null = nu
 }
 
 async function setNotionClient(apikey: string | null = null, notionPomodoroDatabaseId: string | null = null) {
-  const notionKey = apikey || (store.get('NOTION_KEY') as string)
+  const notionKey = apikey || (store.get('NOTION_API_KEY') as string)
 
   if (notionKey && notionPomodoroDatabaseId && notionKey.length > 0) {
     notionClient = notionKey ? new Client({ auth: notionKey }) : null
@@ -134,7 +134,7 @@ async function setNotionClient(apikey: string | null = null, notionPomodoroDatab
 }
 
 ipcMain.on('set_notion_keys', async (event, notionKey, notionPomodoroDatabaseId) => {
-  store.set('NOTION_KEY', notionKey)
+  store.set('NOTION_API_KEY', notionKey)
   store.set('NOTION_POMODORO_DATABASE_ID', notionPomodoroDatabaseId)
 
   try {
