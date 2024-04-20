@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-param-reassign */
 import { Switch } from '@headlessui/react'
 import { useAtom } from 'jotai'
@@ -79,11 +80,9 @@ export default function SetKeys() {
           e.preventDefault()
 
           const formData = new FormData(e.currentTarget)
-          const data = Object.fromEntries(formData)
+          const { notion_api_key, notion_pomodoro_database_id } = Object.fromEntries(formData)
 
-          let notionAPIKey = data.notion_api_key
-          let notionDatabaseId = data.notion_pomodoro_database_id
-          setNotionKeys(notionAPIKey, notionDatabaseId)
+          setNotionKeys(notion_api_key as string, notion_pomodoro_database_id as string)
         }}
       >
         <div className="flex flex-col">

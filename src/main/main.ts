@@ -136,13 +136,8 @@ async function setNotionClient(apikey: string | null = null, notionPomodoroDatab
       }
     }
 
-    try {
-      await setInitialTodayCount(notionPomodoroDatabaseId)
-      return true
-    } catch (e) {
-      console.error(e)
-      resetNotionKeys()
-    }
+    await setInitialTodayCount(notionPomodoroDatabaseId)
+    return true
   }
 
   return false
@@ -152,8 +147,14 @@ ipcMain.on('set_notion_keys', async (event, notionKey, notionPomodoroDatabaseId)
   store.set('NOTION_KEY', notionKey)
   store.set('NOTION_POMODORO_DATABASE_ID', notionPomodoroDatabaseId)
 
-  const res = await setNotionClient(notionKey, notionPomodoroDatabaseId)
-  event.returnValue = res
+  try {
+    const res = await setNotionClient(notionKey, notionPomodoroDatabaseId)
+    event.returnValue = res
+  } catch (e) {
+    console.error(e)
+    resetNotionKeys()
+    event.returnValue = false
+  }
 })
 
 ipcMain.on('reset_notion_keys', async () => {
@@ -447,7 +448,12 @@ const createWindow = async () => {
     await installExtensions()
   }
 
-  await setNotionClient()
+  try {
+    await setNotionClient()
+  } catch (e) {
+    console.error(e)
+    resetNotionKeys()
+  }
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
