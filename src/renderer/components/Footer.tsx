@@ -21,7 +21,6 @@ export default function Footer() {
     setUseSync(null)
     navigate('/set_keys')
     window.electron.ipcRenderer.sendMessage('reset_notion_keys')
-    localStorage.clear()
   }
 
   const isPomodoroPage = location.pathname === '/pomodoro'

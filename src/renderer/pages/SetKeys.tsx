@@ -39,8 +39,6 @@ export default function SetKeys() {
           return
         }
       }
-      localStorage.setItem('NOTION_API_KEY', notionAPIKey)
-      localStorage.setItem('NOTION_POMODORO_DATABASE_ID', notionDatabaseId)
 
       setUseSync(true)
       setTodayInfo({
@@ -53,13 +51,13 @@ export default function SetKeys() {
   )
 
   useEffect(() => {
-    const notionAPIKey = localStorage.getItem('NOTION_API_KEY') as string
-    const notionDatabaseId = localStorage.getItem('NOTION_POMODORO_DATABASE_ID') as string
+    const notionAPIKey = (electronStore.get('NOTION_API_KEY') as string) || ''
+    const notionDatabaseId = (electronStore.get('NOTION_POMODORO_DATABASE_ID') as string) || ''
 
-    if (!notionAPIKey && !notionDatabaseId) return
+    if (notionAPIKey === '' && notionDatabaseId === '') return
 
     setNotionKeys(notionAPIKey, notionDatabaseId)
-  }, [setNotionKeys])
+  }, [electronStore, setNotionKeys])
 
   return (
     <div className="w-full p-5 sm:p-10">
