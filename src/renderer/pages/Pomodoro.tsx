@@ -208,7 +208,7 @@ export default function Pomodoro() {
   return (
     <>
       <div className="relative mt-5">
-        <div className="absolute text-sm top-1 right-2" style={{ zIndex: 10 }}>
+        <div className="absolute text-sm top-1 right-2 text-white/70" style={{ zIndex: 10 }}>
           {`${minutes}:${getStrTowDigitFormat(seconds)}`}
         </div>
         <div className="mb-3">
