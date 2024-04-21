@@ -2,11 +2,7 @@
 
 노션 페이지에 뽀모도로를 기록하기 위한 용도의 일렉트론 앱
 
-<!-- <p align="center">
-  <img src="https://github.com/younggeun0/domado/assets/34850791/bc688c09-a3b4-49b6-972f-ab4f7342fcc5" width="300" />
-  <br />
-  <img src="https://github.com/younggeun0/domado/assets/34850791/757511b0-8712-4d1b-82ab-eaee82f4e342" width="500" />
-</p> -->
+[![demo](https://img.youtube.com/vi/cJozoWq4d74/0.jpg)](https://www.youtube.com/watch?v=cJozoWq4d74)
 
 ## 사용 방법
 
