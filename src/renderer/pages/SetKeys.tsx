@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable camelcase */
 /* eslint-disable no-param-reassign */
 import { useAtom } from 'jotai'
@@ -44,7 +45,11 @@ export default function SetKeys() {
       setTodayInfo({
         count: electronStore.get('TODAY_COUNT'),
       })
-      navigate('/pomodoro')
+      const timeout = setTimeout(navigate, 0, '/pomodoro', { replace: true })
+
+      return () => {
+        clearTimeout(timeout)
+      }
     },
     [setUseSync, setTodayInfo, electronStore, ipcRenderer, navigate],
   )
