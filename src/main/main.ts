@@ -459,6 +459,7 @@ const createWindow = async () => {
   })
 
   mainWindow.loadURL(resolveHtmlPath('index.html'))
+  mainWindow.webContents.setBackgroundThrottling(false)
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
