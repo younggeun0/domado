@@ -221,16 +221,17 @@ export default function Pomodoro() {
   return (
     <>
       <div className="relative mt-5">
-        <div className="absolute text-sm top-1 right-2 text-white/70" style={{ zIndex: 10 }}>
+        <div className="absolute text-sm left-1 bottom-4 text-white/70" style={{ zIndex: 10 }}>
           {`${minutes}:${getStrTowDigitFormat(seconds)}`}
         </div>
         <div className="mb-3">
           <div className="relative w-80">
             <textarea
               id="task_and_memo"
-              rows={18}
+              rows={22}
               className="text-sm block w-full bg-gray-800/50 text-white rounded-md border-0 p-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               placeholder="🍅 사용가이드&#13;&#13;자유롭게 뽀모도로 내용을 메모해보세요.&#13;(🔥 작업내용, 🤺 내/외부 방해 요인 등)&#13;&#13;☁️ 노션 동기화 사용 시&#13;뽀모도로 완료 후 우측 하단에 표시되는 💾을 눌러&#13;메모 내용을 저장할 수 있습니다.&#13;&#13;🎯 첫 줄은 소제목으로 기록됩니다.&#13;📝 소제목 다음줄부터 입력된 내용들은 소제목 밑에 기록됩니다."
+              style={{ resize: 'none' }}
             />
             {useSync && pomodoroTime.end && (
               <button
@@ -244,16 +245,16 @@ export default function Pomodoro() {
             )}
           </div>
         </div>
+      </div>
 
-        <div>
-          <button
-            type="button"
-            className="flex w-full justify-center rounded-md bg-transparent p-10 text-sm font-semibold leading-6 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-            onClick={togglePlay}
-          >
-            {status === 'paused' ? '▶️' : '⏸️'}
-          </button>
-        </div>
+      <div className="w-screen">
+        <button
+          type="button"
+          className="flex w-full justify-center rounded-md bg-transparent p-10 text-sm font-semibold leading-6 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          onClick={togglePlay}
+        >
+          {status === 'paused' ? '▶️' : '⏸️'}
+        </button>
 
         {/* <div className={`flex justify-center items-center ${!status.endsWith('_start') ? 'invisible' : 'visible'}`}>
           <button
