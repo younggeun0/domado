@@ -1,6 +1,6 @@
 module.exports = {
   extends: 'erb',
-  plugins: ['@typescript-eslint', '@eslint-plugin-vitest'],
+  plugins: ['@typescript-eslint'],
   rules: {
     semi: [2, 'never'],
     'prettier/prettier': ['error', { semi: false, printWidth: 120 }],
@@ -19,7 +19,6 @@ module.exports = {
     '@typescript-eslint/no-shadow': 'error',
     'no-unused-vars': 'warn',
     '@typescript-eslint/no-unused-vars': 'off',
-    'vitest/expect-expect": "off',
     'react/prop-types': 'off',
   },
   parserOptions: {

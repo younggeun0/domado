@@ -1,12 +1,12 @@
 import { Outlet, useNavigate } from 'react-router-dom'
-import Footer from '../components/Footer'
 import { useEffect } from 'react'
+import Footer from '../components/Footer'
 
 export default function Layout() {
   const navigate = useNavigate()
-  
+
   useEffect(() => {
-    navigate('/pomodoro')    
+    navigate('/pomodoro')
   }, [])
 
   return (

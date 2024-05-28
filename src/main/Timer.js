@@ -23,7 +23,7 @@ class Timer {
     this.secondsLeft = this.secondsToGo
     this.updateView()
 
-    let startTime = Date.now()
+    const startTime = Date.now()
     this.intervalId = setInterval(() => {
       const spent = Math.round((Date.now() - startTime) / 1000) // seconds
       this.secondsLeft = this.secondsToGo - spent

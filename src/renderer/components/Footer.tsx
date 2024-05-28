@@ -15,7 +15,7 @@ export default function Footer() {
         </span>
       </div>
       <div className="flex justify-between items-center">
-        { location.pathname !== '/pomodoro' && (
+        {location.pathname !== '/pomodoro' && (
           <button
             type="button"
             title="타이머로 이동"
