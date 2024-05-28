@@ -1,39 +1,21 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAtom } from 'jotai'
-import { todayPomodoroInfo, useNotionSync } from '../jotaiStore'
+import { todayPomodoroInfo } from '../jotaiStore'
 
 export default function Footer() {
   const navigate = useNavigate()
   const location = useLocation()
   const [todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
-  const [useSync, setUseSync] = useAtom(useNotionSync)
-
-  function resetKeys() {
-    if (useSync) {
-      if (!window.confirm('노션 API KEY를 초기화하시겠습니까?')) return
-
-      setTodayInfo({
-        count: 0,
-      })
-    }
-    setUseSync(null)
-    navigate('/set_keys')
-    window.electron.ipcRenderer.sendMessage('reset_notion_keys')
-  }
-
-  const isPomodoroPage = location.pathname === '/pomodoro'
 
   return (
     <div className="p-3 w-full flex justify-between items-center">
       <div>
-        {useSync !== null && (
-          <span title="오늘의 기록" className={isPomodoroPage ? 'text-white' : ''}>
-            🍅 : {todayInfo.count}
-          </span>
-        )}
+        <span title="오늘의 기록" className="text-white">
+          🍅 : {todayInfo.count}
+        </span>
       </div>
       <div className="flex justify-between items-center">
-        {useSync && location.pathname !== '/pomodoro' && (
+        { location.pathname !== '/pomodoro' && (
           <button
             type="button"
             title="타이머로 이동"
@@ -46,27 +28,8 @@ export default function Footer() {
           </button>
         )}
 
-        {useSync && isPomodoroPage && (
-          <button
-            type="button"
-            title="통계"
-            className="me-2"
-            onClick={() => {
-              navigate('/statistic')
-            }}
-          >
-            📊
-          </button>
-        )}
-
-        {useSync !== null && (
-          <button type="button" title="노션 키 재설정" className="me-2" onClick={() => resetKeys()}>
-            ⚙️
-          </button>
-        )}
-
         <button type="button" title="README" onClick={() => window.open('https://github.com/younggeun0/domado')}>
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6" fill={isPomodoroPage ? 'white' : ''}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6" fill="white">
             <path
               fillRule="evenodd"
               clipRule="evenodd"

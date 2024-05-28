@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 import React, { useEffect, useRef, useState } from 'react'
 import { useAtom } from 'jotai'
-import { todayPomodoroInfo, useMemoSync, useNotionSync } from '../jotaiStore'
+import { todayPomodoroInfo } from '../jotaiStore'
 
 const { isDebug } = window.electron || { isDebug: false }
 
@@ -20,16 +20,12 @@ const TIME_INFO = isDebug
 const getStrTowDigitFormat = (num: number) => (num < 10 ? `0${num}` : num)
 
 export default function Pomodoro() {
-  const [useSync] = useAtom(useNotionSync)
-  const [syncMemo] = useAtom(useMemoSync)
   const [todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
   const [pomodoroTime, setPomodoroTime] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null })
 
   const {
     electron: { store: electronStore, ipcRenderer },
   } = window
-
-  const [taskHistory, setTaskHistory] = React.useState<string[]>([])
 
   // TODO 구현 - restart, 휴식시간 스킵 기능, 시간 조절(필수는 아닐듯)
   const [status, setStatus] = useState<'restart' | 'running' | 'finish' | 'paused'>('paused')
@@ -41,7 +37,6 @@ export default function Pomodoro() {
   const [remainingTime, setRemainingTime] = useState(durations.pomodoro)
   const countInterval = useRef<any>(null)
   const animationRef = useRef<Animation | null>(null)
-  const showTaskMemo = useSync && syncMemo && pomodoroTime.start
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   // function addMin(min: number) {
@@ -56,30 +51,6 @@ export default function Pomodoro() {
   //     ...(isRest ? { rest: newDuration } : { pomodoro: newDuration }),
   //   })
   // }
-
-  useEffect(() => {
-    if (!showTaskMemo) return
-
-    const focusInput = document.getElementById('task') as HTMLInputElement
-
-    // eslint-disable-next-line no-inner-declarations
-    function keydownHandler(e: KeyboardEvent) {
-      switch (e.key) {
-        case 'ArrowUp':
-          focusInput.value = taskHistory[taskHistory.length - 1] ?? ''
-          setTaskHistory(taskHistory.slice(0, taskHistory.length - 1))
-          break
-        default:
-          break
-      }
-    }
-
-    focusInput?.addEventListener('keydown', keydownHandler)
-
-    return () => {
-      focusInput?.removeEventListener('keydown', keydownHandler)
-    }
-  }, [taskHistory, showTaskMemo])
 
   useEffect(() => {
     const bgTimer = document.getElementById('bg-timer')
@@ -158,7 +129,7 @@ export default function Pomodoro() {
         ipcRenderer.sendMessage('rest_finished')
         setRemainingTime(durations.pomodoro)
         setTodayInfo({
-          count: useSync ? electronStore.get('TODAY_COUNT') : todayInfo.count,
+          count: todayInfo.count,
         })
       } else {
         setPomodoroTime((prev) => ({
@@ -168,7 +139,7 @@ export default function Pomodoro() {
         ipcRenderer.sendSync('post_pomodoro')
         setRemainingTime(durations.rest)
         setTodayInfo({
-          count: useSync ? electronStore.get('TODAY_COUNT') : todayInfo.count + 1,
+          count: todayInfo.count + 1,
         })
       }
       setIsRest((prev) => !prev)
@@ -189,17 +160,9 @@ export default function Pomodoro() {
     durations.pomodoro,
     countInterval,
     electronStore,
-    useSync,
   ])
 
   function logTaskMemo() {
-    const taskAndMemo = (document.getElementById('task_and_memo') as HTMLInputElement)!.value
-
-    ipcRenderer.sendMessage('log_task_memo', {
-      taskAndMemo,
-      pomodoroTime,
-    })
-    setTaskHistory([...taskHistory, taskAndMemo])
     setPomodoroTime({ start: null, end: null })
   }
 
@@ -220,41 +183,18 @@ export default function Pomodoro() {
 
   return (
     <>
-      <div className="relative mt-5">
-        <div className="absolute text-sm left-1 bottom-4 text-white/70" style={{ zIndex: 10 }}>
-          {`${minutes}:${getStrTowDigitFormat(seconds)}`}
-        </div>
-        <div className="mb-3">
-          <div className="relative w-80">
-            <textarea
-              id="task_and_memo"
-              rows={22}
-              className="text-sm block w-full bg-gray-800/50 text-white rounded-md border-0 p-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              placeholder="🍅 사용가이드&#13;&#13;자유롭게 뽀모도로 내용을 메모해보세요.&#13;(🔥 작업내용, 🤺 내/외부 방해 요인 등)&#13;&#13;☁️ 노션 동기화 사용 시&#13;뽀모도로 완료 후 우측 하단에 표시되는 💾을 눌러&#13;메모 내용을 저장할 수 있습니다.&#13;&#13;🎯 첫 줄은 소제목으로 기록됩니다.&#13;📝 소제목 다음줄부터 입력된 내용들은 소제목 밑에 기록됩니다."
-              style={{ resize: 'none' }}
-            />
-            {useSync && pomodoroTime.end && (
-              <button
-                type="button"
-                title="저장"
-                className="absolute rounded-full bottom-2 right-2 bg-transparent px-2.5 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
-                onClick={logTaskMemo}
-              >
-                💾
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="w-screen">
+      <div className="w-screen h-full flex flex-col justify-center items-center">
         <button
           type="button"
-          className="flex w-full justify-center rounded-md bg-transparent p-10 text-sm font-semibold leading-6 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="flex w-full h-100 justify-center rounded-md bg-transparent p-10 text-8xl leading-8 text-white"
           onClick={togglePlay}
         >
-          {status === 'paused' ? '▶️' : '⏸️'}
+          {status === 'paused' ? isRest ? '☕️' : '️🔥' : '⏸️'}
         </button>
+
+        <div className=" text-sm bottom-4 text-white/70" style={{ zIndex: 10 }}>
+          {`${minutes}:${getStrTowDigitFormat(seconds)}`}
+        </div>
 
         {/* <div className={`flex justify-center items-center ${!status.endsWith('_start') ? 'invisible' : 'visible'}`}>
           <button

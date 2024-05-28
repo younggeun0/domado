@@ -1,16 +1,13 @@
-import { useAtom } from 'jotai'
-import { useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
-import { useNotionSync } from '../jotaiStore'
 import Footer from '../components/Footer'
+import { useEffect } from 'react'
 
 export default function Layout() {
   const navigate = useNavigate()
-  const [useSync] = useAtom(useNotionSync)
-
+  
   useEffect(() => {
-    if (useSync === null) navigate('/set_keys')
-  }, [navigate, useSync])
+    navigate('/pomodoro')    
+  }, [])
 
   return (
     <div className="relative w-screen h-screen flex flex-col overflow-auto text-gray-600">
