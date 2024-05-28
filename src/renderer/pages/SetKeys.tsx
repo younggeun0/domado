@@ -11,10 +11,6 @@ export default function SetKeys() {
   const [_useSync, setUseSync] = useAtom(useNotionSync)
   const [_todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
 
-  const {
-    electron: { store: electronStore, ipcRenderer },
-  } = window
-
   const setNotionKeys = useCallback(
     (notionAPIKey: string, notionDatabaseId: string) => {
       if (!notionAPIKey.trim() || !notionDatabaseId.trim()) {
@@ -34,7 +30,7 @@ export default function SetKeys() {
       }
 
       if (notionAPIKey && notionDatabaseId) {
-        if (!ipcRenderer.sendSync('set_notion_keys', notionAPIKey, notionDatabaseId)) {
+        if (!window.electron?.ipcRenderer.sendSync('set_notion_keys', notionAPIKey, notionDatabaseId)) {
           alert('노션 API KEY 또는 DB ID가 잘못 입력됐습니다. 다시 설정해주세요.')
           document.getElementById('notion_api_key')?.focus()
           return
@@ -43,7 +39,7 @@ export default function SetKeys() {
 
       setUseSync(true)
       setTodayInfo({
-        count: electronStore.get('TODAY_COUNT'),
+        count: window.electron?.store.get('TODAY_COUNT'),
       })
       const timeout = setTimeout(navigate, 0, '/pomodoro', { replace: true })
 
@@ -51,17 +47,17 @@ export default function SetKeys() {
         clearTimeout(timeout)
       }
     },
-    [setUseSync, setTodayInfo, electronStore, ipcRenderer, navigate],
+    [setUseSync, setTodayInfo, navigate],
   )
 
   useEffect(() => {
-    const notionAPIKey = (electronStore.get('NOTION_API_KEY') as string) || ''
-    const notionDatabaseId = (electronStore.get('NOTION_POMODORO_DATABASE_ID') as string) || ''
+    const notionAPIKey = (window.electron?.store.get('NOTION_API_KEY') as string) || ''
+    const notionDatabaseId = (window.electron?.store.get('NOTION_POMODORO_DATABASE_ID') as string) || ''
 
     if (notionAPIKey === '' && notionDatabaseId === '') return
 
     setNotionKeys(notionAPIKey, notionDatabaseId)
-  }, [electronStore, setNotionKeys])
+  }, [setNotionKeys])
 
   return (
     <div className="w-full p-5 sm:p-10">

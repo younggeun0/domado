@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useAtom } from 'jotai'
 import { todayPomodoroInfo, useMemoSync, useNotionSync } from '../jotaiStore'
 
-const { isDebug } = window.electron
+const { isDebug } = window.electron || { isDebug: false }
 
 const TIME_INFO = isDebug
   ? {

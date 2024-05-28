@@ -1,6 +1,6 @@
 module.exports = {
   extends: 'erb',
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', '@eslint-plugin-vitest'],
   rules: {
     semi: [2, 'never'],
     'prettier/prettier': ['error', { semi: false, printWidth: 120 }],
@@ -17,8 +17,10 @@ module.exports = {
     'import/no-import-module-exports': 'off',
     'no-shadow': 'off',
     '@typescript-eslint/no-shadow': 'error',
-    'no-unused-vars': 'off',
+    'no-unused-vars': 'warn',
     '@typescript-eslint/no-unused-vars': 'off',
+    'vitest/expect-expect": "off',
+    'react/prop-types': 'off',
   },
   parserOptions: {
     ecmaVersion: 2022,
