@@ -2,12 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
-export type Channels =
-  | 'pomodoro_finished'
-  | 'rest_finished'
-  | 'electron-store-get'
-  | 'electron-store-set'
-  | 'update_tray'
+export type Channels = 'pomodoro_finished' | 'rest_finished' | 'update_tray'
 
 const electronHandler = {
   ipcRenderer: {
@@ -30,14 +25,6 @@ const electronHandler = {
     },
   },
   isDebug: process.env.NODE_ENV === 'development',
-  store: {
-    get(key: string) {
-      return ipcRenderer.sendSync('electron-store-get', key)
-    },
-    set(property: string, val: any) {
-      ipcRenderer.send('electron-store-set', property, val)
-    },
-  },
 }
 
 contextBridge.exposeInMainWorld('electron', electronHandler)
