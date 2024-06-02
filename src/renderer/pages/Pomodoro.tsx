@@ -1,11 +1,10 @@
 /* eslint-disable consistent-return */
 import { useEffect, useRef, useState } from 'react'
-import { useAtom } from 'jotai'
-import { todayPomodoroInfo } from '../jotaiStore'
 import { formatRemainingTime, getTimeInfo, updateTray } from '../components/pomodoro'
+import Footer from '../components/Footer'
 
 export default function Pomodoro() {
-  const [todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
+  const [todayInfo, setTodayInfo] = useState({ count: 0 })
 
   // TODO 구현 - restart, 휴식시간 스킵 기능, 시간 조절(필수는 아닐듯)
   const [status, setStatus] = useState<'restart' | 'running' | 'finish' | 'paused'>('paused')
@@ -84,7 +83,7 @@ export default function Pomodoro() {
           count: todayInfo.count,
         })
       } else {
-        window.electron?.ipcRenderer.sendSync('post_pomodoro')
+        window.electron?.ipcRenderer.sendSync('pomodoro_finished')
         setRemainingTime(durations.rest)
         setTodayInfo({
           count: todayInfo.count + 1,
@@ -98,7 +97,7 @@ export default function Pomodoro() {
     return () => {
       clearInterval(countInterval.current)
     }
-  }, [status, todayInfo, setTodayInfo, isRest, durations.rest, durations.pomodoro, countInterval])
+  }, [status, todayInfo, setTodayInfo, isRest, durations.rest, durations.pomodoro, countInterval, durations])
 
   function togglePlay() {
     setStatus((prev) => {
@@ -112,22 +111,25 @@ export default function Pomodoro() {
     }
   }, [remainingTime])
 
+  const playEmoji = isRest ? '☕️' : '️🔥'
+
   return (
-    <>
-      <div className="w-screen h-full flex flex-col justify-center items-center">
-        <button
-          type="button"
-          className="flex w-full h-100 justify-center rounded-md bg-transparent p-10 text-8xl leading-8 text-white"
-          onClick={togglePlay}
-        >
-          {status === 'paused' ? (isRest ? '☕️' : '️🔥') : '⏸️'}
-        </button>
+    <div className="relative w-screen h-screen flex flex-col overflow-auto text-gray-600">
+      <div className="p-3 flex flex-1 flex-col items-center justify-center">
+        <div className="w-screen h-full flex flex-col justify-center items-center">
+          <button
+            type="button"
+            className="flex w-full h-100 justify-center rounded-md bg-transparent p-10 text-8xl leading-8 text-white"
+            onClick={togglePlay}
+          >
+            {status === 'paused' ? playEmoji : '⏸️'}
+          </button>
 
-        <div className=" text-sm bottom-4 text-white/70" style={{ zIndex: 10 }}>
-          {formatRemainingTime(remainingTime)}
-        </div>
+          <div className=" text-sm bottom-4 text-white/70" style={{ zIndex: 10 }}>
+            {formatRemainingTime(remainingTime)}
+          </div>
 
-        {/* <div className={`flex justify-center items-center ${!status.endsWith('_start') ? 'invisible' : 'visible'}`}>
+          {/* <div className={`flex justify-center items-center ${!status.endsWith('_start') ? 'invisible' : 'visible'}`}>
           <button
             type="button"
             className="flex w-full justify-center rounded-md bg-neutral-700 px-1 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-700"
@@ -152,24 +154,26 @@ export default function Pomodoro() {
             -5 min
           </button>
         </div> */}
-      </div>
+        </div>
 
-      <div
-        id="bg-timer"
-        className="absolute bottom-0 w-full"
-        style={{
-          zIndex: '-1',
-          background: isRest
-            ? 'linear-gradient(to top, rgb(137, 248, 109), #6bf748, #6bf748, #41e418)'
-            : 'linear-gradient(to bottom, #fa3508, #fa5029, #fa5029, #fa5029, #fa5029)',
-        }}
-      />
-      <div
-        className="absolute bg-gray-800 bottom-0 w-full h-full"
-        style={{
-          zIndex: '-2',
-        }}
-      />
-    </>
+        <div
+          id="bg-timer"
+          className="absolute bottom-0 w-full"
+          style={{
+            zIndex: '-1',
+            background: isRest
+              ? 'linear-gradient(to top, rgb(137, 248, 109), #6bf748, #6bf748, #41e418)'
+              : 'linear-gradient(to bottom, #fa3508, #fa5029, #fa5029, #fa5029, #fa5029)',
+          }}
+        />
+        <div
+          className="absolute bg-gray-800 bottom-0 w-full h-full"
+          style={{
+            zIndex: '-2',
+          }}
+        />
+      </div>
+      <Footer todayInfo={todayInfo} />
+    </div>
   )
 }

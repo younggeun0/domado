@@ -1,11 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAtom } from 'jotai'
-import { todayPomodoroInfo } from '../jotaiStore'
 
-export default function Footer() {
+export default function Footer({ todayInfo }: { todayInfo: { count: number } }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const [todayInfo, setTodayInfo] = useAtom(todayPomodoroInfo)
 
   return (
     <div className="p-3 w-full flex justify-between items-center">

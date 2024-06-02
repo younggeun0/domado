@@ -3,14 +3,10 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
 export type Channels =
-  | 'post_pomodoro'
+  | 'pomodoro_finished'
   | 'rest_finished'
-  | 'set_notion_keys'
-  | 'reset_notion_keys'
   | 'electron-store-get'
   | 'electron-store-set'
-  | 'get_pomodoro_logs'
-  | 'log_task_memo'
   | 'update_tray'
 
 const electronHandler = {
