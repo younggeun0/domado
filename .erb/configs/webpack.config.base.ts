@@ -4,12 +4,8 @@
 
 import webpack from 'webpack'
 import TsconfigPathsPlugins from 'tsconfig-paths-webpack-plugin'
-import dotenv from 'dotenv'
 import webpackPaths from './webpack.paths'
 import { dependencies as externals } from '../../release/app/package.json'
-
-// When building for production, we want to load the .env file for setting default notion keys
-dotenv.config()
 
 const configuration: webpack.Configuration = {
   externals: [...Object.keys(externals || {})],
@@ -56,8 +52,6 @@ const configuration: webpack.Configuration = {
   plugins: [
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
-      NOTION_POMODORO_DATABASE_ID: process.env.NOTION_POMODORO_DATABASE_ID || null,
-      NOTION_API_KEY: process.env.NOTION_API_KEY || null,
     }),
   ],
 }
