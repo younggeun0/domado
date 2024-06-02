@@ -1,9 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom'
-
 export default function Footer({ todayInfo }: { todayInfo: { count: number } }) {
-  const navigate = useNavigate()
-  const location = useLocation()
-
   return (
     <div className="p-3 w-full flex justify-between items-center">
       <div>
@@ -12,19 +7,6 @@ export default function Footer({ todayInfo }: { todayInfo: { count: number } }) 
         </span>
       </div>
       <div className="flex justify-between items-center">
-        {location.pathname !== '/pomodoro' && (
-          <button
-            type="button"
-            title="타이머로 이동"
-            className="me-2"
-            onClick={() => {
-              navigate('/pomodoro')
-            }}
-          >
-            🔥
-          </button>
-        )}
-
         <button type="button" title="README" onClick={() => window.open('https://github.com/younggeun0/domado')}>
           <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6" fill="white">
             <path
