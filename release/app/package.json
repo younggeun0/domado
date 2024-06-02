@@ -1,7 +1,7 @@
 {
   "name": "domado",
   "version": "1.0.0",
-  "description": "pomodoro app logging to notion",
+  "description": "pomodoro app",
   "license": "MIT",
   "author": {
     "name": "Young",
