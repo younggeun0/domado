@@ -2,7 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
-export type Channels = 'pomodoro_finished' | 'rest_finished' | 'update_tray'
+export type Channels = 'start_pomodoro' | 'pomodoro_finished' | 'rest_finished' | 'update_tray'
 
 const electronHandler = {
   ipcRenderer: {

@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path'
-import { app, BrowserWindow, shell, ipcMain, Notification, Tray, nativeImage } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, Notification, Tray, nativeImage, globalShortcut, Menu } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
 import MenuBuilder from './menu'
@@ -40,12 +40,22 @@ ipcMain.on('update_tray', async (_event, imageUrl) => {
   tray.setImage(imageUrl ? nativeImage.createFromDataURL(imageUrl) : getDefaultTrayIcon())
 })
 
-function createTrayIcon() {
+function createTray() {
   tray = new Tray(getDefaultTrayIcon())
+
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Reload', type: 'normal', click: () => mainWindow?.reload() },
+    {
+      label: 'Quit',
+      click: () => {
+        app.quit()
+      },
+    },
+  ])
+
+  tray.setContextMenu(contextMenu)
   tray.on('click', () => {
-    if (mainWindow) {
-      mainWindow.show()
-    }
+    mainWindow?.show()
   })
 }
 
@@ -88,10 +98,12 @@ const installExtensions = async () => {
     .catch(console.log)
 }
 
-// function registerShortcuts() {
-//   globalShortcut.register('Super+Y', () => mainWindow.toggle())
-//   globalShortcut.register('Super+Shift+Y', () => mainWindow.start(20))
-// }
+function registerShortcuts() {
+  globalShortcut.register('Super+Shift+D', () => {
+    mainWindow?.show()
+    mainWindow?.webContents.send('start_pomodoro')
+  })
+}
 
 const createWindow = async () => {
   if (isDebug) {
@@ -160,16 +172,21 @@ app.on('window-all-closed', () => {
   }
 })
 
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
+})
+
+app.on('activate', () => {
+  // On macOS it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (mainWindow === null) createWindow()
+})
+
 app
   .whenReady()
   .then(() => {
     createWindow()
-    createTrayIcon()
-    // registerShortcuts()
-    app.on('activate', () => {
-      // On macOS it's common to re-create a window in the app when the
-      // dock icon is clicked and there are no other windows open.
-      if (mainWindow === null) createWindow()
-    })
+    createTray()
+    registerShortcuts()
   })
   .catch(console.log)

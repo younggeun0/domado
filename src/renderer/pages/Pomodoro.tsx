@@ -111,6 +111,12 @@ export default function Pomodoro() {
     }
   }, [remainingTime])
 
+  useEffect(() => {
+    window.electron?.ipcRenderer.on('start_pomodoro', () => {
+      togglePlay()
+    })
+  }, [])
+
   const playEmoji = isRest ? '☕️' : '️🔥'
 
   return (
