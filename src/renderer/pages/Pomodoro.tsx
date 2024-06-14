@@ -115,6 +115,33 @@ export default function Pomodoro() {
     window.electron?.ipcRenderer.on('start_pomodoro', () => {
       togglePlay()
     })
+
+    function keydownHandler(e: KeyboardEvent) {
+      switch (e.key) {
+        case ' ':
+          togglePlay()
+          break
+        case 'a':
+          setTodayInfo((prevTodayInfo) => ({
+            count: prevTodayInfo.count + 1,
+          }))
+          break
+        case 's':
+          setIsRest(true)
+          setStatus('finish')
+          break
+        case 'r':
+          window.location.reload()
+          break
+        default:
+          break
+      }
+    }
+
+    document.addEventListener('keydown', keydownHandler)
+    return () => {
+      document.removeEventListener('keydown', keydownHandler)
+    }
   }, [])
 
   const playEmoji = isRest ? '☕️' : '️🔥'
@@ -127,6 +154,7 @@ export default function Pomodoro() {
             type="button"
             className="flex w-full h-100 justify-center rounded-md bg-transparent p-10 text-8xl leading-8 text-white"
             onClick={togglePlay}
+            tabIndex={-1}
           >
             {status === 'paused' ? playEmoji : '⏸️'}
           </button>
