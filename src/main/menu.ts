@@ -88,13 +88,6 @@ export default class MenuBuilder {
             this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen())
           },
         },
-        {
-          label: 'Toggle Developer Tools',
-          accelerator: 'Alt+Command+I',
-          click: () => {
-            this.mainWindow.webContents.toggleDevTools()
-          },
-        },
       ],
     }
     const subMenuWindow: DarwinMenuItemConstructorOptions = {
@@ -111,10 +104,7 @@ export default class MenuBuilder {
       ],
     }
 
-    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
-      return [subMenuAbout, subMenuViewDev, subMenuWindow]
-    }
-    return [subMenuAbout, subMenuWindow]
+    return [subMenuAbout, subMenuViewDev, subMenuWindow]
   }
 
   buildDefaultTemplate() {
