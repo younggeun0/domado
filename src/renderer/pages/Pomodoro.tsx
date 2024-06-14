@@ -99,10 +99,11 @@ export default function Pomodoro() {
     }
   }, [status, todayInfo, setTodayInfo, isRest, durations.rest, durations.pomodoro, countInterval, durations])
 
-  function togglePlay() {
+  function togglePlay(event: any = null) {
     setStatus((prev) => {
       return prev === 'paused' ? 'running' : 'paused'
     })
+    event?.target.blur() // 마우스 클릭하여 시작 후 포커스가 머무르면 스페이스바 단축키 동작이 안돼 포커스 해제
   }
 
   useEffect(() => {
