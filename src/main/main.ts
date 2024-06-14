@@ -46,6 +46,12 @@ function createTray() {
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Reload', type: 'normal', click: () => mainWindow?.reload() },
     {
+      label: 'Stick on top',
+      type: 'checkbox',
+      checked: mainWindow?.isAlwaysOnTop(),
+      click: () => mainWindow?.setAlwaysOnTop(!mainWindow?.isAlwaysOnTop()),
+    },
+    {
       label: 'Quit',
       click: () => {
         app.quit()
