@@ -41,18 +41,14 @@ export function updateTray(
   if (isRest) {
     const level = Math.floor((1 - newRemainingTime / durations.rest) * 100)
     const height = Math.floor((level / 100) * 28)
-    const gradient = ctx.createLinearGradient(3, 29, 3, 29 - height)
-    gradient.addColorStop(0, '#41e418')
-    gradient.addColorStop(1, '#41e418')
-    ctx.fillStyle = gradient
+    const color = '#217a0b'
+    ctx.fillStyle = color
     ctx.fillRect(3, 29, 26, -height)
   } else {
     const level = Math.floor((newRemainingTime / durations.pomodoro) * 100)
     const height = Math.floor((level / 100) * 28)
-    const gradient = ctx.createLinearGradient(3, 29, 3, 29 - height)
-    gradient.addColorStop(0, '#f7e018')
-    gradient.addColorStop(1, '#fa3508')
-    ctx.fillStyle = gradient
+    const color = '#b22222'
+    ctx.fillStyle = color
     ctx.fillRect(3, 29 - height, 26, height)
   }
 
