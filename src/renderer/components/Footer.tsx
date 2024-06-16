@@ -1,11 +1,16 @@
-export default function Footer({ todayInfo }: { todayInfo: { count: number } }) {
+import { formatRemainingTime } from './pomodoro'
+
+export default function Footer({ remainingTime, todayInfo }: { remainingTime: number; todayInfo: { count: number } }) {
   return (
-    <div className="p-3 w-full flex justify-between items-center">
+    <div className="p-3 w-full flex justify-between items-end">
       <div>
+        <span className="text-white/70">{formatRemainingTime(remainingTime)}</span>
+        <br />
         <span title="오늘의 기록" className="text-white">
           🍅 : {todayInfo.count}
         </span>
       </div>
+
       <div className="flex justify-between items-center">
         <button type="button" title="README" onClick={() => window.open('https://github.com/younggeun0/domado')}>
           <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6" fill="white">
