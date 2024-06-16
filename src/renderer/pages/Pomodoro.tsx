@@ -147,10 +147,7 @@ export default function Pomodoro() {
   }, [])
 
   return (
-    <div
-      className="relative w-screen h-screen flex flex-col overflow-auto text-gray-600"
-      style={{ background: '#21252B' }}
-    >
+    <div className="relative w-screen h-screen flex flex-col overflow-auto text-gray-600">
       <Domado isRest={isRest} paused={status === 'paused'} remainingTime={remainingTime} />
 
       <div className="p-3 flex flex-1 flex-col items-center justify-center">
@@ -181,6 +178,21 @@ export default function Pomodoro() {
             </button>
           </div> */}
         </div>
+
+        <div
+          id="bg-timer"
+          className="absolute bottom-0 w-full"
+          style={{
+            zIndex: '-1',
+            background: isRest ? '#6bf748' : '#fa3508',
+          }}
+        />
+        <div
+          className="absolute bg-gray-800 bottom-0 w-full h-full"
+          style={{
+            zIndex: '-2',
+          }}
+        />
       </div>
       <Footer remainingTime={remainingTime} todayInfo={todayInfo} />
     </div>
