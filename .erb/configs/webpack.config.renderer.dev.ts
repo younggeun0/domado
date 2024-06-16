@@ -91,6 +91,11 @@ const configuration: webpack.Configuration = {
         test: /\.(png|jpg|jpeg|gif)$/i,
         type: 'asset/resource',
       },
+      // 3D models
+      {
+        test: /\.(fbx|tag|mtl|obj)$/i,
+        type: 'asset/resource',
+      },
       // SVG
       {
         test: /\.svg$/,

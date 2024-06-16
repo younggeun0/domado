@@ -9,6 +9,26 @@ declare module '*.svg' {
   export default content
 }
 
+declare module '*.fbx' {
+  const content: string
+  export default content
+}
+
+declare module '*.tga' {
+  const content: string
+  export default content
+}
+
+declare module '*.mtl' {
+  const content: string
+  export default content
+}
+
+declare module '*.obj' {
+  const content: string
+  export default content
+}
+
 declare module '*.png' {
   const content: string
   export default content
