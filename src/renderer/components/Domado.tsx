@@ -90,13 +90,13 @@ export default function Domado({
         position: [50, 40, 0],
         fov: 75,
       }}
-      style={{ position: 'absolute', width: '100vw', height: '100vh', zIndex: -1, background: '#21252B' }}
+      style={{ position: 'absolute', width: '100vw', height: '100vh', background: 'transparent' }}
     >
       <ambientLight intensity={0.8} />
       <directionalLight position={[5, 5, 5]} intensity={2.5} />
       {isRest ? <CoffeeCupModel /> : <TomatoModel paused={paused} />}
       <CameraSetup isRest={isRest} remainingTime={remainingTime} />
-      <OrbitControls />
+      {paused && <OrbitControls />}
     </Canvas>
   )
 }
