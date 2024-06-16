@@ -92,8 +92,8 @@ export default function Domado({
       }}
       style={{ position: 'absolute', width: '100vw', height: '100vh', zIndex: -1, background: '#21252B' }}
     >
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[5, 5, 5]} intensity={2.5} />
       {isRest ? <CoffeeCupModel /> : <TomatoModel paused={paused} />}
       <CameraSetup isRest={isRest} remainingTime={remainingTime} />
       <OrbitControls />
