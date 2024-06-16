@@ -1,4 +1,4 @@
-export const getTimeInfo = (isDebug: boolean) => {
+export const getTimeInfo = (isDebug: boolean = false) => {
   return isDebug
     ? {
         POMODORO_SEC: 3,
@@ -30,33 +30,33 @@ export function updateTray(
   }
 
   const canvas = document.createElement('canvas')
-  canvas.width = 32
-  canvas.height = 32
+  canvas.width = 27
+  canvas.height = 27
 
   const ctx = canvas?.getContext('2d')
   if (!ctx) return
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.fillRect(0, 0, 32, 0)
+  ctx.fillRect(0, 0, 27, 0)
   if (isRest) {
     const level = Math.floor((1 - newRemainingTime / durations.rest) * 100)
-    const height = Math.floor((level / 100) * 28)
+    const height = Math.floor((level / 100) * 23)
     const color = '#217a0b'
     ctx.fillStyle = color
-    ctx.fillRect(3, 29, 26, -height)
+    ctx.fillRect(2, 25, 23, -height)
   } else {
     const level = Math.floor((newRemainingTime / durations.pomodoro) * 100)
-    const height = Math.floor((level / 100) * 28)
+    const height = Math.floor((level / 100) * 23)
     const color = '#b22222'
     ctx.fillStyle = color
-    ctx.fillRect(3, 29 - height, 26, height)
+    ctx.fillRect(2, 25 - height, 23, height)
   }
 
   // 남은 시간 텍스트 표시
   const minutes = Math.floor(newRemainingTime / 60)
   const seconds = newRemainingTime % 60
   const timeText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
-  ctx.font = 'bold 10px Arial'
+  ctx.font = 'bold 9px Arial'
   ctx.fillStyle = '#FFFFFF'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
