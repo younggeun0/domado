@@ -184,7 +184,7 @@ export default function Pomodoro() {
           className="absolute bottom-0 w-full"
           style={{
             zIndex: '-1',
-            background: isRest ? '#6bf748' : '#fa3508',
+            background: isRest ? '#217a0b' : '#b22222',
           }}
         />
         <div
