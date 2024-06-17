@@ -20,9 +20,9 @@ function CoffeeCupModel() {
     loader.setMaterials(cupMaterials)
   })
 
-  const scale = 15
+  const scale = 12
   cupObj.scale.set(scale, scale, scale)
-  cupObj.position.set(0, -88, 0)
+  cupObj.position.set(0, -68, 0)
 
   return <primitive ref={groupRef} object={cupObj} />
 }
