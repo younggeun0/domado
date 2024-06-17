@@ -3,22 +3,36 @@ import { formatRemainingTime } from './pomodoro'
 export default function Footer({ remainingTime, todayInfo }: { remainingTime: number; todayInfo: { count: number } }) {
   return (
     <div
-      className="p-3 w-full flex justify-between items-end"
+      className="text-sm p-3 w-full flex justify-between items-end"
       style={{
-        // @ts-ignore
-        WebkitAppRegion: 'drag',
         zIndex: '10',
       }}
     >
-      <div>
-        <span className="text-sm text-white/70">{formatRemainingTime(remainingTime)}</span>
+      <div
+        style={{
+          // @ts-ignore
+          WebkitAppRegion: 'drag',
+          // no-select
+          WebKitUserSelect: 'none',
+          MozUserSelect: 'none',
+          MSUserSelect: 'none',
+          userSelect: 'none',
+          cursor: 'grab',
+        }}
+      >
+        <span className="text-white/80">{formatRemainingTime(remainingTime)}</span>
         <br />
         <span title="오늘의 기록" className="text-white">
           🍅 : {todayInfo.count}
         </span>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div
+        className="flex justify-between items-center"
+        style={{
+          zIndex: '11',
+        }}
+      >
         <button type="button" title="README" onClick={() => window.open('https://github.com/younggeun0/domado')}>
           <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6" fill="white">
             <path
