@@ -6,7 +6,7 @@ export default function Footer({ remainingTime, todayInfo }: { remainingTime: nu
       className="p-3 w-full flex justify-between items-end"
       style={{
         // @ts-ignore
-        webkitAppRegion: 'drag',
+        WebkitAppRegion: 'drag',
         zIndex: '10',
       }}
     >
