@@ -4,7 +4,7 @@ export default function Footer({ remainingTime, todayInfo }: { remainingTime: nu
   return (
     <div className="p-3 w-full flex justify-between items-end">
       <div>
-        <span className="text-white/70">{formatRemainingTime(remainingTime)}</span>
+        <span className="text-sm text-white/70">{formatRemainingTime(remainingTime)}</span>
         <br />
         <span title="오늘의 기록" className="text-white">
           🍅 : {todayInfo.count}
