@@ -2,7 +2,14 @@ import { formatRemainingTime } from './pomodoro'
 
 export default function Footer({ remainingTime, todayInfo }: { remainingTime: number; todayInfo: { count: number } }) {
   return (
-    <div className="p-3 w-full flex justify-between items-end">
+    <div
+      className="p-3 w-full flex justify-between items-end"
+      style={{
+        // @ts-ignore
+        webkitAppRegion: 'drag',
+        zIndex: '10',
+      }}
+    >
       <div>
         <span className="text-sm text-white/70">{formatRemainingTime(remainingTime)}</span>
         <br />
