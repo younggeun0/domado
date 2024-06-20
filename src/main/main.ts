@@ -136,6 +136,7 @@ const createWindow = async () => {
     },
   })
 
+  mainWindow.setAlwaysOnTop(true)
   mainWindow.loadURL(resolveHtmlPath('index.html'))
   mainWindow.webContents.setBackgroundThrottling(false)
 
