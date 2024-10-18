@@ -25,6 +25,8 @@ if (isDebug) {
 }
 
 ipcMain.on('rest_finished', async () => {
+  mainWindow?.setFullScreen(!mainWindow?.isFullScreen())
+
   new Notification({
     title: '휴식 종료!',
     body: '다시 힘내보자구! 화이팅! 💪',
@@ -70,6 +72,7 @@ ipcMain.on('pomodoro_finished', async (event, _message) => {
   // TODO, 이어서 이벤트 체이닝이 가능
   // event.reply('end_pomodoro_finished', msgTemplate('pomodoro_finished pong'));
   tray.setImage(getDefaultTrayIcon())
+  mainWindow?.setFullScreen(!mainWindow?.isFullScreen())
 
   new Notification({
     title: '🍅 뽀모도로 종료! 고생했어!',
