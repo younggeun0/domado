@@ -7,7 +7,6 @@ import Domado from '../components/Domado'
 export default function Pomodoro() {
   const [todayInfo, setTodayInfo] = useState({ count: 0 })
 
-  // TODO 구현 - 시간 조절(필수는 아닐듯)
   const [status, setStatus] = useState<'restart' | 'running' | 'finish' | 'paused'>('paused')
   const [isRest, setIsRest] = useState(false)
   const timeInfo = getTimeInfo(window.electron?.isDebug ?? true)
@@ -18,20 +17,6 @@ export default function Pomodoro() {
   const [remainingTime, setRemainingTime] = useState(durations.pomodoro)
   const countInterval = useRef<any>(null)
   const animationRef = useRef<Animation | null>(null)
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // function addMin(min: number) {
-  //   const newDuration = (isRest ? durations.rest : durations.pomodoro) + min
-  //   if (newDuration <= 0) {
-  //     setStatus(isRest ? 'finish' : 'pomodoro_finished')
-  //     return
-  //   }
-
-  //   setDurations({
-  //     ...durations,
-  //     ...(isRest ? { rest: newDuration } : { pomodoro: newDuration }),
-  //   })
-  // }
 
   useEffect(() => {
     const bgTimer = document.getElementById('bg-timer')
@@ -151,34 +136,6 @@ export default function Pomodoro() {
       <Domado isRest={isRest} paused={status === 'paused'} remainingTime={remainingTime} />
 
       <div className="p-3 flex flex-1 flex-col items-center justify-center">
-        <div className="w-screen h-full flex flex-col justify-center items-center">
-          {/* <div className={`flex justify-center items-center ${!status.endsWith('_start') ? 'invisible' : 'visible'}`}>
-            <button
-              type="button"
-              className="flex w-full justify-center rounded-md bg-neutral-700 px-1 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-700"
-              onClick={() => addMin(TIME_INFO.ADD_MIN)}
-            >
-              +5 min
-            </button>
-
-            <button
-              type="button"
-              className="mx-2 h-full flex w-full justify-center rounded-md bg-neutral-700 px-1 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-700"
-              onClick={restart}
-            >
-              RESET
-            </button>
-
-            <button
-              type="button"
-              className="flex w-full justify-center rounded-md bg-neutral-700 px-1 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-700"
-              onClick={() => addMin(-TIME_INFO.ADD_MIN)}
-            >
-              -5 min
-            </button>
-          </div> */}
-        </div>
-
         <div
           id="bg-timer"
           className="absolute bottom-0 w-full"
