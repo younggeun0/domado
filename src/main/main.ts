@@ -19,22 +19,28 @@ let mainWindow: BrowserWindow | null = null
 let tray: Tray
 
 const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
-
 if (isDebug) {
   require('electron-debug')()
 }
 
 ipcMain.on('rest_finished', async () => {
   mainWindow?.setFullScreen(!mainWindow?.isFullScreen())
-
   new Notification({
     title: '휴식 종료!',
     body: '다시 힘내보자구! 화이팅! 💪',
   }).show()
 })
 
+const RESOURCES_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'assets')
+  : path.join(__dirname, '../../assets')
+
+const getAssetPath = (...paths: string[]): string => {
+  return path.join(RESOURCES_PATH, ...paths)
+}
+
 function getDefaultTrayIcon() {
-  const iconPath = path.join(__dirname, '../..', 'assets', 'icon_22x22.png')
+  const iconPath = getAssetPath('icon_22x22.png')
   return nativeImage.createFromPath(iconPath)
 }
 
@@ -42,35 +48,7 @@ ipcMain.on('update_tray', async (_event, imageUrl) => {
   tray.setImage(imageUrl ? nativeImage.createFromDataURL(imageUrl) : getDefaultTrayIcon())
 })
 
-function createTray() {
-  tray = new Tray(getDefaultTrayIcon())
-
-  const contextMenu = Menu.buildFromTemplate([
-    { label: 'Reload', type: 'normal', click: () => mainWindow?.reload() },
-    {
-      label: 'Stick on top',
-      type: 'checkbox',
-      checked: mainWindow?.isAlwaysOnTop(),
-      click: () => mainWindow?.setAlwaysOnTop(!mainWindow?.isAlwaysOnTop()),
-    },
-    {
-      label: 'Quit',
-      click: () => {
-        app.quit()
-      },
-    },
-  ])
-
-  tray.setContextMenu(contextMenu)
-  tray.on('click', () => {
-    mainWindow?.show()
-  })
-}
-
-ipcMain.on('pomodoro_finished', async (event, _message) => {
-  // const msgTemplate = (pingPong: string) => `pomodoro_finished test: ${pingPong}`;
-  // TODO, 이어서 이벤트 체이닝이 가능
-  // event.reply('end_pomodoro_finished', msgTemplate('pomodoro_finished pong'));
+ipcMain.on('pomodoro_finished', async (event) => {
   tray.setImage(getDefaultTrayIcon())
   mainWindow?.setFullScreen(!mainWindow?.isFullScreen())
 
@@ -119,14 +97,6 @@ const createWindow = async () => {
     await installExtensions()
   }
 
-  const RESOURCES_PATH = app.isPackaged
-    ? path.join(process.resourcesPath, 'assets')
-    : path.join(__dirname, '../../assets')
-
-  const getAssetPath = (...paths: string[]): string => {
-    return path.join(RESOURCES_PATH, ...paths)
-  }
-
   mainWindow = new BrowserWindow({
     show: false,
     width: 100,
@@ -172,10 +142,38 @@ const createWindow = async () => {
   new AppUpdater();
 }
 
+function showWindow() {
+  if (mainWindow) {
+    mainWindow.show()
+    return
+  }
+  createWindow()
+}
+
+function createTray() {
+  tray = new Tray(getDefaultTrayIcon())
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Reload', type: 'normal', click: () => mainWindow?.reload() },
+    {
+      label: 'Stick on top',
+      type: 'checkbox',
+      checked: mainWindow?.isAlwaysOnTop(),
+      click: () => mainWindow?.setAlwaysOnTop(!mainWindow?.isAlwaysOnTop()),
+    },
+    {
+      label: 'Quit',
+      click: () => {
+        app.quit()
+      },
+    },
+  ])
+  tray.setContextMenu(contextMenu)
+  tray.on('click', showWindow)
+}
+
 /**
  * Add event listeners...
  */
-
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
@@ -188,16 +186,14 @@ app.on('will-quit', () => {
   globalShortcut.unregisterAll()
 })
 
-app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) createWindow()
-})
+// On macOS it's common to re-create a window in the app when the
+// dock icon is clicked and there are no other windows open.
+app.on('activate', showWindow)
 
 app
   .whenReady()
+  .then(createWindow)
   .then(() => {
-    createWindow()
     createTray()
     registerShortcuts()
   })
