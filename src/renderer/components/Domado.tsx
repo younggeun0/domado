@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unknown-property */
 import { useEffect, useRef, useState } from 'react'
-import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
+import { Canvas, invalidate, useFrame, useLoader, useThree } from '@react-three/fiber'
 import { OrbitControls, useTexture } from '@react-three/drei'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader'
@@ -19,8 +19,10 @@ particleFire.install({ THREE })
 
 function FireEffect({ parentGroup }: { parentGroup: any }) {
   const { camera, clock } = useThree()
+  const animationFrameId = useRef<number | null>(null)
 
   useEffect(() => {
+    console.log('set fire ')
     const fireRadius = 2
     const fireHeight = 15
     const particleCount = 500
@@ -31,19 +33,23 @@ function FireEffect({ parentGroup }: { parentGroup: any }) {
     })
     material0.setPerspective(camera, height)
     const particleFireMesh0 = new THREE.Points(geometry0, material0)
-    // console.log('🚀 ~ useEffect ~ particleFireMesh0:', particleFireMesh0)
     particleFireMesh0.position.set(2.5, 2, -0.2)
     parentGroup.add(particleFireMesh0)
 
     function update() {
       const delta = clock.getDelta()
-      requestAnimationFrame(update)
+      animationFrameId.current = requestAnimationFrame(update)
       particleFireMesh0.material.update(delta)
     }
     update()
 
     return () => {
       parentGroup.remove(particleFireMesh0)
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current)
+      }
+      geometry0.dispose()
+      material0.dispose()
     }
   }, [camera, clock, parentGroup])
 
@@ -116,7 +122,7 @@ function CameraSetup({ isRest, remainingTime }: { isRest: boolean; remainingTime
       camera.position.set(40, 15, 0)
       camera.lookAt(0, 10, 0)
     } else {
-      const codinate = 14 + 36 * (remainingTime / timeInfo[isRest ? 'REST_SEC' : 'POMODORO_SEC'])
+      const codinate = 14 + 36 * (remainingTime / timeInfo.POMODORO_SEC)
       camera.position.set(codinate, codinate, 0)
       camera.lookAt(0, 0, 0)
     }
@@ -139,7 +145,7 @@ export default function Domado({
       style={{ position: 'absolute', width: '100vw', height: '100vh', background: isRest ? 'black' : 'transparent' }}
     >
       <ambientLight intensity={0.8} />
-      <directionalLight position={[5, 5, 5]} intensity={2.5} castShadow={false} />
+      <directionalLight position={[5, 5, 5]} intensity={2.5} />
       {isRest ? <CoffeeCupModel /> : <TomatoModel paused={paused} />}
       <CameraSetup isRest={isRest} remainingTime={remainingTime} />
       {paused && !isRest && <OrbitControls />}
