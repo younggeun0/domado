@@ -34,7 +34,7 @@ export default function Footer({ isRest, remainingTime, todayInfo }: FooterProps
       </div>
 
       <div
-        className="flex justify-between items-center"
+        className="flex justify-between items-center github-button"
         style={{
           zIndex: '11',
         }}

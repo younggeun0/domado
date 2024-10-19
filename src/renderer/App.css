@@ -37,3 +37,9 @@ body {
   font-family: 'Pretendard-Regular', sans-serif;
   opacity: 0.8;
 }
+
+@media(max-width: 100px) {
+  div.github-button {
+    display: none;
+  }
+}
