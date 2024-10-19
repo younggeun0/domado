@@ -114,12 +114,12 @@ function CameraSetup({ isRest, remainingTime }: { isRest: boolean; remainingTime
   useEffect(() => {
     if (isRest) {
       camera.position.set(40, 15, 0)
+      camera.lookAt(0, 10, 0)
     } else {
       const codinate = 14 + 36 * (remainingTime / timeInfo[isRest ? 'REST_SEC' : 'POMODORO_SEC'])
       camera.position.set(codinate, codinate, 0)
+      camera.lookAt(0, 0, 0)
     }
-
-    camera.lookAt(0, 0, 0)
   }, [camera, isRest, remainingTime, timeInfo])
 
   return null
