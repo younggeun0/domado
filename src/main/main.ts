@@ -24,7 +24,7 @@ if (isDebug) {
 }
 
 ipcMain.on('rest_finished', async () => {
-  mainWindow?.setFullScreen(!mainWindow?.isFullScreen())
+  mainWindow?.setFullScreen(false)
   new Notification({
     title: '휴식 종료!',
     body: '다시 힘내보자구! 화이팅! 💪',
@@ -50,7 +50,7 @@ ipcMain.on('update_tray', async (_event, imageUrl) => {
 
 ipcMain.on('pomodoro_finished', async (event) => {
   tray.setImage(getDefaultTrayIcon())
-  mainWindow?.setFullScreen(!mainWindow?.isFullScreen())
+  mainWindow?.setFullScreen(true)
 
   new Notification({
     title: '🍅 뽀모도로 종료! 고생했어!',

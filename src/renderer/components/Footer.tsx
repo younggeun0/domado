@@ -1,6 +1,12 @@
 import { formatRemainingTime } from './pomodoro'
 
-export default function Footer({ remainingTime, todayInfo }: { remainingTime: number; todayInfo: { count: number } }) {
+interface FooterProps {
+  isRest: boolean
+  remainingTime: number
+  todayInfo: { count: number }
+}
+
+export default function Footer({ isRest, remainingTime, todayInfo }: FooterProps) {
   return (
     <div
       className="text-sm p-3 w-full flex justify-between items-end"
@@ -20,8 +26,8 @@ export default function Footer({ remainingTime, todayInfo }: { remainingTime: nu
           cursor: 'grab',
         }}
       >
-        <span className="text-white/80">{formatRemainingTime(remainingTime)}</span>
-        <br />
+        {!isRest && <div className="text-white/80">{formatRemainingTime(remainingTime)}</div>}
+
         <span title="오늘의 기록" className="text-white">
           🍅 : {todayInfo.count}
         </span>

@@ -1,12 +1,11 @@
 /* eslint-disable consistent-return */
 import { useEffect, useRef, useState } from 'react'
-import { getTimeInfo, updateTray } from '../components/pomodoro'
+import { formatRemainingTime, getTimeInfo, updateTray } from '../components/pomodoro'
 import Footer from '../components/Footer'
 import Domado from '../components/Domado'
 
 export default function Pomodoro() {
   const [todayInfo, setTodayInfo] = useState({ count: 0 })
-
   const [status, setStatus] = useState<'restart' | 'running' | 'finish' | 'paused'>('paused')
   const [isRest, setIsRest] = useState(false)
   const timeInfo = getTimeInfo(window.electron?.isDebug ?? true)
@@ -136,14 +135,28 @@ export default function Pomodoro() {
       <Domado isRest={isRest} paused={status === 'paused'} remainingTime={remainingTime} />
 
       <div className="p-3 flex flex-1 flex-col items-center justify-center">
+        {isRest && (
+          <div
+            className="absolute text-white/80"
+            style={{
+              top: '20%',
+              transform: 'translateY(-20%)',
+              fontSize: '12rem',
+              userSelect: 'none',
+            }}
+          >
+            {formatRemainingTime(remainingTime)}
+          </div>
+        )}
         <div
           id="bg-timer"
           className="absolute bottom-0 w-full"
           style={{
             zIndex: '-1',
-            background: isRest ? '#217a0b' : '#b22222',
+            background: isRest ? '#6AFF88' : '#b22222',
           }}
         />
+
         <div
           className="absolute bg-gray-800 bottom-0 w-full h-full"
           style={{
@@ -151,7 +164,7 @@ export default function Pomodoro() {
           }}
         />
       </div>
-      <Footer remainingTime={remainingTime} todayInfo={todayInfo} />
+      <Footer isRest={isRest} remainingTime={remainingTime} todayInfo={todayInfo} />
     </div>
   )
 }

@@ -41,7 +41,7 @@ export function updateTray(
   if (isRest) {
     const level = Math.floor((1 - newRemainingTime / durations.rest) * 100)
     const height = Math.floor((level / 100) * 23)
-    const color = '#217a0b'
+    const color = '#6AFF88'
     ctx.fillStyle = color
     ctx.fillRect(2, 25, 23, -height)
   } else {

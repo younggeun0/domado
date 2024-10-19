@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unknown-property */
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import { OrbitControls, useTexture } from '@react-three/drei'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
@@ -10,10 +10,49 @@ import tomatoTexture from 'assets/3dmodel/tomato_texture.jpg'
 
 import cupOBJ from 'assets/3dmodel/coffee_cup.obj'
 import cupMTL from 'assets/3dmodel/coffee_cup.mtl'
+
+import * as THREE from 'three'
+import particleFire from 'three-particle-fire'
 import { getTimeInfo } from './pomodoro'
 
+particleFire.install({ THREE })
+
+function FireEffect({ parentGroup }: { parentGroup: any }) {
+  const { camera, clock } = useThree()
+
+  useEffect(() => {
+    const fireRadius = 2
+    const fireHeight = 15
+    const particleCount = 500
+    const height = window.innerHeight
+    const geometry0 = new particleFire.Geometry(fireRadius, fireHeight, particleCount)
+    const material0 = new particleFire.Material({
+      color: '#FF4F30',
+    })
+    material0.setPerspective(camera, height)
+    const particleFireMesh0 = new THREE.Points(geometry0, material0)
+    // console.log('🚀 ~ useEffect ~ particleFireMesh0:', particleFireMesh0)
+    particleFireMesh0.position.set(2.5, 2, -0.2)
+    parentGroup.add(particleFireMesh0)
+
+    function update() {
+      const delta = clock.getDelta()
+      requestAnimationFrame(update)
+      particleFireMesh0.material.update(delta)
+    }
+    update()
+
+    return () => {
+      parentGroup.remove(particleFireMesh0)
+    }
+  }, [camera, clock, parentGroup])
+
+  return null
+}
+
 function CoffeeCupModel() {
-  const groupRef = useRef<any>()
+  const groupRef = useRef<any>(null)
+  const [isGroupSet, setIsGroupSet] = useState(false)
   const cupMaterials = useLoader(MTLLoader, cupMTL)
   const cupObj = useLoader(OBJLoader, cupOBJ, (loader) => {
     cupMaterials.preload()
@@ -22,9 +61,20 @@ function CoffeeCupModel() {
 
   const scale = 12
   cupObj.scale.set(scale, scale, scale)
-  cupObj.position.set(0, -68, 0)
+  cupObj.position.set(0, -75, 0)
 
-  return <primitive ref={groupRef} object={cupObj} />
+  useEffect(() => {
+    if (groupRef.current) {
+      setIsGroupSet(true)
+    }
+  }, [groupRef])
+
+  return (
+    <group ref={groupRef}>
+      <primitive object={cupObj} />
+      {isGroupSet && <FireEffect parentGroup={groupRef.current} />}
+    </group>
+  )
 }
 
 function TomatoModel({ paused }: { paused: boolean }) {
@@ -63,7 +113,7 @@ function CameraSetup({ isRest, remainingTime }: { isRest: boolean; remainingTime
 
   useEffect(() => {
     if (isRest) {
-      camera.position.set(25, 20, 0)
+      camera.position.set(40, 15, 0)
     } else {
       const codinate = 14 + 36 * (remainingTime / timeInfo[isRest ? 'REST_SEC' : 'POMODORO_SEC'])
       camera.position.set(codinate, codinate, 0)
@@ -86,17 +136,13 @@ export default function Domado({
 }) {
   return (
     <Canvas
-      camera={{
-        position: [50, 40, 0],
-        fov: 75,
-      }}
-      style={{ position: 'absolute', width: '100vw', height: '100vh', background: 'transparent' }}
+      style={{ position: 'absolute', width: '100vw', height: '100vh', background: isRest ? 'black' : 'transparent' }}
     >
       <ambientLight intensity={0.8} />
-      <directionalLight position={[5, 5, 5]} intensity={2.5} />
+      <directionalLight position={[5, 5, 5]} intensity={2.5} castShadow={false} />
       {isRest ? <CoffeeCupModel /> : <TomatoModel paused={paused} />}
       <CameraSetup isRest={isRest} remainingTime={remainingTime} />
-      {paused && <OrbitControls />}
+      {paused && !isRest && <OrbitControls />}
     </Canvas>
   )
 }
