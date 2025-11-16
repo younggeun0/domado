@@ -1,12 +1,15 @@
+import { Link } from 'react-router-dom'
 import { formatRemainingTime } from './pomodoro'
 
 interface FooterProps {
   isRest: boolean
   remainingTime: number
   todayInfo: { count: number }
+  status: 'restart' | 'running' | 'finish' | 'paused'
+  onTogglePlay: () => void
 }
 
-export default function Footer({ isRest, remainingTime, todayInfo }: FooterProps) {
+export default function Footer({ isRest, remainingTime, todayInfo, status, onTogglePlay }: FooterProps) {
   return (
     <div
       className="text-sm p-3 w-full flex justify-between items-end"
@@ -15,6 +18,7 @@ export default function Footer({ isRest, remainingTime, todayInfo }: FooterProps
       }}
     >
       <div
+        className="flex flex-col gap-2"
         style={{
           // @ts-ignore
           WebkitAppRegion: 'drag',
@@ -28,17 +32,89 @@ export default function Footer({ isRest, remainingTime, todayInfo }: FooterProps
       >
         {!isRest && <div className="text-white/80">{formatRemainingTime(remainingTime)}</div>}
 
-        <span title="오늘의 기록" className="text-white">
-          🍅 : {todayInfo.count}
-        </span>
+        <div className="flex items-center gap-2">
+          <span title="오늘의 기록" className="text-white">
+            🍅 : {todayInfo.count}
+          </span>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onTogglePlay()
+            }}
+            className="text-white/60 hover:text-white/80 transition-colors"
+            title={status === 'running' ? '일시정지' : '재생'}
+            style={{
+              zIndex: '11',
+              pointerEvents: 'auto',
+              // @ts-ignore
+              WebkitAppRegion: 'no-drag',
+            }}
+          >
+            {status === 'running' ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
       <div
-        className="flex justify-between items-center github-button"
+        className="flex justify-between items-center github-button gap-2"
         style={{
           zIndex: '11',
+          // @ts-ignore
+          WebkitAppRegion: 'no-drag',
         }}
       >
+        <Link
+          to="/settings"
+          className="text-white/60 hover:text-white/80 transition-colors"
+          title="설정"
+          style={{ zIndex: '11', pointerEvents: 'auto' }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </Link>
+
         <button type="button" title="README" onClick={() => window.open('https://github.com/younggeun0/domado')}>
           <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6" fill="white">
             <path
