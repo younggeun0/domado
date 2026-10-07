@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+
 import { formatRemainingTime } from '../components/pomodoro'
 
 interface UseDocumentTitleProps {
@@ -13,4 +14,3 @@ export function useDocumentTitle({ count, remainingTime, isRest }: UseDocumentTi
     document.title = `${count} - ${formattedTime} ${isRest ? '☕' : '🔥'}`
   }, [count, remainingTime, isRest])
 }
-

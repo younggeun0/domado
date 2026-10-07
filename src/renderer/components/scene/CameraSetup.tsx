@@ -1,27 +1,35 @@
 import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
-import { getTimeInfo } from '../pomodoro'
+
+export interface CameraConfig {
+  position: [number, number, number]
+  lookAt: [number, number, number]
+}
 
 interface CameraSetupProps {
   isRest: boolean
-  remainingTime: number
+  config?: CameraConfig
 }
 
-export default function CameraSetup({ isRest, remainingTime }: CameraSetupProps) {
-  const { camera } = useThree()
-  const timeInfo = getTimeInfo(window.electron?.isDebug ?? true)
+export const DEFAULT_WORK_CONFIG: CameraConfig = {
+  position: [18, 10, -13],
+  lookAt: [0, 8, 0],
+}
+
+export const DEFAULT_REST_CONFIG: CameraConfig = {
+  position: [25, 10, 3],
+  lookAt: [0, 8, 0],
+}
+
+export default function CameraSetup({ isRest, config }: CameraSetupProps) {
+  const { camera, invalidate } = useThree()
 
   useEffect(() => {
-    if (isRest) {
-      camera.position.set(40, 15, 0)
-      camera.lookAt(0, 10, 0)
-    } else {
-      const codinate = 14 + 36 * (remainingTime / timeInfo.POMODORO_SEC)
-      camera.position.set(codinate, codinate, 0)
-      camera.lookAt(0, 0, 0)
-    }
-  }, [camera, isRest, remainingTime, timeInfo])
+    const cameraConfig = config || (isRest ? DEFAULT_REST_CONFIG : DEFAULT_WORK_CONFIG)
+    camera.position.set(...cameraConfig.position)
+    camera.lookAt(...cameraConfig.lookAt)
+    invalidate()
+  }, [camera, invalidate, isRest, config])
 
   return null
 }
-

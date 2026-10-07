@@ -4,12 +4,14 @@ interface UseKeyboardShortcutsProps {
   onTogglePlay: () => void
   onIncrementCount: () => void
   onSkipToRest: () => void
+  onReload: () => void
 }
 
 export function useKeyboardShortcuts({
   onTogglePlay,
   onIncrementCount,
   onSkipToRest,
+  onReload,
 }: UseKeyboardShortcutsProps) {
   useEffect(() => {
     function keydownHandler(e: KeyboardEvent) {
@@ -25,7 +27,7 @@ export function useKeyboardShortcuts({
           onSkipToRest()
           break
         case 'r':
-          window.location.reload()
+          onReload()
           break
         default:
           break
@@ -36,6 +38,5 @@ export function useKeyboardShortcuts({
     return () => {
       document.removeEventListener('keydown', keydownHandler)
     }
-  }, [onTogglePlay, onIncrementCount, onSkipToRest])
+  }, [onTogglePlay, onIncrementCount, onSkipToRest, onReload])
 }
-

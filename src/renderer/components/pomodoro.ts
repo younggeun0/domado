@@ -1,14 +1,13 @@
-export const getTimeInfo = (isDebug: boolean = false) => {
-  return isDebug
+// 개발 모드(electron-vite dev)에서는 흐름 확인용으로 3초씩만 돈다
+export const getTimeInfo = (pomodoroMinutes: number = 25, restMinutes: number = 5) => {
+  return window.electron?.isDebug
     ? {
         POMODORO_SEC: 3,
         REST_SEC: 3,
-        ADD_MIN: 5000,
       }
     : {
-        POMODORO_SEC: 25 * 60,
-        REST_SEC: 5 * 60,
-        ADD_MIN: 5 * 60,
+        POMODORO_SEC: pomodoroMinutes * 60,
+        REST_SEC: restMinutes * 60,
       }
 }
 
@@ -19,7 +18,7 @@ export function formatRemainingTime(time: number) {
 }
 
 export function updateTray(
-  ipcRenderer: any,
+  ipcRenderer: NonNullable<Window['electron']>['ipcRenderer'] | undefined,
   newRemainingTime: number,
   isRest: boolean,
   durations: { pomodoro: number; rest: number },

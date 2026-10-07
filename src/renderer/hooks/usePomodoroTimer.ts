@@ -1,4 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { saveDailyCount } from './pomodoroHistory'
+import { getTodayKey, incrementTodayInfo, loadTodayInfo, saveTodayInfo } from './todayInfoStorage'
+
 import { getTimeInfo, updateTray } from '../components/pomodoro'
 
 type TimerStatus = 'restart' | 'running' | 'finish' | 'paused'
@@ -8,71 +12,12 @@ interface UsePomodoroTimerProps {
   restMinutes: number
 }
 
-const STORAGE_KEY_TODAY_INFO = 'domado_today_info'
-
-// 오늘 날짜를 YYYY-MM-DD 형식으로 반환
-function getTodayKey(): string {
-  return new Date().toISOString().split('T')[0]
-}
-
-function loadTodayInfo(): { count: number; date: string } {
-  if (typeof window === 'undefined') {
-    return { count: 0, date: getTodayKey() }
-  }
-
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY_TODAY_INFO)
-    if (saved) {
-      const data = JSON.parse(saved)
-      const today = getTodayKey()
-
-      if (data.date === today) {
-        return data
-      }
-    }
-  } catch (error) {
-    console.warn('Failed to load today info from localStorage:', error)
-  }
-
-  return { count: 0, date: getTodayKey() }
-}
-
-function saveTodayInfo(count: number): void {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  try {
-    const data = { count, date: getTodayKey() }
-    localStorage.setItem(STORAGE_KEY_TODAY_INFO, JSON.stringify(data))
-  } catch (error) {
-    console.warn('Failed to save today info to localStorage:', error)
-  }
-}
-
 export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTimerProps) {
-  const isDebug = window.electron?.isDebug ?? false
-  
-  // durations 계산 (디버그 모드일 때는 짧은 시간 사용, 아니면 설정값 사용)
-  const durations = useMemo(() => {
-    if (isDebug) {
-      const timeInfo = getTimeInfo(isDebug)
-      return {
-        pomodoro: timeInfo.POMODORO_SEC,
-        rest: timeInfo.REST_SEC,
-      }
-    }
-    return {
-      pomodoro: pomodoroMinutes * 60,
-      rest: restMinutes * 60,
-    }
-  }, [isDebug, pomodoroMinutes, restMinutes])
-  
-  const initialPomodoroSec = durations.pomodoro
+  const initialTimeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
   const [status, setStatus] = useState<TimerStatus>('paused')
   const [isRest, setIsRest] = useState(false)
   const [todayInfo, setTodayInfo] = useState(loadTodayInfo)
-  const [remainingTime, setRemainingTime] = useState(initialPomodoroSec)
+  const [remainingTime, setRemainingTime] = useState(initialTimeInfo.POMODORO_SEC)
 
   // Date 기반 정확한 타이머를 위한 refs
   const endTimeRef = useRef<number | null>(null) // 목표 종료 시간 (timestamp)
@@ -89,17 +34,6 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
     return remaining
   }
 
-  // 초기 시간 설정 및 설정 변경 시 업데이트
-  useEffect(() => {
-    if (status === 'paused') {
-      const newRemainingTime = isRest ? durations.rest : durations.pomodoro
-      setRemainingTime(newRemainingTime)
-      pausedTimeRef.current = newRemainingTime
-      endTimeRef.current = null
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, isRest, durations.pomodoro, durations.rest])
-
   // 타이머 시작/일시정지 처리
   useEffect(() => {
     if (status === 'running') {
@@ -113,16 +47,12 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
       }
 
       // 주기적으로 남은 시간 업데이트 (Date 기반 계산)
+      const timeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
       const interval = setInterval(() => {
         const calculated = calculateRemainingTime()
         setRemainingTime(calculated)
-        
-        // Electron IPC: 트레이 업데이트
-        updateTray(window.electron?.ipcRenderer, calculated, isRest, {
-          pomodoro: durations.pomodoro,
-          rest: durations.rest,
-        })
-        
+        updateTray(window.electron?.ipcRenderer, calculated, isRest, { pomodoro: timeInfo.POMODORO_SEC, rest: timeInfo.REST_SEC })
+
         if (calculated <= 0) {
           endTimeRef.current = null
         }
@@ -148,7 +78,7 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, isRest, isDebug])
+  }, [status])
 
   // Page Visibility API: 탭이 다시 활성화될 때 시간 재계산
   useEffect(() => {
@@ -182,48 +112,59 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
   // finish 상태 처리
   useEffect(() => {
     if (status === 'finish') {
-      const newRemainingTime = isRest ? durations.pomodoro : durations.rest
+      const timeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
+      const newRemainingTime = isRest ? timeInfo.POMODORO_SEC : timeInfo.REST_SEC
       setRemainingTime(newRemainingTime)
       pausedTimeRef.current = newRemainingTime
       endTimeRef.current = null
       
-      if (isRest) {
-        // Electron IPC: 휴식 종료 알림
-        window.electron?.ipcRenderer.sendMessage('rest_finished')
-        setTodayInfo({
-          count: todayInfo.count,
-        })
-      } else {
-        // Electron IPC: 뽀모도로 완료 알림
-        window.electron?.ipcRenderer.sendSync('pomodoro_finished')
-        setTodayInfo((prev) => {
-          const newCount = prev.count + 1
-          saveTodayInfo(newCount)
-          return { ...prev, count: newCount }
-        })
+      if (!isRest) {
+        setTodayInfo(incrementTodayInfo)
       }
-      setIsRest((prev) => !prev)
+      setIsRest(prev => !prev)
       setStatus('paused')
     }
-  }, [status, isRest, durations.pomodoro, durations.rest, todayInfo.count])
+  }, [status, isRest, pomodoroMinutes, restMinutes])
 
   // 날짜가 바뀌면 뽀모도로 개수 초기화
   useEffect(() => {
     const today = getTodayKey()
     if (todayInfo.date !== today) {
       setTodayInfo({ count: 0, date: today })
-      saveTodayInfo(0)
     }
   }, [todayInfo.date])
 
-  // todayInfo가 변경될 때마다 localStorage에 저장 (수동으로 count를 변경하는 경우 대비)
+  // todayInfo가 변경될 때마다 localStorage(오늘)와 IndexedDB(일별 기록)에 저장
   useEffect(() => {
-    saveTodayInfo(todayInfo.count)
-  }, [todayInfo.count])
+    saveTodayInfo(todayInfo)
+    void saveDailyCount(todayInfo.date, todayInfo.count)
+  }, [todayInfo])
+
+  const incrementCount = useCallback(() => {
+    setTodayInfo(incrementTodayInfo)
+  }, [])
 
   const togglePlay = () => {
-    setStatus((prev) => (prev === 'paused' ? 'running' : 'paused'))
+    setStatus(prev => (prev === 'paused' ? 'running' : 'paused'))
   }
+
+  // 설정 창에서 시간을 바꾸면 진행 중이던 뽀모도로를 새 시간으로 초기화한다 (최초 마운트 때는 초기 상태와 같아 영향 없음)
+  useEffect(() => {
+    const nextTimeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
+
+    if (countInterval.current) {
+      clearInterval(countInterval.current)
+      countInterval.current = null
+    }
+
+    endTimeRef.current = null
+    pausedTimeRef.current = nextTimeInfo.POMODORO_SEC
+    setStatus('paused')
+    setIsRest(false)
+    setRemainingTime(nextTimeInfo.POMODORO_SEC)
+  }, [pomodoroMinutes, restMinutes])
+
+  const timeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
 
   return {
     status,
@@ -233,8 +174,10 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
     togglePlay,
     setStatus,
     setIsRest,
-    setTodayInfo,
-    durations,
+    incrementCount,
+    durations: {
+      pomodoro: timeInfo.POMODORO_SEC,
+      rest: timeInfo.REST_SEC,
+    },
   }
 }
-

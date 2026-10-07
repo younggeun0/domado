@@ -1,84 +1,117 @@
-import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { GlobeAltIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+
 import { usePomodoroSettings } from '../hooks/usePomodoroSettings'
+import { LANGUAGE_NAMES, LANGUAGES, type Language, useI18n } from '../i18n'
 
+const INPUT_CLASS =
+  'w-full rounded-lg border border-white/40 bg-black/60 px-3 py-2 text-base text-white outline-hidden focus:ring-2 focus:ring-red-400'
+const BUTTON_CLASS = 'rounded-lg px-4 py-2 text-sm font-medium transition-colors'
+
+// 위젯 창과 별개인 설정 창. 저장하면 localStorage를 거쳐 위젯 창에 반영된다
 export default function Settings() {
-  const navigate = useNavigate()
-  const { pomodoroMinutes, restMinutes, updateSettings } = usePomodoroSettings()
-  const [pomodoroMinutesInput, setPomodoroMinutesInput] = useState(pomodoroMinutes.toString())
-  const [restMinutesInput, setRestMinutesInput] = useState(restMinutes.toString())
+  const { language, setLanguage, m } = useI18n()
+  const { pomodoroMinutes: currentPomodoroMinutes, restMinutes: currentRestMinutes, updateSettings } =
+    usePomodoroSettings()
+  const [pomodoroMinutes, setPomodoroMinutes] = useState(currentPomodoroMinutes.toString())
+  const [restMinutes, setRestMinutes] = useState(currentRestMinutes.toString())
 
-  useEffect(() => {
-    setPomodoroMinutesInput(pomodoroMinutes.toString())
-    setRestMinutesInput(restMinutes.toString())
-  }, [pomodoroMinutes, restMinutes])
+  const nextPomodoro = parseInt(pomodoroMinutes, 10)
+  const nextRest = parseInt(restMinutes, 10)
+  const hasValidInput = Number.isFinite(nextPomodoro) && Number.isFinite(nextRest) && nextPomodoro > 0 && nextRest > 0
+  const hasChanged = hasValidInput && (nextPomodoro !== currentPomodoroMinutes || nextRest !== currentRestMinutes)
 
   const handleSave = () => {
-    const pomodoro = parseInt(pomodoroMinutesInput, 10)
-    const rest = parseInt(restMinutesInput, 10)
-
-    if (pomodoro > 0 && rest > 0) {
-      updateSettings(pomodoro, rest)
-      navigate('/')
-    }
+    if (!hasValidInput) return
+    if (hasChanged) updateSettings(nextPomodoro, nextRest)
+    window.close()
   }
 
   return (
-    <div className="h-screen bg-gray-900 text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-gray-800 rounded-lg border border-gray-700 p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-2">domado 설정</h1>
-          <p className="text-gray-400 text-sm">뽀모도로 시간과 휴식 시간을 설정하세요.</p>
+    <main className="flex h-screen flex-col gap-4 bg-neutral-900 p-5 text-white">
+      <title>{m.settings.title}</title>
+      <header className="grid gap-1.5">
+        <h1 className="text-lg font-semibold leading-none tracking-tight">{m.settings.title}</h1>
+        <p className="text-sm text-white/70">{m.settings.description}</p>
+      </header>
+
+      <div className="-mx-1.5 grid min-h-0 flex-1 content-start gap-4 overflow-y-auto px-1.5 py-2">
+        <div className="grid gap-2">
+          <label htmlFor="pomodoro" className="text-sm font-medium text-white/80">
+            {m.settings.pomodoroMinutes}
+          </label>
+          <input
+            id="pomodoro"
+            type="number"
+            min="1"
+            value={pomodoroMinutes}
+            onChange={e => setPomodoroMinutes(e.target.value)}
+            className={INPUT_CLASS}
+          />
         </div>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="pomodoro" className="text-sm font-medium text-gray-300 block">
-              뽀모도로 시간 (분)
-            </label>
-            <input
-              id="pomodoro"
-              type="number"
-              min="1"
-              value={pomodoroMinutesInput}
-              onChange={(e) => setPomodoroMinutesInput(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 text-white placeholder:text-gray-500 px-3 py-2 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-red-600"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="rest" className="text-sm font-medium text-gray-300 block">
-              휴식 시간 (분)
-            </label>
-            <input
-              id="rest"
-              type="number"
-              min="1"
-              value={restMinutesInput}
-              onChange={(e) => setRestMinutesInput(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 text-white placeholder:text-gray-500 px-3 py-2 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-red-600"
-            />
-          </div>
+        <div className="grid gap-2">
+          <label htmlFor="rest" className="text-sm font-medium text-white/80">
+            {m.settings.restMinutes}
+          </label>
+          <input
+            id="rest"
+            type="number"
+            min="1"
+            value={restMinutes}
+            onChange={e => setRestMinutes(e.target.value)}
+            className={INPUT_CLASS}
+          />
         </div>
-
-        <div className="flex gap-3 justify-end">
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="px-4 py-2 border border-gray-600 text-gray-300 hover:bg-gray-700 rounded-md transition-colors"
+        {hasChanged ? (
+          <p className="rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-100">
+            {m.settings.resetWarning}
+          </p>
+        ) : null}
+        <div className="grid gap-2">
+          <label htmlFor="language" className="text-sm font-medium text-white/80">
+            {m.settings.language}
+          </label>
+          {/* 저장 버튼과 별개로 선택 즉시 언어를 바꾼다 */}
+          <select
+            id="language"
+            value={language}
+            onChange={e => setLanguage(e.target.value as Language)}
+            className={INPUT_CLASS}
           >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-md transition-colors"
-          >
-            저장
-          </button>
+            {LANGUAGES.map(code => (
+              <option key={code} value={code}>
+                {LANGUAGE_NAMES[code]}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
-    </div>
+
+      <footer className="flex items-center justify-between gap-3">
+        <a
+          href="https://younggeun0.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="younggeun0.dev"
+          aria-label="younggeun0.dev"
+          className="text-white/45 transition-colors hover:text-white"
+        >
+          <GlobeAltIcon className="h-5 w-5" aria-hidden="true" />
+        </a>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => window.close()}
+            className={`${BUTTON_CLASS} border border-white/10 text-white/75 hover:bg-white/5 hover:text-white`}
+          >
+            {m.settings.cancel}
+          </button>
+          <button type="button" onClick={handleSave} className={`${BUTTON_CLASS} bg-red-700 text-white hover:bg-red-600`}>
+            {m.settings.save}
+          </button>
+        </div>
+      </footer>
+    </main>
   )
 }
-

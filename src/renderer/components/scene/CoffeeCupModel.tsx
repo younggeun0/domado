@@ -1,12 +1,11 @@
-/* eslint-disable react/no-unknown-property */
-import { useFrame, useLoader } from '@react-three/fiber'
+import { ThreeEvent, useFrame, useLoader } from '@react-three/fiber'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader'
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js'
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js'
 
-import cupMTL from '../../../../assets/3dmodel/coffee_cup.mtl'
-import cupOBJ from '../../../../assets/3dmodel/coffee_cup.obj'
+import cupMTL from '../../../../assets/3dmodel/coffee_cup.mtl?url'
+import cupOBJ from '../../../../assets/3dmodel/coffee_cup.obj?url'
 
 export interface FirePosition {
   x: number
@@ -166,7 +165,7 @@ function FireEffect({
         const material = fireParticlesRef.current.material
         if (material) {
           if (Array.isArray(material)) {
-            material.forEach((m) => m.dispose())
+            material.forEach(m => m.dispose())
           } else {
             material.dispose()
           }
@@ -237,14 +236,15 @@ function FireEffect({
 
 interface CoffeeCupModelProps {
   firePosition?: FirePosition
+  onTogglePlay?: () => void
 }
 
 export const DEFAULT_FIRE_POSITION: FirePosition = { x: 0.5, y: -7, z: 0 }
 
-export default function CoffeeCupModel({ firePosition = DEFAULT_FIRE_POSITION }: CoffeeCupModelProps) {
+export default function CoffeeCupModel({ firePosition = DEFAULT_FIRE_POSITION, onTogglePlay }: CoffeeCupModelProps) {
   const groupRef = useRef<any>(null)
   const [isGroupSet, setIsGroupSet] = useState(false)
-  const cupMaterials = useLoader(MTLLoader, cupMTL) as any
+  const cupMaterials = useLoader(MTLLoader, cupMTL)
   const cupObj = useLoader(OBJLoader, cupOBJ, (loader) => {
     cupMaterials.preload()
     loader.setMaterials(cupMaterials)
@@ -260,11 +260,15 @@ export default function CoffeeCupModel({ firePosition = DEFAULT_FIRE_POSITION }:
     }
   }, [groupRef])
 
+  const handleClick = (event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation()
+    onTogglePlay?.()
+  }
+
   return (
     <group ref={groupRef}>
-      <primitive object={cupObj} />
+      <primitive object={cupObj} onClick={handleClick} />
       {isGroupSet && <FireEffect parentGroup={groupRef.current} cupObj={cupObj} positionOffset={firePosition} />}
     </group>
   )
 }
-

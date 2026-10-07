@@ -25,11 +25,15 @@ export default function BackgroundTimer({ isRest, pomodoroDuration, restDuration
     bgTimer.style.height = initialHeight
 
     const animation = new Animation(
-      new KeyframeEffect(bgTimer, [{ height: initialHeight }, { height: isRest ? '100%' : '0%' }], {
-        duration: isRest ? restDuration * 1000 : pomodoroDuration * 1000,
-        fill: 'forwards',
-        easing: 'linear',
-      }),
+      new KeyframeEffect(
+        bgTimer,
+        [{ height: initialHeight }, { height: isRest ? '100%' : '0%' }],
+        {
+          duration: isRest ? restDuration * 1000 : pomodoroDuration * 1000,
+          fill: 'forwards',
+          easing: 'linear',
+        },
+      ),
       document.timeline,
     )
 
@@ -54,21 +58,20 @@ export default function BackgroundTimer({ isRest, pomodoroDuration, restDuration
   }, [status])
 
   return (
-    <>
+    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
       <div
         ref={bgTimerRef}
-        className="absolute bottom-0 w-full"
+        className="absolute inset-x-0 bottom-0"
         style={{
-          zIndex: '-1',
           background: isRest ? '#6AFF88' : '#b22222',
         }}
       />
       <div
-        className="absolute bg-gray-800 bottom-0 w-full h-full"
+        className="absolute inset-0 bg-black"
         style={{
-          zIndex: '-2',
+          zIndex: -1,
         }}
       />
-    </>
+    </div>
   )
 }
