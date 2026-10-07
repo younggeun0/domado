@@ -102,7 +102,11 @@ export default function Settings() {
             step="5"
             value={opacity}
             onChange={e => setOpacity(Number(e.target.value))}
-            className="accent-red-600 [color-scheme:dark]"
+            // 네이티브 트랙은 accent-color 때문에 밝게 그려져 직접 그린다 (채워진 부분은 그라디언트)
+            style={{
+              background: `linear-gradient(to right, var(--color-red-600) ${((opacity - 20) / 80) * 100}%, rgb(255 255 255 / 0.12) 0)`,
+            }}
+            className="h-1.5 cursor-pointer appearance-none rounded-full [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600"
           />
         </div>
       </div>
