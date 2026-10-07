@@ -100,8 +100,9 @@ export default function Pomodoro() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTimerFinished])
 
+  // 휴식 화면은 화면 전체를 덮으므로 위젯 불투명도와 상관없이 불투명하게 한다(뒤 앱이 비치지 않게)
   return (
-    <main className="group fixed inset-0 overflow-hidden text-gray-600" style={{ opacity: opacity / 100 }}>
+    <main className="group fixed inset-0 overflow-hidden text-gray-600" style={{ opacity: isRest ? 1 : opacity / 100 }}>
       <BackgroundTimer
         isRest={isRest}
         pomodoroDuration={durations.pomodoro}

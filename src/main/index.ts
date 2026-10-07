@@ -7,8 +7,15 @@ import MenuBuilder from './menu'
 let mainWindow: BrowserWindow | null = null
 let tray: Tray
 
+// macOS 네이티브 전체화면은 별도 Space를 만들어, 휴식 중 연 설정·기록 창(자식 창)이 다른 Space에 뜨고
+// 닫은 뒤 휴식 화면이 합성되지 않아 검은 화면만 남았다. Space를 만들지 않는 단순 전체화면으로 덮는다
+const isMac = process.platform === 'darwin'
+const isWidgetFullScreen = () => !!mainWindow && (isMac ? mainWindow.isSimpleFullScreen() : mainWindow.isFullScreen())
+
 ipcMain.on('set_fullscreen', (_event, value: boolean) => {
-  mainWindow?.setFullScreen(value)
+  if (!mainWindow || isWidgetFullScreen() === value) return
+  if (isMac) mainWindow.setSimpleFullScreen(value)
+  else mainWindow.setFullScreen(value)
 })
 
 // 문구는 renderer가 현재 언어로 보낸다
@@ -46,7 +53,7 @@ const WIDGET_MIN_SIZE = { width: 100, height: 200 }
 
 // 투명 창은 OS 테두리로 크기를 바꿀 수 없어 renderer의 손잡이가 보낸 크기로 조절한다
 ipcMain.on('resize_widget', (_event, width: unknown, height: unknown) => {
-  if (!mainWindow || mainWindow.isFullScreen()) return
+  if (!mainWindow || isWidgetFullScreen()) return
   if (typeof width !== 'number' || typeof height !== 'number' || !Number.isFinite(width) || !Number.isFinite(height)) return
   mainWindow.setSize(
     Math.max(WIDGET_MIN_SIZE.width, Math.round(width)),
