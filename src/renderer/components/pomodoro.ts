@@ -1,6 +1,6 @@
-// 개발 모드(electron-vite dev)에서는 흐름 확인용으로 3초씩만 돈다
+// 개발 모드(tauri dev)와 DOMADO_FAST_TIMER=1 실행에서는 흐름 확인용으로 3초씩만 돈다
 export const getTimeInfo = (pomodoroMinutes: number = 25, restMinutes: number = 5) => {
-  return window.electron?.isDebug
+  return window.domado?.isDebug
     ? {
         POMODORO_SEC: 3,
         REST_SEC: 3,
@@ -18,13 +18,13 @@ export function formatRemainingTime(time: number) {
 }
 
 export function updateTray(
-  ipcRenderer: NonNullable<Window['electron']>['ipcRenderer'] | undefined,
+  ipc: NonNullable<Window['domado']>['ipc'] | undefined,
   newRemainingTime: number,
   isRest: boolean,
   durations: { pomodoro: number; rest: number },
 ) {
   if (newRemainingTime <= 0) {
-    ipcRenderer?.sendMessage('update_tray', null)
+    ipc?.sendMessage('update_tray', null)
     return
   }
 
@@ -61,5 +61,5 @@ export function updateTray(
   ctx.textBaseline = 'middle'
   ctx.fillText(timeText, canvas.width / 2, canvas.height / 2)
 
-  ipcRenderer?.sendMessage('update_tray', canvas.toDataURL())
+  ipc?.sendMessage('update_tray', canvas.toDataURL())
 }

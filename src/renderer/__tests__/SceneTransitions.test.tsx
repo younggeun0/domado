@@ -20,7 +20,7 @@ vi.mock('../components/scene/Domado3DScene', async () => {
   }
 })
 
-const sendMessage = () => window.electron!.ipcRenderer.sendMessage as ReturnType<typeof vi.fn>
+const sendMessage = () => window.domado!.ipc.sendMessage as ReturnType<typeof vi.fn>
 const fullScreenRequests = () => sendMessage().mock.calls.filter(([channel]) => channel === 'set_fullscreen').map(([, value]) => value)
 const scene = () => screen.getByTestId('scene')
 

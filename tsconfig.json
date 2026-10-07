@@ -3,8 +3,16 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["node", "vite/client", "vitest/globals"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
+    "types": [
+      "node",
+      "vite/client",
+      "vitest/globals"
+    ],
     "jsx": "react-jsx",
     "strict": true,
     "noUnusedLocals": true,
@@ -13,5 +21,10 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src", "e2e", "*.config.ts", "eslint.config.mjs"]
+  "include": [
+    "src",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "eslint.config.mjs"
+  ]
 }

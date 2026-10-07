@@ -12,7 +12,7 @@ interface FooterProps {
   onReload: () => void
 }
 
-const openWindow = (name: 'settings' | 'history') => window.electron?.ipcRenderer.sendMessage('open_window', name)
+const openWindow = (name: 'settings' | 'history') => window.domado?.ipc.sendMessage('open_window', name)
 
 const ICON_CLASS = 'h-4 w-4 min-[240px]:h-6 min-[240px]:w-6'
 

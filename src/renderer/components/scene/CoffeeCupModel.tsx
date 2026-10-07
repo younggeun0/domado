@@ -4,7 +4,7 @@ import * as THREE from 'three'
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js'
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js'
 
-// electron-builder는 *.obj를 C 오브젝트 파일로 보고 패키징에서 빼므로(excludedExts) 파일로 불러오지 않고 텍스트로 번들한다
+// 모델 파일을 따로 불러오지 않도록 OBJ·MTL을 텍스트로 번들해 바로 파싱한다
 import cupMTL from '../../../../assets/3dmodel/coffee_cup.mtl?raw'
 import cupOBJ from '../../../../assets/3dmodel/coffee_cup.obj?raw'
 

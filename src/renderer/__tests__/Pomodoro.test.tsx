@@ -26,7 +26,7 @@ describe('Pomodoro', () => {
 
     await userEvent.click(screen.getByTitle('설정'))
 
-    expect(window.electron?.ipcRenderer.sendMessage).toHaveBeenCalledWith('open_window', 'settings')
+    expect(window.domado?.ipc.sendMessage).toHaveBeenCalledWith('open_window', 'settings')
   })
 
   it('설정 창에서 시간을 바꾸면 진행 중인 타이머가 새 시간으로 초기화되고 오늘 기록은 유지된다', async () => {
@@ -59,7 +59,7 @@ describe('Pomodoro', () => {
     fireEvent.pointerDown(handle, { pointerId: 1, screenX: 100, screenY: 100 })
     fireEvent.pointerMove(handle, { pointerId: 1, screenX: 150, screenY: 130 })
 
-    expect(window.electron?.ipcRenderer.sendMessage).toHaveBeenLastCalledWith(
+    expect(window.domado?.ipc.sendMessage).toHaveBeenLastCalledWith(
       'resize_widget',
       window.innerWidth + 50,
       window.innerHeight + 30,
@@ -117,7 +117,7 @@ describe('Pomodoro', () => {
     expect(screen.getByText('🍅 : 1')).toBeInTheDocument()
 
     // 메인 프로세스에 완료 알림과 휴식 전체화면을 요청한다
-    const { sendMessage } = window.electron!.ipcRenderer
+    const { sendMessage } = window.domado!.ipc
     expect(sendMessage).toHaveBeenCalledWith('notify', {
       title: '뽀모도로가 완료되었습니다! 🎉',
       body: '오늘 1개의 뽀모도로를 완료했습니다! 휴식을 취하세요.',

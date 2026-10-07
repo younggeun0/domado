@@ -2,10 +2,28 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 
-import type { Channels, ElectronHandler } from '../preload'
+// renderer가 메인 프로세스(src-tauri)와 주고받는 채널. 채널 이름이 Rust 커맨드·이벤트 이름이다
+export type Channels = 'start_pomodoro' | 'set_fullscreen' | 'notify' | 'update_tray' | 'open_window' | 'resize_widget'
 
-// Tauri 시험 구현: Electron preload가 내주던 window.electron을 같은 모양으로 만들어 renderer 코드는 그대로 둔다.
-// 채널 이름이 Rust 커맨드 이름이고, 위치 인자를 커맨드의 이름 있는 인자로 바꾼다
+export type DomadoBridge = {
+  ipc: {
+    sendMessage(channel: Channels, ...args: unknown[]): void
+    // 구독을 해제하는 함수를 돌려준다
+    on(channel: Channels, func: (...args: unknown[]) => void): () => void
+  }
+  // 개발 모드와 E2E·수동 확인(DOMADO_FAST_TIMER=1)은 타이머를 3초씩만 돌린다
+  isDebug: boolean
+}
+
+declare global {
+  interface Window {
+    domado?: DomadoBridge
+    __TAURI_INTERNALS__?: unknown
+    __DOMADO_FAST_TIMER__?: boolean
+  }
+}
+
+// 위치 인자를 Rust 커맨드의 이름 있는 인자로 바꾼다
 const toArgs: Partial<Record<Channels, (...args: any[]) => Record<string, unknown>>> = {
   set_fullscreen: value => ({ value }),
   notify: ({ title, body }) => ({ title, body }),
@@ -14,16 +32,10 @@ const toArgs: Partial<Record<Channels, (...args: any[]) => Record<string, unknow
   resize_widget: (width, height) => ({ width, height }),
 }
 
-declare global {
-  interface Window {
-    __TAURI_INTERNALS__?: unknown
-    __DOMADO_FAST_TIMER__?: boolean
-  }
-}
-
+// Tauri 웹뷰 밖(단위 테스트의 jsdom)에서는 아무것도 하지 않는다
 if (window.__TAURI_INTERNALS__) {
-  const handler: ElectronHandler = {
-    ipcRenderer: {
+  window.domado = {
+    ipc: {
       sendMessage(channel, ...args) {
         invoke(channel, toArgs[channel]?.(...args)).catch(console.error)
       },
@@ -34,7 +46,6 @@ if (window.__TAURI_INTERNALS__) {
     },
     isDebug: import.meta.env.DEV || window.__DOMADO_FAST_TIMER__ === true,
   }
-  window.electron = handler
 
   // WKWebView는 스크립트로 열지 않은 창의 window.close()를 무시한다 (설정 저장 후 창 닫기)
   window.close = () => void getCurrentWindow().close()

@@ -13,7 +13,7 @@ import { usePomodoroSettings, useWidgetOpacity } from '../hooks/usePomodoroSetti
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer'
 import { useI18n } from '../i18n'
 
-const ipc = () => window.electron?.ipcRenderer
+const ipc = () => window.domado?.ipc
 
 export default function Pomodoro() {
   const { m } = useI18n()

@@ -12,7 +12,7 @@ export default function ResizeHandle() {
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const start = startRef.current
     if (!start) return
-    window.electron?.ipcRenderer.sendMessage(
+    window.domado?.ipc.sendMessage(
       'resize_widget',
       start.width + event.screenX - start.x,
       start.height + event.screenY - start.y,

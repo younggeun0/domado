@@ -37,7 +37,7 @@ describe('일별 기록', () => {
 
     await userEvent.click(screen.getByTitle('오늘의 기록'))
 
-    expect(window.electron?.ipcRenderer.sendMessage).toHaveBeenCalledWith('open_window', 'history')
+    expect(window.domado?.ipc.sendMessage).toHaveBeenCalledWith('open_window', 'history')
   })
 
   it('기록 창에 오늘 개수가 반영된다', () => {

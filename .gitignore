@@ -28,8 +28,6 @@ npm-debug.log.*
 *.scss.d.ts
 
 .env
-test-results
-playwright-report
-dist-tauri
+dist
 src-tauri/target
 src-tauri/gen

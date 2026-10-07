@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "vite/client", "@wdio/globals/types", "@wdio/mocha-framework"]
+  },
+  "include": [".", "../wdio.conf.ts", "../src/renderer/tauriBridge.ts"]
+}

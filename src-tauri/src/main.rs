@@ -1,5 +1,5 @@
-// Electron 메인 프로세스(src/main/index.ts)를 옮긴 Tauri 시험 구현. renderer는 src/renderer/tauriBridge.ts가
-// window.electron 모양으로 감싸 같은 채널 이름의 커맨드를 부른다
+// 메인 프로세스: 위젯·패널 창, 트레이, 전역 단축키, 알림, 자동 업데이트.
+// renderer는 src/renderer/tauriBridge.ts의 window.domado로 같은 이름의 커맨드를 부른다
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -12,7 +12,8 @@ use tauri::{AppHandle, Emitter, LogicalSize, Manager, WebviewUrl, WebviewWindow,
 use tauri_plugin_global_shortcut::ShortcutState;
 use tauri_plugin_notification::NotificationExt;
 
-// 위젯 최소 크기. Electron 앱과 같다
+// 위젯 최소 크기. 폭 100px 미만이면 타이머 숫자와 하단 버튼 4개가 잘리고,
+// 높이 200px 미만이면 높이에 비례해 작아지는 3D 모델을 타이머·하단 버튼이 덮는다
 const WIDGET_MIN: (f64, f64) = (100.0, 200.0);
 const TRAY_ID: &str = "main";
 
@@ -105,7 +106,7 @@ fn open_external(app: AppHandle, url: String) {
 }
 
 fn create_main_window(app: &AppHandle) -> tauri::Result<WebviewWindow> {
-    // E2E·수동 확인용 3초 타이머 (Electron의 DOMADO_FAST_TIMER와 같다)
+    // E2E·수동 확인용 3초 타이머
     let fast_timer = std::env::var("DOMADO_FAST_TIMER").as_deref() == Ok("1");
     WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
         .title("domado")
@@ -197,6 +198,21 @@ fn e2e_main_bounds(app: AppHandle) -> Option<serde_json::Value> {
     Some(serde_json::json!({ "x": position.x, "y": position.y, "width": size.width, "height": size.height }))
 }
 
+// GitHub 최신 릴리스의 latest.json을 보고 새 버전을 받아 설치한다. 실행 중인 앱은 그대로 두고 다음 실행부터 적용한다
+#[cfg(all(not(debug_assertions), not(feature = "e2e")))]
+async fn install_update(app: AppHandle) -> tauri_plugin_updater::Result<()> {
+    use tauri_plugin_updater::UpdaterExt;
+    let Some(update) = app.updater()?.check().await? else { return Ok(()) };
+    update.download_and_install(|_, _| {}, || {}).await?;
+    let _ = app
+        .notification()
+        .builder()
+        .title("domado")
+        .body(format!("Version {} is installed. Restart domado to apply it.", update.version))
+        .show();
+    Ok(())
+}
+
 fn main() {
     let builder = tauri::Builder::default();
     #[cfg(feature = "e2e")]
@@ -204,6 +220,7 @@ fn main() {
     builder
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_shortcuts(["super+shift+d"])
@@ -231,6 +248,15 @@ fn main() {
         .setup(|app| {
             create_main_window(app.handle())?;
             create_tray(app.handle())?;
+            #[cfg(all(not(debug_assertions), not(feature = "e2e")))]
+            {
+                let handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    if let Err(error) = install_update(handle).await {
+                        eprintln!("update failed: {error}");
+                    }
+                });
+            }
             Ok(())
         })
         .build(tauri::generate_context!())

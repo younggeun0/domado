@@ -13,9 +13,9 @@ class ResizeObserverMock implements ResizeObserver {
 
 globalThis.ResizeObserver = ResizeObserverMock
 
-// preload가 노출하는 IPC 목. 테스트에서 sendMessage 호출로 메인 프로세스 연동을 확인한다
-window.electron = {
-  ipcRenderer: { sendMessage: vi.fn(), on: vi.fn(() => () => {}) },
+// tauriBridge가 만드는 window.domado 목. 테스트에서 sendMessage 호출로 메인 프로세스 연동을 확인한다
+window.domado = {
+  ipc: { sendMessage: vi.fn(), on: vi.fn(() => () => {}) },
   isDebug: false,
 }
 

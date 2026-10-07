@@ -3,8 +3,21 @@
     "security": {
       "capabilities": [
         "default",
-        { "identifier": "e2e", "windows": ["main", "settings", "history"], "permissions": ["wdio-webdriver:default"] }
+        {
+          "identifier": "e2e",
+          "windows": [
+            "main",
+            "settings",
+            "history"
+          ],
+          "permissions": [
+            "wdio-webdriver:default"
+          ]
+        }
       ]
     }
+  },
+  "bundle": {
+    "createUpdaterArtifacts": false
   }
 }

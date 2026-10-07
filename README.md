@@ -1,6 +1,8 @@
 # domado 🍅
 
-혼자 쓰려고 만든 뽀모도로 일렉트론 앱 (웹앱: https://domado.younggeun0.dev)
+혼자 쓰려고 만든 macOS 뽀모도로 위젯 앱 (웹앱: https://domado.younggeun0.dev)
+
+4.0.0부터 Electron 대신 [Tauri](https://tauri.app)로 만든다 (dmg 약 134MB → 9MB).
 
 - 작은 위젯 창에 마우스를 올리면 오늘 개수와 버튼(개수 증가·휴식 스킵·새로고침·설정)이 보인다
 - 오늘 개수를 누르면 일별 기록 히트맵 창, 설정 버튼을 누르면 설정 창이 따로 열린다
@@ -20,12 +22,17 @@
 
 ### 개발
 
+Rust(`rustup`)와 Node 22 이상이 필요하다.
+
 ```sh
 npm install
-npm run dev        # electron-vite 개발 모드 (타이머가 3초씩 돈다)
+npm run dev        # tauri dev (타이머가 3초씩 돈다)
 npm test           # vitest (단위)
-npm run test:e2e   # 패키징 앱을 띄워 3D 렌더링·창 상태 검사 (macOS, 릴리스 전 실행)
-npm run package    # release/build에 앱 생성
+npm run test:e2e   # e2e feature로 앱을 빌드해 3D 렌더링·창 상태 검사 (macOS, 릴리스 전 실행)
+npm run build      # src-tauri/target/release/bundle에 앱·dmg·업데이트 파일 생성
 ```
 
-macOS 공증은 `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` 환경 변수가 있으면 electron-builder가 처리한다.
+### 릴리스
+
+- 자동 업데이트는 GitHub 최신 릴리스의 `latest.json`을 본다. 업데이트 파일(`domado.app.tar.gz`)은 `~/.tauri/domado-updater.key`로 서명한다 (`TAURI_SIGNING_PRIVATE_KEY`). 이 키를 잃으면 이미 설치된 앱에 업데이트를 보낼 수 없다.
+- 서명은 `APPLE_SIGNING_IDENTITY`로 지정한 Developer ID로 하고, 공증은 `xcrun notarytool submit --keychain-profile <프로필>` 후 `xcrun stapler staple`로 한다.

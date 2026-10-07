@@ -51,7 +51,7 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
       const interval = setInterval(() => {
         const calculated = calculateRemainingTime()
         setRemainingTime(calculated)
-        updateTray(window.electron?.ipcRenderer, calculated, isRest, { pomodoro: timeInfo.POMODORO_SEC, rest: timeInfo.REST_SEC })
+        updateTray(window.domado?.ipc, calculated, isRest, { pomodoro: timeInfo.POMODORO_SEC, rest: timeInfo.REST_SEC })
 
         if (calculated <= 0) {
           endTimeRef.current = null
