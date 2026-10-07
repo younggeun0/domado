@@ -117,7 +117,8 @@ for (const [button, label] of [
 
     await switchToPanel(label)
     if (process.env.SHOT_DIR) await browser.saveScreenshot(`${process.env.SHOT_DIR}/panel-${label}.png`)
-    await browser.execute(() => window.close())
+    // 창이 execute 응답 전에 닫히면 드라이버가 no such window를 낸다: 응답 뒤로 미룬다
+    await browser.execute(() => void setTimeout(() => window.close(), 100))
     await browser.switchToWindow('main')
     await poll(async () => (await windowStates()).length === 1, `${label} not closed`)
 
