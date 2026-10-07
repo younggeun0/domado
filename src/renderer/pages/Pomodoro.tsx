@@ -116,7 +116,7 @@ export default function Pomodoro() {
       </SceneErrorBoundary>
 
       {/* 프레임 없는 창을 옮기는 손잡이. 드래그 영역 안에서는 hover가 잡히지 않아 하단 버튼과 분리해 상단에 둔다 */}
-      <div className="drag-region absolute inset-x-0 top-0 z-20 h-5" />
+      <div data-tauri-drag-region className="drag-region absolute inset-x-0 top-0 z-20 h-5" />
 
       <div className="pointer-events-none relative z-10 flex h-full flex-col">
         <div className="flex flex-1 flex-col items-center justify-center p-3">

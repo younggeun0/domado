@@ -31,7 +31,7 @@ export default function Settings() {
   return (
     <main className="flex h-screen flex-col gap-4 bg-neutral-900 p-5 pt-10 text-white">
       {/* 숨긴 타이틀바 자리. 창을 끌어 옮기는 손잡이이자 신호등 버튼과 내용이 겹치지 않게 하는 여백 */}
-      <div className="drag-region fixed inset-x-0 top-0 h-8" />
+      <div data-tauri-drag-region className="drag-region fixed inset-x-0 top-0 h-8" />
       <title>{m.settings.title}</title>
       <header className="grid gap-1.5">
         <h1 className="text-lg font-semibold leading-none tracking-tight">{m.settings.title}</h1>

@@ -30,3 +30,6 @@ npm-debug.log.*
 .env
 test-results
 playwright-report
+dist-tauri
+src-tauri/target
+src-tauri/gen
