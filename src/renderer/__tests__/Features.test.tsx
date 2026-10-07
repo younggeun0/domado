@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, vi } from 'vitest'
 
@@ -109,6 +109,19 @@ describe('설정 창', () => {
     })
 
     expect(screen.getByTitle("Today's count")).toBeInTheDocument()
+  })
+
+  it('위젯 불투명도는 저장 없이 바로 저장소에 남고, 위젯 창은 storage 이벤트로 반영한다', () => {
+    render(<Settings />)
+    fireEvent.change(screen.getByLabelText(/위젯 불투명도/), { target: { value: '50' } })
+    expect(localStorage.getItem('domado_widget_opacity')).toBe('50')
+
+    const { container } = render(<Pomodoro />)
+    act(() => {
+      localStorage.setItem('domado_widget_opacity', '40')
+      window.dispatchEvent(new StorageEvent('storage', { key: 'domado_widget_opacity' }))
+    })
+    expect(container.querySelector('main')).toHaveStyle({ opacity: '0.4' })
   })
 
   it('시간을 바꾸면 경고가 보이고 저장하면 값을 남기고 창을 닫는다', async () => {

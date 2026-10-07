@@ -7,7 +7,7 @@ import RemainingTimeDisplay from '../components/RemainingTimeDisplay'
 import Domado3DScene from '../components/scene/Domado3DScene'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts'
-import { usePomodoroSettings } from '../hooks/usePomodoroSettings'
+import { usePomodoroSettings, useWidgetOpacity } from '../hooks/usePomodoroSettings'
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer'
 import { useI18n } from '../i18n'
 
@@ -16,6 +16,7 @@ const ipc = () => window.electron?.ipcRenderer
 export default function Pomodoro() {
   const { m } = useI18n()
   const { pomodoroMinutes, restMinutes } = usePomodoroSettings()
+  const [opacity] = useWidgetOpacity()
   const [playbackFeedback, setPlaybackFeedback] = useState<{
     id: number
     mode: 'play' | 'pause'
@@ -98,7 +99,7 @@ export default function Pomodoro() {
   }, [isTimerFinished])
 
   return (
-    <main className="group fixed inset-0 overflow-hidden text-gray-600 opacity-80">
+    <main className="group fixed inset-0 overflow-hidden text-gray-600" style={{ opacity: opacity / 100 }}>
       <BackgroundTimer
         isRest={isRest}
         pomodoroDuration={durations.pomodoro}

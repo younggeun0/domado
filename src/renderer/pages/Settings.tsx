@@ -1,7 +1,7 @@
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
-import { usePomodoroSettings } from '../hooks/usePomodoroSettings'
+import { usePomodoroSettings, useWidgetOpacity } from '../hooks/usePomodoroSettings'
 import { LANGUAGE_NAMES, LANGUAGES, type Language, useI18n } from '../i18n'
 
 const INPUT_CLASS =
@@ -13,6 +13,7 @@ export default function Settings() {
   const { language, setLanguage, m } = useI18n()
   const { pomodoroMinutes: currentPomodoroMinutes, restMinutes: currentRestMinutes, updateSettings } =
     usePomodoroSettings()
+  const [opacity, setOpacity] = useWidgetOpacity()
   const [pomodoroMinutes, setPomodoroMinutes] = useState(currentPomodoroMinutes.toString())
   const [restMinutes, setRestMinutes] = useState(currentRestMinutes.toString())
 
@@ -84,6 +85,23 @@ export default function Settings() {
               </option>
             ))}
           </select>
+        </div>
+        <div className="grid gap-2">
+          <label htmlFor="opacity" className="flex justify-between text-sm font-medium text-white/80">
+            {m.settings.opacity}
+            <span className="tabular-nums text-white/60">{opacity}%</span>
+          </label>
+          {/* 언어처럼 저장 버튼과 별개로 움직이는 즉시 위젯에 반영한다 */}
+          <input
+            id="opacity"
+            type="range"
+            min="20"
+            max="100"
+            step="5"
+            value={opacity}
+            onChange={e => setOpacity(Number(e.target.value))}
+            className="accent-red-600"
+          />
         </div>
       </div>
 
