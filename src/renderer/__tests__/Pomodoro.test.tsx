@@ -51,6 +51,21 @@ describe('Pomodoro', () => {
     expect(screen.getByText('🍅 : 3')).toBeInTheDocument()
   })
 
+  it('우하단 손잡이를 끌면 늘어난 만큼의 위젯 크기를 메인 프로세스에 요청한다', () => {
+    const { container } = render(<Pomodoro />)
+    const handle = container.querySelector('.cursor-nwse-resize') as HTMLElement
+    handle.setPointerCapture = vi.fn()
+
+    fireEvent.pointerDown(handle, { pointerId: 1, screenX: 100, screenY: 100 })
+    fireEvent.pointerMove(handle, { pointerId: 1, screenX: 150, screenY: 130 })
+
+    expect(window.electron?.ipcRenderer.sendMessage).toHaveBeenLastCalledWith(
+      'resize_widget',
+      window.innerWidth + 50,
+      window.innerHeight + 30,
+    )
+  })
+
   it('뽀모도로 개수 증가 버튼은 확인 후 오늘의 기록을 증가시킨다', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
 

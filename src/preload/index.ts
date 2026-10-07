@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
-export type Channels = 'start_pomodoro' | 'set_fullscreen' | 'notify' | 'update_tray' | 'open_window'
+export type Channels = 'start_pomodoro' | 'set_fullscreen' | 'notify' | 'update_tray' | 'open_window' | 'resize_widget'
 
 const electronHandler = {
   ipcRenderer: {

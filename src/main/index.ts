@@ -40,6 +40,20 @@ function registerShortcuts() {
   })
 }
 
+// 위젯 최소 크기. 폭 100px 미만이면 타이머 숫자(최소 24px)와 하단 버튼 4개가 잘리고,
+// 높이 200px 미만이면 높이에 비례해 작아지는 3D 모델을 타이머·하단 버튼이 덮는다
+const WIDGET_MIN_SIZE = { width: 100, height: 200 }
+
+// 투명 창은 OS 테두리로 크기를 바꿀 수 없어 renderer의 손잡이가 보낸 크기로 조절한다
+ipcMain.on('resize_widget', (_event, width: unknown, height: unknown) => {
+  if (!mainWindow || mainWindow.isFullScreen()) return
+  if (typeof width !== 'number' || typeof height !== 'number' || !Number.isFinite(width) || !Number.isFinite(height)) return
+  mainWindow.setSize(
+    Math.max(WIDGET_MIN_SIZE.width, Math.round(width)),
+    Math.max(WIDGET_MIN_SIZE.height, Math.round(height)),
+  )
+})
+
 // 개발 서버(electron-vite dev)면 URL, 패키징 후에는 빌드된 html 파일을 연다. 해시로 보여줄 페이지를 고른다
 function loadRenderer(window: BrowserWindow, hash = '') {
   if (process.env.ELECTRON_RENDERER_URL) {
@@ -93,8 +107,9 @@ ipcMain.on('open_window', (_event, name: PanelName) => {
 const createWindow = async () => {
   mainWindow = new BrowserWindow({
     show: false,
-    width: 100,
-    height: 200,
+    ...WIDGET_MIN_SIZE,
+    minWidth: WIDGET_MIN_SIZE.width,
+    minHeight: WIDGET_MIN_SIZE.height,
     transparent: true,
     frame: false,
     icon: getAssetPath('icon.png'),

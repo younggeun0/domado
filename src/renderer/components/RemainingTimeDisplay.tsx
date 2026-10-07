@@ -16,8 +16,8 @@ export default function RemainingTimeDisplay({ remainingTime }: RemainingTimeDis
       style={{
         top: '20%',
         transform: 'translateY(-20%)',
-        // 100px 위젯부터 전체화면까지 폭에 비례
-        fontSize: 'clamp(1.5rem, 25vw, 18rem)',
+        // 100px 위젯부터 전체화면까지 창 크기에 비례. 넓고 낮은 창에서도 높이를 넘지 않게 vh도 함께 본다
+        fontSize: 'clamp(1.5rem, min(25vw, 22vh), 18rem)',
         fontVariantNumeric: 'tabular-nums',
         lineHeight: 1,
         userSelect: 'none',

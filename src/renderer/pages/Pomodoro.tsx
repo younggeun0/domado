@@ -4,6 +4,7 @@ import BackgroundTimer from '../components/BackgroundTimer'
 import Footer from '../components/Footer'
 import PlaybackFeedback from '../components/PlaybackFeedback'
 import RemainingTimeDisplay from '../components/RemainingTimeDisplay'
+import ResizeHandle from '../components/ResizeHandle'
 import Domado3DScene from '../components/scene/Domado3DScene'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts'
@@ -127,6 +128,9 @@ export default function Pomodoro() {
           onReload={handleReload}
         />
       </div>
+
+      {/* 휴식 중에는 전체화면이라 크기 조절이 필요 없다 */}
+      {!isRest && <ResizeHandle />}
     </main>
   )
 }
