@@ -7,6 +7,9 @@ import MenuBuilder from './menu'
 let mainWindow: BrowserWindow | null = null
 let tray: Tray
 
+// E2E 테스트가 실제 기록을 건드리지 않도록 임시 프로필을 쓸 수 있게 한다
+if (process.env.DOMADO_USER_DATA) app.setPath('userData', process.env.DOMADO_USER_DATA)
+
 // macOS 네이티브 전체화면은 별도 Space를 만들어, 휴식 중 연 설정·기록 창(자식 창)이 다른 Space에 뜨고
 // 닫은 뒤 휴식 화면이 합성되지 않아 검은 화면만 남았다. Space를 만들지 않는 단순 전체화면으로 덮는다
 const isMac = process.platform === 'darwin'

@@ -16,7 +16,8 @@ const electronHandler = {
       }
     },
   },
-  isDebug: import.meta.env.DEV,
+  // 개발 모드와 E2E 테스트(DOMADO_FAST_TIMER=1)는 타이머를 3초씩만 돌린다
+  isDebug: import.meta.env.DEV || process.env.DOMADO_FAST_TIMER === '1',
 }
 
 contextBridge.exposeInMainWorld('electron', electronHandler)
