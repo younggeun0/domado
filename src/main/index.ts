@@ -1,34 +1,19 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path'
 import { app, BrowserWindow, shell, ipcMain, Notification, Tray, nativeImage, globalShortcut, Menu } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import log from 'electron-log'
+import log from 'electron-log/main'
 import MenuBuilder from './menu'
-import { resolveHtmlPath } from './util'
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray
 
-const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true'
-if (isDebug) {
-  require('electron-debug')()
-}
+ipcMain.on('set_fullscreen', (_event, value: boolean) => {
+  mainWindow?.setFullScreen(value)
+})
 
-ipcMain.on('rest_finished', async () => {
-  mainWindow?.setFullScreen(false)
-  new Notification({
-    title: '휴식 종료!',
-    body: '다시 힘내보자구! 화이팅! 💪',
-  }).show()
+// 문구는 renderer가 현재 언어로 보낸다
+ipcMain.on('notify', (_event, { title, body }: { title: string; body: string }) => {
+  new Notification({ title, body }).show()
 })
 
 const RESOURCES_PATH = app.isPackaged
@@ -48,43 +33,6 @@ ipcMain.on('update_tray', async (_event, imageUrl) => {
   tray.setImage(imageUrl ? nativeImage.createFromDataURL(imageUrl) : getDefaultTrayIcon())
 })
 
-ipcMain.on('pomodoro_finished', async (event) => {
-  tray.setImage(getDefaultTrayIcon())
-  mainWindow?.setFullScreen(true)
-
-  new Notification({
-    title: '🍅 뽀모도로 종료! 고생했어!',
-    body: '조금만 쉬었다 해요 🥰',
-  }).show()
-  event.returnValue = true
-})
-
-class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info'
-    autoUpdater.logger = log
-    autoUpdater.checkForUpdatesAndNotify()
-  }
-}
-
-if (process.env.NODE_ENV === 'production') {
-  const sourceMapSupport = require('source-map-support')
-  sourceMapSupport.install()
-}
-
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer')
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS
-  const extensions = ['REACT_DEVELOPER_TOOLS']
-
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload,
-    )
-    .catch(console.log)
-}
-
 function registerShortcuts() {
   globalShortcut.register('Super+Shift+D', () => {
     mainWindow?.show()
@@ -92,11 +40,53 @@ function registerShortcuts() {
   })
 }
 
-const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions()
+// 개발 서버(electron-vite dev)면 URL, 패키징 후에는 빌드된 html 파일을 연다. 해시로 보여줄 페이지를 고른다
+function loadRenderer(window: BrowserWindow, hash = '') {
+  if (process.env.ELECTRON_RENDERER_URL) {
+    window.loadURL(`${process.env.ELECTRON_RENDERER_URL}#${hash}`)
+  } else {
+    window.loadFile(path.join(__dirname, '../renderer/index.html'), { hash })
+  }
+}
+
+const openExternal = ({ url }: { url: string }) => {
+  if (/^https?:\/\//.test(url)) shell.openExternal(url)
+  return { action: 'deny' as const }
+}
+
+// 작은 위젯 창 크기에 묶이지 않도록 설정·기록은 별도 창으로 연다 (종류별로 하나만)
+const PANEL_SIZES = {
+  settings: { width: 384, height: 460 },
+  history: { width: 420, height: 320 },
+}
+type PanelName = keyof typeof PANEL_SIZES
+const panels: Partial<Record<PanelName, BrowserWindow>> = {}
+
+ipcMain.on('open_window', (_event, name: PanelName) => {
+  if (!Object.hasOwn(PANEL_SIZES, name)) return
+
+  const existing = panels[name]
+  if (existing) {
+    existing.focus()
+    return
   }
 
+  const panel = new BrowserWindow({
+    ...PANEL_SIZES[name],
+    // 위젯이 항상 위에 떠 있어 부모로 묶어야 위젯 뒤로 가려지지 않는다
+    parent: mainWindow ?? undefined,
+    show: false,
+    backgroundColor: '#171717',
+    autoHideMenuBar: true,
+  })
+  panels[name] = panel
+  panel.on('closed', () => delete panels[name])
+  panel.once('ready-to-show', () => panel.show())
+  panel.webContents.setWindowOpenHandler(openExternal)
+  loadRenderer(panel, name)
+})
+
+const createWindow = async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: 100,
@@ -105,23 +95,16 @@ const createWindow = async () => {
     frame: false,
     icon: getAssetPath('icon.png'),
     webPreferences: {
-      preload: app.isPackaged ? path.join(__dirname, 'preload.js') : path.join(__dirname, '../../.erb/dll/preload.js'),
+      preload: path.join(__dirname, '../preload/index.js'),
     },
   })
 
   mainWindow.setAlwaysOnTop(true)
-  mainWindow.loadURL(resolveHtmlPath('index.html'))
+  loadRenderer(mainWindow)
   mainWindow.webContents.setBackgroundThrottling(false)
 
   mainWindow.on('ready-to-show', () => {
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined')
-    }
-    if (process.env.START_MINIMIZED) {
-      mainWindow.minimize()
-    } else {
-      mainWindow.show()
-    }
+    mainWindow?.show()
   })
 
   mainWindow.on('closed', () => {
@@ -132,14 +115,14 @@ const createWindow = async () => {
   menuBuilder.buildMenu()
 
   // Open urls in the user's browser
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
-    shell.openExternal(edata.url)
-    return { action: 'deny' }
-  })
+  mainWindow.webContents.setWindowOpenHandler(openExternal)
 
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
-  new AppUpdater();
+  if (app.isPackaged) {
+    log.transports.file.level = 'info'
+    autoUpdater.logger = log
+    // publish 설정이 없으면 app-update.yml이 없어 실패하므로 로그만 남긴다
+    autoUpdater.checkForUpdatesAndNotify().catch(log.error)
+  }
 }
 
 function showWindow() {
@@ -171,9 +154,6 @@ function createTray() {
   tray.on('click', showWindow)
 }
 
-/**
- * Add event listeners...
- */
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
