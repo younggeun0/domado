@@ -102,7 +102,7 @@ export default function Settings() {
             step="5"
             value={opacity}
             onChange={e => setOpacity(Number(e.target.value))}
-            className="accent-red-600"
+            className="accent-red-600 [color-scheme:dark]"
           />
         </div>
       </div>
