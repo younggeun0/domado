@@ -1,4 +1,9 @@
 import { $, browser, expect } from '@wdio/globals'
+import { execSync } from 'child_process'
+import { mkdtempSync, readFileSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import path from 'path'
+
 import { PNG } from 'pngjs'
 
 // e2e/app.spec.ts(Electron)와 같은 시나리오를 Tauri 앱에서 확인한다.
@@ -12,8 +17,24 @@ const invoke = <T>(command: string, args?: Record<string, unknown>) =>
 const windowStates = () => invoke<WindowState[]>('e2e_window_states')
 const widgetState = async () => (await windowStates()).find(window => window.label === 'main')!
 
-async function countPixels(region: { x: [number, number]; y: [number, number] }, match: (r: number, g: number, b: number) => boolean) {
-  const png = PNG.sync.read(Buffer.from(await browser.takeScreenshot(), 'base64'))
+// 웹뷰 스냅샷(takeScreenshot)은 OS 합성 결과가 아니라서 창이 검게 합성되는 문제를 못 본다.
+// 휴식 화면은 screencapture로 실제 화면을 찍는다 (전체화면이라 위젯이 있는 모니터 전체)
+async function osScreenshot() {
+  const { x, y, width, height } = await invoke<{ x: number; y: number; width: number; height: number }>('e2e_main_bounds')
+  const dir = mkdtempSync(path.join(tmpdir(), 'domado-shot-'))
+  const file = path.join(dir, 'shot.png')
+  execSync(`screencapture -x -R ${x},${y},${width},${height} ${file}`)
+  const png = readFileSync(file)
+  rmSync(dir, { recursive: true, force: true })
+  return png
+}
+
+async function countPixels(
+  region: { x: [number, number]; y: [number, number] },
+  match: (r: number, g: number, b: number) => boolean,
+  source: 'webview' | 'os' = 'webview',
+) {
+  const png = PNG.sync.read(source === 'os' ? await osScreenshot() : Buffer.from(await browser.takeScreenshot(), 'base64'))
   let count = 0
   for (let y = Math.floor(png.height * region.y[0]); y < png.height * region.y[1]; y++) {
     for (let x = Math.floor(png.width * region.x[0]); x < png.width * region.x[1]; x++) {
@@ -29,10 +50,11 @@ const poll = (fn: () => Promise<boolean>, message: string) => browser.waitUntil(
 // 위젯 스크린샷은 창 크기(배율 1)라 Electron보다 픽셀이 적다: 기준을 넓이에 맞춰 둔다
 const expectTomatoRendered = () =>
   poll(async () => (await countPixels({ x: [0.2, 0.8], y: [0.25, 0.75] }, (r, g, b) => g >= r && g > b + 20)) > 20, 'tomato not rendered')
-const expectCupRendered = () =>
+const expectCupRendered = (source: 'webview' | 'os' = 'webview') =>
   poll(
-    async () => (await countPixels({ x: [0.35, 0.65], y: [0.5, 0.7] }, (r, g, b) => r > 170 && g > 170 && b > 170 && Math.abs(r - b) < 40)) > 500,
-    'cup not rendered',
+    async () =>
+      (await countPixels({ x: [0.35, 0.65], y: [0.5, 0.7] }, (r, g, b) => r > 170 && g > 170 && b > 170 && Math.abs(r - b) < 40, source)) > 500,
+    `cup not rendered (${source})`,
   )
 
 async function finishPomodoro() {
@@ -100,6 +122,8 @@ for (const [button, label] of [
 
     expect(await widgetState()).toMatchObject({ visible: true, fullScreen: true })
     await expectCupRendered()
+    // 이전 버전의 검은 화면은 웹뷰는 멀쩡하고 OS 합성만 검었다
+    await expectCupRendered('os')
     expect(await browser.getTitle()).toContain('☕')
   })
 }

@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint'
 
 // 웹앱(younggeun0.dev/apps/domado)과 같은 기준: 훅 규칙은 rules-of-hooks·exhaustive-deps만 적용
 export default tseslint.config(
-  { ignores: ['out', 'release', 'test-results', 'playwright-report'] },
+  { ignores: ['out', 'release', 'test-results', 'playwright-report', 'dist-tauri', 'src-tauri/target', 'src-tauri/gen'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

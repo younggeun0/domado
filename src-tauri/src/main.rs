@@ -171,15 +171,30 @@ fn e2e_window_states(app: AppHandle) -> Vec<serde_json::Value> {
         .map(|(label, window)| {
             let scale = window.scale_factor().unwrap_or(1.0);
             let size = window.inner_size().map(|s| s.to_logical::<f64>(scale)).ok();
+            // 앱이 들고 있는 플래그가 아니라 실제 창 크기가 모니터를 덮는지로 판단한다
+            let outer = window.outer_size().ok();
+            let monitor = window.current_monitor().ok().flatten().map(|m| *m.size());
+            let full_screen = matches!((outer, monitor), (Some(o), Some(m)) if o.width >= m.width && o.height >= m.height);
             serde_json::json!({
                 "label": label,
                 "visible": window.is_visible().unwrap_or(false),
-                "fullScreen": label == "main" && FULLSCREEN.load(Ordering::SeqCst),
+                "fullScreen": full_screen,
                 "width": size.map(|s| s.width),
                 "height": size.map(|s| s.height),
             })
         })
         .collect()
+}
+
+// E2E가 OS 화면 캡처(screencapture -R)할 위젯 영역. 전역 좌표(포인트)
+#[cfg(feature = "e2e")]
+#[tauri::command]
+fn e2e_main_bounds(app: AppHandle) -> Option<serde_json::Value> {
+    let window = main_window(&app)?;
+    let scale = window.scale_factor().ok()?;
+    let position = window.outer_position().ok()?.to_logical::<f64>(scale);
+    let size = window.outer_size().ok()?.to_logical::<f64>(scale);
+    Some(serde_json::json!({ "x": position.x, "y": position.y, "width": size.width, "height": size.height }))
 }
 
 fn main() {
@@ -209,7 +224,9 @@ fn main() {
             open_window,
             open_external,
             #[cfg(feature = "e2e")]
-            e2e_window_states
+            e2e_window_states,
+            #[cfg(feature = "e2e")]
+            e2e_main_bounds
         ])
         .setup(|app| {
             create_main_window(app.handle())?;
