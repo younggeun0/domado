@@ -13,6 +13,7 @@
   },
   "main": "./out/main/index.js",
   "scripts": {
+    "postinstall": "install-electron",
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
     "build": "electron-vite build",
