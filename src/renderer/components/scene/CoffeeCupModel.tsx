@@ -1,11 +1,12 @@
-import { ThreeEvent, useFrame, useLoader } from '@react-three/fiber'
-import { useEffect, useRef, useState } from 'react'
+import { ThreeEvent, useFrame } from '@react-three/fiber'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js'
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js'
 
-import cupMTL from '../../../../assets/3dmodel/coffee_cup.mtl?url'
-import cupOBJ from '../../../../assets/3dmodel/coffee_cup.obj?url'
+// electron-builder는 *.obj를 C 오브젝트 파일로 보고 패키징에서 빼므로(excludedExts) 파일로 불러오지 않고 텍스트로 번들한다
+import cupMTL from '../../../../assets/3dmodel/coffee_cup.mtl?raw'
+import cupOBJ from '../../../../assets/3dmodel/coffee_cup.obj?raw'
 
 export interface FirePosition {
   x: number
@@ -244,15 +245,16 @@ export const DEFAULT_FIRE_POSITION: FirePosition = { x: 0.5, y: -7, z: 0 }
 export default function CoffeeCupModel({ firePosition = DEFAULT_FIRE_POSITION, onTogglePlay }: CoffeeCupModelProps) {
   const groupRef = useRef<any>(null)
   const [isGroupSet, setIsGroupSet] = useState(false)
-  const cupMaterials = useLoader(MTLLoader, cupMTL)
-  const cupObj = useLoader(OBJLoader, cupOBJ, (loader) => {
-    cupMaterials.preload()
-    loader.setMaterials(cupMaterials)
-  }) as THREE.Group
+  const cupObj = useMemo(() => {
+    const materials = new MTLLoader().parse(cupMTL, '')
+    materials.preload()
+    const obj = new OBJLoader().setMaterials(materials).parse(cupOBJ)
 
-  const scale = 12
-  cupObj.scale.set(scale, scale, scale)
-  cupObj.position.set(0, -75, 0)
+    const scale = 12
+    obj.scale.set(scale, scale, scale)
+    obj.position.set(0, -75, 0)
+    return obj
+  }, [])
 
   useEffect(() => {
     if (groupRef.current) {

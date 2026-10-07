@@ -6,6 +6,7 @@ import PlaybackFeedback from '../components/PlaybackFeedback'
 import RemainingTimeDisplay from '../components/RemainingTimeDisplay'
 import ResizeHandle from '../components/ResizeHandle'
 import Domado3DScene from '../components/scene/Domado3DScene'
+import SceneErrorBoundary from '../components/scene/SceneErrorBoundary'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts'
 import { usePomodoroSettings, useWidgetOpacity } from '../hooks/usePomodoroSettings'
@@ -108,7 +109,10 @@ export default function Pomodoro() {
         status={status === 'running' ? 'running' : 'paused'}
       />
 
-      <Domado3DScene isRest={isRest} paused={status === 'paused'} onTogglePlay={handleTogglePlay} />
+      {/* 작업·휴식이 바뀌면 다른 모델을 불러오므로 다시 시도한다 */}
+      <SceneErrorBoundary key={String(isRest)}>
+        <Domado3DScene isRest={isRest} paused={status === 'paused'} onTogglePlay={handleTogglePlay} />
+      </SceneErrorBoundary>
 
       {/* 프레임 없는 창을 옮기는 손잡이. 드래그 영역 안에서는 hover가 잡히지 않아 하단 버튼과 분리해 상단에 둔다 */}
       <div className="drag-region absolute inset-x-0 top-0 z-20 h-5" />
