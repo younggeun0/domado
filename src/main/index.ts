@@ -57,7 +57,7 @@ const openExternal = ({ url }: { url: string }) => {
 // 작은 위젯 창 크기에 묶이지 않도록 설정·기록은 별도 창으로 연다 (종류별로 하나만)
 const PANEL_SIZES = {
   settings: { width: 384, height: 460 },
-  history: { width: 420, height: 320 },
+  history: { width: 420, height: 370 },
 }
 type PanelName = keyof typeof PANEL_SIZES
 const panels: Partial<Record<PanelName, BrowserWindow>> = {}

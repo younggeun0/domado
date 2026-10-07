@@ -74,3 +74,55 @@ export function buildHeatmapWeeks(today: Date, weeks = 53): (string | null)[][] 
     }),
   )
 }
+
+// ── JSON 백업 (웹앱 younggeun0.dev/apps/domado와 같은 형식이라 서로 주고받을 수 있다) ──
+
+const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+export interface HistoryBackup {
+  app: 'domado'
+  version: 1
+  exportedAt: string
+  dailyCounts: Record<string, number>
+}
+
+export async function downloadHistoryBackup(): Promise<void> {
+  const backup: HistoryBackup = {
+    app: 'domado',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    dailyCounts: await loadDailyCounts(),
+  }
+  const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `domado-history-${toDateKey(new Date())}.json`
+  link.click()
+  setTimeout(() => URL.revokeObjectURL(url))
+}
+
+// 사용자가 고른 파일이라 형식을 검사한다. domado 백업이 아니거나 값이 이상하면 null
+export function parseHistoryBackup(text: string): Record<string, number> | null {
+  let data: unknown
+  try {
+    data = JSON.parse(text)
+  } catch {
+    return null
+  }
+
+  const counts = (data as Partial<HistoryBackup> | null)?.dailyCounts
+  if ((data as Partial<HistoryBackup>)?.app !== 'domado' || typeof counts !== 'object' || counts === null) return null
+
+  const entries = Object.entries(counts)
+  const isValid = entries.every(
+    ([date, count]) => DATE_KEY_PATTERN.test(date) && Number.isInteger(count) && count >= 0 && count < 1000,
+  )
+  return isValid ? Object.fromEntries(entries) : null
+}
+
+// 날짜별로 기존 기록과 비교해 큰 값을 남긴다 (saveDailyCount 규칙) — 백업을 불러와도 그 뒤 기록이 줄지 않는다
+export async function importDailyCounts(counts: Record<string, number>): Promise<void> {
+  for (const [date, count] of Object.entries(counts)) {
+    await saveDailyCount(date, count)
+  }
+}

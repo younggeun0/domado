@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, vi } from 'vitest'
 
-import { buildHeatmapWeeks } from '../hooks/pomodoroHistory'
+import { buildHeatmapWeeks, parseHistoryBackup } from '../hooks/pomodoroHistory'
 import { getTodayKey, incrementTodayInfo, toDateKey } from '../hooks/todayInfoStorage'
 import { setLanguage } from '../i18n'
 import History from '../pages/History'
@@ -46,6 +46,37 @@ describe('일별 기록', () => {
 
     expect(screen.getByRole('heading', { name: '뽀모도로 기록' })).toBeInTheDocument()
     expect(screen.getByText('총 3개 · 1일')).toBeInTheDocument()
+  })
+})
+
+describe('기록 JSON 백업', () => {
+  const backup = (dailyCounts: unknown, app = 'domado') => JSON.stringify({ app, version: 1, exportedAt: '', dailyCounts })
+
+  it('domado 백업 형식만 받아들인다', () => {
+    expect(parseHistoryBackup(backup({ '2026-10-01': 4, '2026-10-02': 0 }))).toEqual({ '2026-10-01': 4, '2026-10-02': 0 })
+    expect(parseHistoryBackup('not json')).toBeNull()
+    expect(parseHistoryBackup(backup({ '2026-10-01': 4 }, 'other'))).toBeNull()
+    expect(parseHistoryBackup(backup({ '2026/10/01': 4 }))).toBeNull()
+    expect(parseHistoryBackup(backup({ '2026-10-01': -1 }))).toBeNull()
+    expect(parseHistoryBackup(backup({ '2026-10-01': 1.5 }))).toBeNull()
+    expect(parseHistoryBackup(backup(null))).toBeNull()
+  })
+
+  it('기록 창에서 백업 파일을 불러오면 결과를 알려 준다', async () => {
+    render(<History />)
+
+    const file = new File([backup({ '2026-10-01': 4, '2026-10-02': 2 })], 'b.json', { type: 'application/json' })
+    await userEvent.upload(screen.getByTestId('history-import-input'), file)
+
+    expect(await screen.findByText('2일 기록을 불러왔습니다.')).toBeInTheDocument()
+  })
+
+  it('잘못된 파일이면 오류를 알려 준다', async () => {
+    render(<History />)
+
+    await userEvent.upload(screen.getByTestId('history-import-input'), new File(['{}'], 'b.json', { type: 'application/json' }))
+
+    expect(await screen.findByText('올바른 domado 기록 파일이 아닙니다.')).toBeInTheDocument()
   })
 })
 

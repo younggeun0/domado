@@ -45,6 +45,10 @@ const ko = {
     summary: (total: number, days: number) => `총 ${total}개 · ${days}일`,
     less: '적음',
     more: '많음',
+    export: 'JSON 내보내기',
+    import: 'JSON 불러오기',
+    importDone: (days: number) => `${days}일 기록을 불러왔습니다.`,
+    importError: '올바른 domado 기록 파일이 아닙니다.',
   },
 }
 
@@ -87,6 +91,10 @@ const en: Messages = {
     summary: (total: number, days: number) => `${total} total · ${days} ${days === 1 ? 'day' : 'days'}`,
     less: 'Less',
     more: 'More',
+    export: 'Export JSON',
+    import: 'Import JSON',
+    importDone: (days: number) => `Imported ${days} ${days === 1 ? 'day' : 'days'} of history.`,
+    importError: 'This is not a valid domado history file.',
   },
 }
 
@@ -126,6 +134,10 @@ const ja: Messages = {
     summary: (total: number, days: number) => `合計${total}個・${days}日間`,
     less: '少ない',
     more: '多い',
+    export: 'JSONを書き出す',
+    import: 'JSONを読み込む',
+    importDone: (days: number) => `${days}日分の記録を読み込みました。`,
+    importError: '有効なdomadoの記録ファイルではありません。',
   },
 }
 

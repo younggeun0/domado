@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import HistoryBackupActions from '../components/HistoryBackupActions'
 import { buildHeatmapWeeks, loadDailyCounts } from '../hooks/pomodoroHistory'
 import { getTodayKey, loadTodayInfo } from '../hooks/todayInfoStorage'
 import { useI18n } from '../i18n'
@@ -106,6 +107,8 @@ export default function History() {
             {m.history.more}
           </span>
         </div>
+
+        <HistoryBackupActions onImported={() => loadDailyCounts().then(setCounts)} />
       </div>
     </main>
   )
