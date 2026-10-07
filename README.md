@@ -23,7 +23,8 @@
 ```sh
 npm install
 npm run dev        # electron-vite 개발 모드 (타이머가 3초씩 돈다)
-npm test           # vitest
+npm test           # vitest (단위)
+npm run test:e2e   # 패키징 앱을 띄워 3D 렌더링·창 상태 검사 (macOS, 릴리스 전 실행)
 npm run package    # release/build에 앱 생성
 ```
 
