@@ -78,6 +78,10 @@ ipcMain.on('open_window', (_event, name: PanelName) => {
     show: false,
     backgroundColor: '#171717',
     autoHideMenuBar: true,
+    // OS 테마를 따르는 네이티브 타이틀바 대신 창 배경(neutral-900)이 맨 위까지 보이게 한다.
+    // macOS는 신호등 버튼만 남고, Windows·Linux는 창 버튼 영역을 같은 색으로 그린다
+    titleBarStyle: 'hidden',
+    titleBarOverlay: { color: '#171717', symbolColor: '#ffffff', height: 32 },
   })
   panels[name] = panel
   panel.on('closed', () => delete panels[name])
