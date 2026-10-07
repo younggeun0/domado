@@ -1,3 +1,4 @@
+import { ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
@@ -75,18 +76,22 @@ export default function Settings() {
             {m.settings.language}
           </label>
           {/* 저장 버튼과 별개로 선택 즉시 언어를 바꾼다 */}
-          <select
-            id="language"
-            value={language}
-            onChange={e => setLanguage(e.target.value as Language)}
-            className={INPUT_CLASS}
-          >
-            {LANGUAGES.map(code => (
-              <option key={code} value={code}>
-                {LANGUAGE_NAMES[code]}
-              </option>
-            ))}
-          </select>
+          {/* WebKit(Tauri)의 네이티브 select는 padding·높이·모서리를 무시해 입력칸과 크기가 달라 직접 그린다 */}
+          <div className="relative">
+            <select
+              id="language"
+              value={language}
+              onChange={e => setLanguage(e.target.value as Language)}
+              className={`${INPUT_CLASS} appearance-none pr-9`}
+            >
+              {LANGUAGES.map(code => (
+                <option key={code} value={code}>
+                  {LANGUAGE_NAMES[code]}
+                </option>
+              ))}
+            </select>
+            <ChevronUpDownIcon className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-white/70" />
+          </div>
         </div>
         <div className="grid gap-2">
           <label htmlFor="opacity" className="flex justify-between text-sm font-medium text-white/80">
