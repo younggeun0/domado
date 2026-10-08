@@ -80,11 +80,11 @@ it('휴식이 끝나면 작업 장면으로 돌아오고 전체화면을 푼다'
 })
 
 it('휴식을 건너뛰면 작업 장면으로 돌아오고 전체화면을 푼다', async () => {
-  vi.spyOn(window, 'confirm').mockReturnValue(true)
   render(<Pomodoro />)
   await finishPomodoro()
 
   fireEvent.keyDown(document, { key: 's' })
+  fireEvent.click(screen.getByRole('button', { name: '확인' }))
 
   expect(scene()).toHaveAttribute('data-rest', 'false')
   expect(fullScreenRequests().at(-1)).toBe(false)

@@ -15,6 +15,8 @@ export default tseslint.config(
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       '@typescript-eslint/no-explicit-any': 'off',
+      // Tauri 웹뷰(WKWebView)는 alert·confirm·prompt를 띄우지 않는다. e2e 빌드에서는 동작해 테스트로 못 잡는다
+      'no-alert': 'error',
     },
   },
 )

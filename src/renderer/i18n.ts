@@ -22,6 +22,8 @@ const ko = {
     increment: '오늘의 뽀모도로를 1개 추가할까요?',
     skipRest: '휴식을 건너뛰고 새 뽀모도로 대기 상태로 이동할까요?',
     reload: '앱을 새로고침할까요? 진행 중인 상태가 초기화될 수 있습니다.',
+    ok: '확인',
+    cancel: '취소',
   },
   notification: {
     restEndTitle: '휴식 시간이 끝났습니다! 🍅',
@@ -68,6 +70,8 @@ const en: Messages = {
     increment: "Add 1 to today's pomodoro count?",
     skipRest: 'Skip the break and get ready for a new pomodoro?',
     reload: 'Reload the app? Your current progress may be reset.',
+    ok: 'OK',
+    cancel: 'Cancel',
   },
   notification: {
     restEndTitle: 'Break is over! 🍅',
@@ -113,6 +117,8 @@ const ja: Messages = {
     increment: '今日のポモドーロ数を1つ増やしますか？',
     skipRest: '休憩をスキップして、次のポモドーロの準備をしますか？',
     reload: 'アプリを再読み込みしますか？\u3000進行中の状態がリセットされる場合があります。',
+    ok: 'OK',
+    cancel: 'キャンセル',
   },
   notification: {
     restEndTitle: '休憩時間が終わりました！🍅',
