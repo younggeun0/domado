@@ -11,6 +11,8 @@ export type DomadoBridge = {
     // 구독을 해제하는 함수를 돌려준다
     on(channel: Channels, func: (...args: unknown[]) => void): () => void
   }
+  // 위젯 밖 네이티브 확인 창. 확인을 누르면 true
+  confirm(message: string, ok: string, cancel: string): Promise<boolean>
   // 개발 모드와 E2E·수동 확인(DOMADO_FAST_TIMER=1)은 타이머를 3초씩만 돌린다
   isDebug: boolean
 }
@@ -44,6 +46,7 @@ if (window.__TAURI_INTERNALS__) {
         return () => void unlisten.then(off => off())
       },
     },
+    confirm: (message, ok, cancel) => invoke<boolean>('confirm', { message, ok, cancel }),
     isDebug: import.meta.env.DEV || window.__DOMADO_FAST_TIMER__ === true,
   }
 

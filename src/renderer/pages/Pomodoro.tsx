@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import BackgroundTimer from '../components/BackgroundTimer'
-import ConfirmDialog from '../components/ConfirmDialog'
 import Footer from '../components/Footer'
 import PlaybackFeedback from '../components/PlaybackFeedback'
 import RemainingTimeDisplay from '../components/RemainingTimeDisplay'
@@ -24,7 +23,6 @@ export default function Pomodoro() {
     id: number
     mode: 'play' | 'pause'
   } | null>(null)
-  const [confirming, setConfirming] = useState<{ message: string; onConfirm: () => void } | null>(null)
 
   const { status, isRest, todayInfo, remainingTime, togglePlay, setStatus, incrementCount, durations } =
     usePomodoroTimer({ pomodoroMinutes, restMinutes })
@@ -37,9 +35,16 @@ export default function Pomodoro() {
     togglePlay()
   }, [status, togglePlay])
 
+  const confirmThen = useCallback(
+    (message: string, action: () => void) => {
+      void window.domado?.confirm(message, m.confirm.ok, m.confirm.cancel).then(ok => ok && action())
+    },
+    [m],
+  )
+
   const handleIncrementCount = useCallback(() => {
-    setConfirming({ message: m.confirm.increment, onConfirm: incrementCount })
-  }, [incrementCount, m])
+    confirmThen(m.confirm.increment, incrementCount)
+  }, [confirmThen, incrementCount, m])
 
   const canSkipRest = isRest && status === 'paused'
 
@@ -48,12 +53,12 @@ export default function Pomodoro() {
       return
     }
 
-    setConfirming({ message: m.confirm.skipRest, onConfirm: () => setStatus('finish') })
-  }, [canSkipRest, setStatus, m])
+    confirmThen(m.confirm.skipRest, () => setStatus('finish'))
+  }, [canSkipRest, confirmThen, setStatus, m])
 
   const handleReload = useCallback(() => {
-    setConfirming({ message: m.confirm.reload, onConfirm: () => window.location.reload() })
-  }, [m])
+    confirmThen(m.confirm.reload, () => window.location.reload())
+  }, [confirmThen, m])
 
   useKeyboardShortcuts({
     onTogglePlay: handleTogglePlay,
@@ -123,16 +128,6 @@ export default function Pomodoro() {
           onReload={handleReload}
         />
       </div>
-
-      {confirming && (
-        <ConfirmDialog
-          message={confirming.message}
-          onClose={confirmed => {
-            setConfirming(null)
-            if (confirmed) confirming.onConfirm()
-          }}
-        />
-      )}
 
       {/* 휴식 중에는 전체화면이라 크기 조절이 필요 없다 */}
       {!isRest && <ResizeHandle />}

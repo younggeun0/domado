@@ -37,6 +37,18 @@ fn set_fullscreen(app: AppHandle, value: bool) {
     let _ = window.set_fullscreen(value);
 }
 
+// 웹뷰의 window.confirm은 WKWebView에서 바로 false를 돌려주므로 위젯 밖 확인 창으로 묻는다.
+// 부모 창을 주지 않으면 rfd가 CFUserNotification으로 띄워 위젯 크기와 상관없는 별도 시스템 창이 된다
+#[tauri::command]
+async fn confirm(app: AppHandle, message: String, ok: String, cancel: String) -> bool {
+    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
+    app.dialog()
+        .message(message)
+        .title("domado")
+        .buttons(MessageDialogButtons::OkCancelCustom(ok, cancel))
+        .blocking_show()
+}
+
 #[tauri::command]
 fn notify(app: AppHandle, title: String, body: String) {
     let _ = app.notification().builder().title(title).body(body).show();
@@ -218,6 +230,7 @@ fn main() {
     #[cfg(feature = "e2e")]
     let builder = builder.plugin(tauri_plugin_wdio_webdriver::init());
     builder
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -235,6 +248,7 @@ fn main() {
         )
         .invoke_handler(tauri::generate_handler![
             set_fullscreen,
+            confirm,
             notify,
             update_tray,
             resize_widget,

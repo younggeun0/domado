@@ -15,6 +15,7 @@ base64 = "0.22"
 serde_json = "1"
 tauri-plugin-updater = "2"
 tauri-plugin-wdio-webdriver = { version = "1.4.0", optional = true }
+tauri-plugin-dialog = "2"
 
 [features]
 # E2E(WebdriverIO) 전용: 앱 안에 WebDriver 서버를 띄운다. 배포 빌드에는 넣지 않는다

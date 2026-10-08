@@ -70,17 +70,16 @@ describe('Pomodoro', () => {
     render(<Pomodoro />)
 
     await userEvent.click(screen.getByRole('button', { name: '뽀모도로 개수 증가' }))
-    expect(screen.getByText('오늘의 뽀모도로를 1개 추가할까요?')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: '확인' }))
 
-    expect(screen.getByText('🍅 : 1')).toBeInTheDocument()
+    expect(window.domado?.confirm).toHaveBeenCalledWith('오늘의 뽀모도로를 1개 추가할까요?', '확인', '취소')
+    expect(await screen.findByText('🍅 : 1')).toBeInTheDocument()
   })
 
   it('뽀모도로 개수 증가를 취소하면 오늘의 기록을 유지한다', async () => {
+    vi.mocked(window.domado!.confirm).mockResolvedValueOnce(false)
     render(<Pomodoro />)
 
     await userEvent.click(screen.getByRole('button', { name: '뽀모도로 개수 증가' }))
-    await userEvent.click(screen.getByRole('button', { name: '취소' }))
 
     expect(screen.getByText('🍅 : 0')).toBeInTheDocument()
   })

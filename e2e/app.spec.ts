@@ -87,9 +87,6 @@ beforeEach(async () => {
   await invoke('resize_widget', { width: 100, height: 200 })
   await expect($('[aria-label="남은 시간"]')).toBeDisplayed()
   await poll(async () => (await timerText()) === '00:03', 'timer not reset')
-  // 프로덕션 WKWebView에는 confirm 처리기가 없어 confirm()이 바로 false를 돌려준다.
-  // e2e 빌드는 WebDriver 플러그인이 confirm을 가로채 이 차이를 가리므로 프로덕션처럼 맞춘다
-  await browser.execute(() => void (window.confirm = () => false))
 })
 
 it('작업 화면에 토마토가 렌더된다', async () => {
@@ -187,9 +184,18 @@ it('WebGL 컨텍스트가 끊겼다 복구되면 장면을 다시 그린다', as
 
 const todayCount = () => $('[title="오늘의 기록"]').getText()
 
-async function confirmWith(answer: '확인' | '취소') {
-  await $(`aria/${answer}`).click()
-  await expect($('aria/확인')).not.toBeExisting()
+// 확인 창은 rfd가 CFUserNotification으로 띄워 UserNotificationCenter 프로세스의 창이다.
+// WebDriver 밖이라 System Events로 누른다 (테스트를 돌리는 터미널에 손쉬운 사용 권한이 필요하다)
+const notificationCenter = (script: string) =>
+  execSync(`osascript -e 'tell application "System Events" to tell process "UserNotificationCenter" to ${script}'`)
+    .toString()
+    .trim()
+const confirmWindows = (message: string) => `windows whose value of static text 2 is "${message}"`
+
+async function answerConfirm(message: string, button: '확인' | '취소') {
+  await poll(async () => notificationCenter(`count (${confirmWindows(message)})`) !== '0', 'confirm not shown')
+  notificationCenter(`click button "${button}" of first window of (${confirmWindows(message)})`)
+  await poll(async () => notificationCenter(`count (${confirmWindows(message)})`) === '0', 'confirm not closed')
 }
 
 // 새로고침되면 표식이 사라진다
@@ -197,17 +203,18 @@ const markPage = () => browser.execute(() => void ((window as any).__reloadMarke
 const expectReloaded = () =>
   poll(async () => (await browser.execute(() => (window as any).__reloadMarker).catch(() => true)) !== true, 'not reloaded')
 
+const INCREMENT = '오늘의 뽀모도로를 1개 추가할까요?'
 for (const [how, trigger] of [
   ['a 키', () => browser.keys('a')],
   ['+ 버튼', () => $('[title="뽀모도로 개수 증가"]').click()],
 ] as const) {
   it(`${how}로 확인하면 오늘 개수가 늘고, 취소하면 그대로다`, async () => {
     await trigger()
-    await confirmWith('취소')
+    await answerConfirm(INCREMENT, '취소')
     expect(await todayCount()).toContain(': 0')
 
     await trigger()
-    await confirmWith('확인')
+    await answerConfirm(INCREMENT, '확인')
     await poll(async () => (await todayCount()).includes(': 1'), 'count not incremented')
   })
 }
@@ -219,7 +226,7 @@ for (const [how, trigger] of [
   it(`휴식 중 ${how}로 휴식을 건너뛴다`, async () => {
     await finishPomodoro()
     await trigger()
-    await confirmWith('확인')
+    await answerConfirm('휴식을 건너뛰고 새 뽀모도로 대기 상태로 이동할까요?', '확인')
     await poll(async () => (await browser.getTitle()).includes('🔥'), 'rest not skipped')
     await poll(async () => !(await widgetState()).fullScreen, 'still fullscreen')
   })
@@ -232,9 +239,7 @@ for (const [how, trigger] of [
   it(`${how}로 확인하면 새로고침된다`, async () => {
     await markPage()
     await trigger()
-    // window.confirm처럼 Enter가 확인이 되게 확인 버튼에 포커스가 있다 (WebDriver 키 입력은 합성 이벤트라 Enter로 누르지는 못한다)
-    await expect($('aria/확인')).toBeFocused()
-    await $('aria/확인').click()
+    await answerConfirm('앱을 새로고침할까요? 진행 중인 상태가 초기화될 수 있습니다.', '확인')
     await expectReloaded()
   })
 }

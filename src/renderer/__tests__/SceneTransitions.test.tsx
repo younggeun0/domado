@@ -83,8 +83,10 @@ it('휴식을 건너뛰면 작업 장면으로 돌아오고 전체화면을 푼�
   render(<Pomodoro />)
   await finishPomodoro()
 
-  fireEvent.keyDown(document, { key: 's' })
-  fireEvent.click(screen.getByRole('button', { name: '확인' }))
+  // 확인 창 응답(Promise)을 기다린다
+  await act(async () => {
+    fireEvent.keyDown(document, { key: 's' })
+  })
 
   expect(scene()).toHaveAttribute('data-rest', 'false')
   expect(fullScreenRequests().at(-1)).toBe(false)
