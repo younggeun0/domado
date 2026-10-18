@@ -11,7 +11,6 @@ tauri = { version = "2", features = ["tray-icon", "image-png", "macos-private-ap
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-notification = "2"
 tauri-plugin-opener = "2"
-base64 = "0.22"
 serde_json = "1"
 tauri-plugin-updater = "2"
 tauri-plugin-wdio-webdriver = { version = "1.4.0", optional = true }

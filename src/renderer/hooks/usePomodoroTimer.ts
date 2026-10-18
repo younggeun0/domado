@@ -47,11 +47,10 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
       }
 
       // 주기적으로 남은 시간 업데이트 (Date 기반 계산)
-      const timeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
       const interval = setInterval(() => {
         const calculated = calculateRemainingTime()
         setRemainingTime(calculated)
-        updateTray(window.domado?.ipc, calculated, isRest, { pomodoro: timeInfo.POMODORO_SEC, rest: timeInfo.REST_SEC })
+        updateTray(window.domado?.ipc, calculated, isRest)
 
         if (calculated <= 0) {
           endTimeRef.current = null

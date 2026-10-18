@@ -4,7 +4,6 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use base64::Engine;
 use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem};
 use tauri::tray::TrayIconBuilder;
@@ -59,16 +58,11 @@ fn default_tray_icon(app: &AppHandle) -> Option<Image<'static>> {
     Image::from_path(path).ok()
 }
 
-// renderer가 그린 남은 시간 아이콘(PNG data URL). 없으면 기본 아이콘으로 되돌린다
+// 트레이 아이콘 옆 남은 시간 글자(macOS 메뉴 막대). None이면 지운다
 #[tauri::command]
-fn update_tray(app: AppHandle, image: Option<String>) {
+fn update_tray(app: AppHandle, title: Option<String>) {
     let Some(tray) = app.tray_by_id(TRAY_ID) else { return };
-    let icon = image
-        .and_then(|url| url.strip_prefix("data:image/png;base64,").map(str::to_owned))
-        .and_then(|data| base64::engine::general_purpose::STANDARD.decode(data).ok())
-        .and_then(|bytes| Image::from_bytes(&bytes).ok())
-        .or_else(|| default_tray_icon(&app));
-    let _ = tray.set_icon(icon);
+    let _ = tray.set_title(title);
 }
 
 #[tauri::command]

@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { default as userEvent } from '@testing-library/user-event'
 import { afterEach, vi } from 'vitest'
 
-import { formatRemainingTime, getTimeInfo } from '../components/pomodoro'
+import { formatRemainingTime, getTimeInfo, updateTray } from '../components/pomodoro'
 import { loadDailyCounts } from '../hooks/pomodoroHistory'
 import { getTodayKey } from '../hooks/todayInfoStorage'
 import Pomodoro from '../pages/Pomodoro'
@@ -145,5 +145,22 @@ describe('Pomodoro', () => {
       body: '오늘 1개의 뽀모도로를 완료했습니다! 휴식을 취하세요.',
     })
     expect(sendMessage).toHaveBeenLastCalledWith('set_fullscreen', true)
+  })
+})
+
+describe('트레이 남은 시간', () => {
+  it('글자가 바뀔 때만 보내고, 휴식은 ☕를 붙이며, 시간이 다 되면 지운다', () => {
+    const ipc = { sendMessage: vi.fn(), on: vi.fn() }
+
+    updateTray(ipc, 1453, false)
+    updateTray(ipc, 1453, false)
+    updateTray(ipc, 252, true)
+    updateTray(ipc, 0, true)
+
+    expect(ipc.sendMessage.mock.calls).toEqual([
+      ['update_tray', '24:13'],
+      ['update_tray', '☕ 4:12'],
+      ['update_tray', null],
+    ])
   })
 })

@@ -17,49 +17,14 @@ export function formatRemainingTime(time: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-export function updateTray(
-  ipc: NonNullable<Window['domado']>['ipc'] | undefined,
-  newRemainingTime: number,
-  isRest: boolean,
-  durations: { pomodoro: number; rest: number },
-) {
-  if (newRemainingTime <= 0) {
-    ipc?.sendMessage('update_tray', null)
-    return
-  }
+// 메뉴 막대 트레이 아이콘 옆에 남은 시간을 글자로 띄운다 (휴식은 ☕). 시간이 다 되면 지운다.
+// 100ms마다 불리므로 글자가 바뀔 때만 보낸다
+let lastTrayTitle: string | null = null
 
-  const canvas = document.createElement('canvas')
-  canvas.width = 27
-  canvas.height = 27
-
-  const ctx = canvas?.getContext('2d')
-  if (!ctx) return
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.fillRect(0, 0, 27, 0)
-  if (isRest) {
-    const level = Math.floor((1 - newRemainingTime / durations.rest) * 100)
-    const height = Math.floor((level / 100) * 23)
-    const color = '#6AFF88'
-    ctx.fillStyle = color
-    ctx.fillRect(2, 25, 23, -height)
-  } else {
-    const level = Math.floor((newRemainingTime / durations.pomodoro) * 100)
-    const height = Math.floor((level / 100) * 23)
-    const color = '#b22222'
-    ctx.fillStyle = color
-    ctx.fillRect(2, 25 - height, 23, height)
-  }
-
-  // 남은 시간 텍스트 표시
-  const minutes = Math.floor(newRemainingTime / 60)
-  const seconds = newRemainingTime % 60
-  const timeText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
-  ctx.font = 'bold 9px Arial'
-  ctx.fillStyle = '#FFFFFF'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillText(timeText, canvas.width / 2, canvas.height / 2)
-
-  ipc?.sendMessage('update_tray', canvas.toDataURL())
+export function updateTray(ipc: NonNullable<Window['domado']>['ipc'] | undefined, remaining: number, isRest: boolean) {
+  const time = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`
+  const title = remaining > 0 ? `${isRest ? '☕ ' : ''}${time}` : null
+  if (title === lastTrayTitle) return
+  lastTrayTitle = title
+  ipc?.sendMessage('update_tray', title)
 }

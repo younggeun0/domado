@@ -913,7 +913,6 @@ dependencies = [
 name = "domado"
 version = "4.0.0"
 dependencies = [
- "base64 0.22.1",
  "serde_json",
  "tauri",
  "tauri-build",
