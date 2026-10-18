@@ -36,6 +36,22 @@ describe('Pomodoro', () => {
     expect(await screen.findByText('🍅 : 3')).toBeInTheDocument()
   })
 
+  it('진행 중 일시정지하면 트레이가 ⏸와 멈춘 시간으로 바뀐다', async () => {
+    render(<Pomodoro />)
+    const user = userEvent.setup()
+
+    await user.keyboard(' ')
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 1200))
+    })
+    await user.keyboard(' ')
+
+    expect(window.domado!.ipc.sendMessage).toHaveBeenLastCalledWith('update_tray', {
+      title: expect.stringMatching(/^⏸ 24:5\d$/),
+      icon: false,
+    })
+  })
+
   it('IndexedDB 기록이 화면 개수보다 작으면 화면 개수를 유지한다', async () => {
     localStorage.setItem('domado_today_info', JSON.stringify({ count: 5, date: getTodayKey() }))
     vi.mocked(loadDailyCounts).mockResolvedValueOnce({ [getTodayKey()]: 3 })
@@ -149,18 +165,20 @@ describe('Pomodoro', () => {
 })
 
 describe('트레이 남은 시간', () => {
-  it('글자가 바뀔 때만 보내고, 휴식은 ☕를 붙이며, 시간이 다 되면 지운다', () => {
+  it('표시가 바뀔 때만 보내고, 휴식은 ☕·일시정지는 ⏸로 토마토 아이콘을 대신하며, 시간이 다 되면 지운다', () => {
     const ipc = { sendMessage: vi.fn(), on: vi.fn() }
 
     updateTray(ipc, 1453, false)
     updateTray(ipc, 1453, false)
+    updateTray(ipc, 1452, false, true)
     updateTray(ipc, 252, true)
     updateTray(ipc, 0, true)
 
     expect(ipc.sendMessage.mock.calls).toEqual([
-      ['update_tray', '24:13'],
-      ['update_tray', '☕ 4:12'],
-      ['update_tray', null],
+      ['update_tray', { title: '24:13', icon: true }],
+      ['update_tray', { title: '⏸ 24:12', icon: false }],
+      ['update_tray', { title: '☕ 4:12', icon: false }],
+      ['update_tray', { title: null, icon: true }],
     ])
   })
 })

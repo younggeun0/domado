@@ -30,6 +30,8 @@ fn set_fullscreen(app: AppHandle, value: bool) {
     if FULLSCREEN.swap(value, Ordering::SeqCst) == value {
         return;
     }
+    // 항상 위 표시를 꺼 둬도 휴식 화면은 다른 창을 덮어야 하므로 휴식 동안만 켜고, 끝나면 저장된 설정으로 되돌린다
+    let _ = window.set_always_on_top(value || is_on_top(&app));
     #[cfg(target_os = "macos")]
     let _ = window.set_simple_fullscreen(value);
     #[cfg(not(target_os = "macos"))]
@@ -58,10 +60,12 @@ fn default_tray_icon(app: &AppHandle) -> Option<Image<'static>> {
     Image::from_path(path).ok()
 }
 
-// 트레이 아이콘 옆 남은 시간 글자(macOS 메뉴 막대). None이면 지운다
+// 트레이 아이콘 옆 남은 시간 글자(macOS 메뉴 막대). None이면 지운다.
+// 휴식(☕)·일시정지(⏸)는 글자 앞 이모지가 아이콘 역할을 하므로 토마토 아이콘을 숨긴다
 #[tauri::command]
-fn update_tray(app: AppHandle, title: Option<String>) {
+fn update_tray(app: AppHandle, title: Option<String>, icon: bool) {
     let Some(tray) = app.tray_by_id(TRAY_ID) else { return };
+    let _ = tray.set_icon(if icon { default_tray_icon(&app) } else { None });
     let _ = tray.set_title(title);
 }
 

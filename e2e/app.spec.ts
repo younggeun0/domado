@@ -201,6 +201,24 @@ it('설정의 항상 위에 표시를 끄면 위젯·트레이에 바로 반영�
   expect(await invoke<boolean>('e2e_tray_on_top')).toBe(true)
 })
 
+it('항상 위에 표시를 꺼 둬도 휴식 화면은 다른 창 위에 뜨고, 휴식이 끝나면 꺼진 상태로 돌아온다', async () => {
+  await invoke('set_on_top', { value: false })
+  try {
+    expect(await widgetState()).toMatchObject({ alwaysOnTop: false })
+
+    await finishPomodoro()
+    await poll(async () => (await widgetState()).fullScreen, 'not fullscreen')
+    expect(await widgetState()).toMatchObject({ alwaysOnTop: true })
+
+    await browser.keys(' ')
+    await poll(async () => !(await widgetState()).fullScreen, 'still fullscreen')
+    expect(await widgetState()).toMatchObject({ alwaysOnTop: false })
+    expect(await invoke<boolean>('e2e_tray_on_top')).toBe(false)
+  } finally {
+    await invoke('set_on_top', { value: true })
+  }
+})
+
 it('휴식이 끝나면 위젯 크기로 돌아와 토마토가 렌더된다', async () => {
   await finishPomodoro()
   await expectCupRendered()

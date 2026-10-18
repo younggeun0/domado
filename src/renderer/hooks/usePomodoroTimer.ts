@@ -63,6 +63,7 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
       if (endTimeRef.current !== null) {
         pausedTimeRef.current = calculateRemainingTime()
         endTimeRef.current = null
+        updateTray(window.domado?.ipc, pausedTimeRef.current, isRest, true)
       }
       
       if (countInterval.current) {
@@ -116,6 +117,8 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
       setRemainingTime(newRemainingTime)
       pausedTimeRef.current = newRemainingTime
       endTimeRef.current = null
+      // 휴식을 건너뛰어 끝난 경우에도 트레이의 남은 시간을 지운다
+      updateTray(window.domado?.ipc, 0, false)
       
       if (!isRest) {
         setTodayInfo(incrementTodayInfo)
@@ -168,6 +171,8 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
 
     endTimeRef.current = null
     pausedTimeRef.current = nextTimeInfo.POMODORO_SEC
+    // 새로고침·시간 변경으로 처음 상태가 되면 트레이에 남은 시간도 지운다
+    updateTray(window.domado?.ipc, 0, false)
     setStatus('paused')
     setIsRest(false)
     setRemainingTime(nextTimeInfo.POMODORO_SEC)

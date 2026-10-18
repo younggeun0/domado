@@ -39,7 +39,7 @@ declare global {
 const toArgs: Partial<Record<Channels, (...args: any[]) => Record<string, unknown>>> = {
   set_fullscreen: value => ({ value }),
   notify: ({ title, body }) => ({ title, body }),
-  update_tray: title => ({ title }),
+  update_tray: ({ title, icon }) => ({ title, icon }),
   open_window: name => ({ name }),
   resize_widget: (width, height) => ({ width, height }),
   set_tray_labels: ({ reload, onTop, quit }) => ({ reload, onTop, quit }),
