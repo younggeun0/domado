@@ -21,7 +21,6 @@ function Domado3DScene({ isRest, paused, onTogglePlay }: Domado3DSceneProps) {
         inset: 0,
         width: '100%',
         height: '100%',
-        background: isRest ? 'black' : 'transparent',
         touchAction: 'none',
       }}
       // 일시정지된 작업 모드는 움직이는 것이 없으니 변경(조작·리렌더)이 있을 때만 그린다

@@ -16,8 +16,9 @@ export const DEFAULT_WORK_CONFIG: CameraConfig = {
   lookAt: [0, 8, 0],
 }
 
+// 커피잔 옆모습이 보이도록 거의 수평에서 살짝 위로. 커피 면은 테두리 안쪽으로 얇게만 보인다
 export const DEFAULT_REST_CONFIG: CameraConfig = {
-  position: [25, 10, 3],
+  position: [25, 12, 3],
   lookAt: [0, 8, 0],
 }
 

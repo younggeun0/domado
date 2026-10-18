@@ -21,13 +21,14 @@ export default function BackgroundTimer({ isRest, pomodoroDuration, restDuration
       animationRef.current.cancel()
     }
 
-    const initialHeight = isRest ? '0%' : '100%'
-    bgTimer.style.height = initialHeight
+    // 작업은 빨간 막대가 줄어들고, 휴식은 밝은 아침빛이 서서히 드러난다
+    bgTimer.style.height = '100%'
+    bgTimer.style.opacity = isRest ? '0' : '1'
 
     const animation = new Animation(
       new KeyframeEffect(
         bgTimer,
-        [{ height: initialHeight }, { height: isRest ? '100%' : '0%' }],
+        isRest ? [{ opacity: 0 }, { opacity: 1 }] : [{ height: '100%' }, { height: '0%' }],
         {
           duration: isRest ? restDuration * 1000 : pomodoroDuration * 1000,
           fill: 'forwards',
@@ -63,13 +64,15 @@ export default function BackgroundTimer({ isRest, pomodoroDuration, restDuration
         ref={bgTimerRef}
         className="absolute inset-x-0 bottom-0"
         style={{
-          background: isRest ? '#6AFF88' : '#b22222',
+          background: isRest ? 'linear-gradient(to bottom, #e6a464 0%, #f2c58f 55%, #f8dfb8 100%)' : '#b22222',
         }}
       />
+      {/* 휴식은 어둡고 따뜻한 밤에서 시작해 끝날 때 아침처럼 밝아진다 */}
       <div
-        className="absolute inset-0 bg-black"
+        className="absolute inset-0"
         style={{
           zIndex: -1,
+          background: isRest ? 'radial-gradient(circle at 50% 55%, #3b2619 0%, #1a110b 50%, #080504 100%)' : 'black',
         }}
       />
     </div>
