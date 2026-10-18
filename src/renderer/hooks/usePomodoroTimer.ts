@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { saveDailyCount } from './pomodoroHistory'
+import { loadDailyCounts, saveDailyCount } from './pomodoroHistory'
 import { getTodayKey, incrementTodayInfo, loadTodayInfo, saveTodayInfo } from './todayInfoStorage'
 
 import { getTimeInfo, updateTray } from '../components/pomodoro'
@@ -133,6 +133,16 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
       setTodayInfo({ count: 0, date: today })
     }
   }, [todayInfo.date])
+
+  // localStorage가 비어 오늘 개수가 0부터 시작해도 IndexedDB에 남은 오늘 기록이 더 크면 그 값으로 이어 센다
+  useEffect(() => {
+    void loadDailyCounts().then(counts => {
+      setTodayInfo(prev => {
+        const saved = counts[prev.date] ?? 0
+        return saved > prev.count ? { ...prev, count: saved } : prev
+      })
+    })
+  }, [])
 
   // todayInfo가 변경될 때마다 localStorage(오늘)와 IndexedDB(일별 기록)에 저장
   useEffect(() => {

@@ -84,8 +84,25 @@ async function switchToPanel(label: string) {
 const timerText = () => $('[aria-label="남은 시간"]').getText()
 
 beforeEach(async () => {
-  // 앱을 세션마다 새로 띄우지 않으므로 처음 상태로 되돌린다
+  // 앱을 세션마다 새로 띄우지 않으므로 처음 상태로 되돌린다.
+  // E2E 빌드는 identifier가 domado-e2e라 실제 앱(domado)의 기록·설정은 건드리지 않는다
   await browser.switchToWindow('main')
+  // 오늘 개수는 IndexedDB 기록으로도 되살아나므로 둘 다 비운다. 열린 연결이 있어 DB 삭제 대신 저장소를 비운다
+  await browser.execute(
+    () =>
+      new Promise<void>(resolve => {
+        const request = indexedDB.open('domado', 1)
+        request.onupgradeneeded = () => request.result.createObjectStore('dailyCounts', { keyPath: 'date' })
+        request.onsuccess = () => {
+          const tx = request.result.transaction('dailyCounts', 'readwrite')
+          tx.objectStore('dailyCounts').clear()
+          tx.oncomplete = () => {
+            request.result.close()
+            resolve()
+          }
+        }
+      }),
+  )
   await browser.execute(() => {
     localStorage.clear()
     location.reload()
@@ -177,7 +194,7 @@ it('설정의 항상 위에 표시를 끄면 위젯·트레이에 바로 반영�
     await browser.switchToWindow('main')
     await poll(async () => (await windowStates()).length === 1, 'settings not closed')
   } finally {
-    // 같은 identifier라 실제 사용자 설정 파일을 쓴다: 켜진 상태로 되돌린다
+    // 앱을 세션마다 새로 띄우지 않으므로 다음 테스트를 위해 켜진 상태로 되돌린다
     await invoke('set_on_top', { value: true })
   }
   expect(await widgetState()).toMatchObject({ alwaysOnTop: true })

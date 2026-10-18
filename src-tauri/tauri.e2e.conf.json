@@ -1,4 +1,5 @@
 {
+  "identifier": "domado-e2e",
   "app": {
     "security": {
       "capabilities": [

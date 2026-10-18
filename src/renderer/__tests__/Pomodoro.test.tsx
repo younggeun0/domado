@@ -3,8 +3,15 @@ import { default as userEvent } from '@testing-library/user-event'
 import { afterEach, vi } from 'vitest'
 
 import { formatRemainingTime, getTimeInfo } from '../components/pomodoro'
+import { loadDailyCounts } from '../hooks/pomodoroHistory'
 import { getTodayKey } from '../hooks/todayInfoStorage'
 import Pomodoro from '../pages/Pomodoro'
+
+// jsdom에는 IndexedDB가 없어 일별 기록 읽기만 바꿔 끼운다
+vi.mock('../hooks/pomodoroHistory', async importOriginal => {
+  const actual = await importOriginal<typeof import('../hooks/pomodoroHistory')>()
+  return { ...actual, loadDailyCounts: vi.fn(actual.loadDailyCounts) }
+})
 
 describe('Pomodoro', () => {
   beforeEach(() => {
@@ -19,6 +26,24 @@ describe('Pomodoro', () => {
 
   it('정상 렌더여부', () => {
     expect(render(<Pomodoro />)).toBeTruthy()
+  })
+
+  it('localStorage가 비어도 IndexedDB에 남은 오늘 기록으로 개수를 이어 센다', async () => {
+    vi.mocked(loadDailyCounts).mockResolvedValueOnce({ [getTodayKey()]: 3 })
+
+    render(<Pomodoro />)
+
+    expect(await screen.findByText('🍅 : 3')).toBeInTheDocument()
+  })
+
+  it('IndexedDB 기록이 화면 개수보다 작으면 화면 개수를 유지한다', async () => {
+    localStorage.setItem('domado_today_info', JSON.stringify({ count: 5, date: getTodayKey() }))
+    vi.mocked(loadDailyCounts).mockResolvedValueOnce({ [getTodayKey()]: 3 })
+
+    render(<Pomodoro />)
+    await act(async () => {})
+
+    expect(screen.getByText('🍅 : 5')).toBeInTheDocument()
   })
 
   it('설정 버튼은 위젯과 별개인 설정 창을 연다', async () => {
