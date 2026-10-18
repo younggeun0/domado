@@ -1,6 +1,6 @@
 import { ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { usePomodoroSettings, useWidgetOpacity } from '../hooks/usePomodoroSettings'
 import { LANGUAGE_NAMES, LANGUAGES, type Language, useI18n } from '../i18n'
@@ -17,6 +17,17 @@ export default function Settings() {
   const [opacity, setOpacity] = useWidgetOpacity()
   const [pomodoroMinutes, setPomodoroMinutes] = useState(currentPomodoroMinutes.toString())
   const [restMinutes, setRestMinutes] = useState(currentRestMinutes.toString())
+  const [onTop, setOnTop] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    void window.domado?.isOnTop().then(setOnTop)
+  }, [])
+
+  // 트레이 메뉴를 몰라도 끌 수 있게 설정 창에도 둔다. 언어·불투명도처럼 바로 반영한다
+  const handleOnTopChange = (value: boolean) => {
+    setOnTop(value)
+    window.domado?.ipc.sendMessage('set_on_top', value)
+  }
 
   const nextPomodoro = parseInt(pomodoroMinutes, 10)
   const nextRest = parseInt(restMinutes, 10)
@@ -114,6 +125,20 @@ export default function Settings() {
             className="h-1.5 cursor-pointer appearance-none rounded-full [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600"
           />
         </div>
+        <label
+          htmlFor="on-top"
+          className="flex cursor-pointer items-center justify-between text-sm font-medium text-white/80"
+        >
+          {m.tray.onTop}
+          <input
+            id="on-top"
+            type="checkbox"
+            checked={onTop ?? true}
+            disabled={onTop === null}
+            onChange={e => handleOnTopChange(e.target.checked)}
+            className="size-4 cursor-pointer accent-red-600"
+          />
+        </label>
       </div>
 
       <footer className="flex items-center justify-between gap-3">

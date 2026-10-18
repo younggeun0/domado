@@ -3,7 +3,15 @@ import { listen } from '@tauri-apps/api/event'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 
 // renderer가 메인 프로세스(src-tauri)와 주고받는 채널. 채널 이름이 Rust 커맨드·이벤트 이름이다
-export type Channels = 'start_pomodoro' | 'set_fullscreen' | 'notify' | 'update_tray' | 'open_window' | 'resize_widget'
+export type Channels =
+  | 'start_pomodoro'
+  | 'set_fullscreen'
+  | 'notify'
+  | 'update_tray'
+  | 'open_window'
+  | 'resize_widget'
+  | 'set_tray_labels'
+  | 'set_on_top'
 
 export type DomadoBridge = {
   ipc: {
@@ -13,6 +21,8 @@ export type DomadoBridge = {
   }
   // 위젯 밖 네이티브 확인 창. 확인을 누르면 true
   confirm(message: string, ok: string, cancel: string): Promise<boolean>
+  // 위젯 창이 항상 위에 떠 있는지 (트레이 "Stick on top"과 같은 값)
+  isOnTop(): Promise<boolean>
   // 개발 모드와 E2E·수동 확인(DOMADO_FAST_TIMER=1)은 타이머를 3초씩만 돌린다
   isDebug: boolean
 }
@@ -32,6 +42,8 @@ const toArgs: Partial<Record<Channels, (...args: any[]) => Record<string, unknow
   update_tray: image => ({ image }),
   open_window: name => ({ name }),
   resize_widget: (width, height) => ({ width, height }),
+  set_tray_labels: ({ reload, onTop, quit }) => ({ reload, onTop, quit }),
+  set_on_top: value => ({ value }),
 }
 
 // Tauri 웹뷰 밖(단위 테스트의 jsdom)에서는 아무것도 하지 않는다
@@ -47,6 +59,7 @@ if (window.__TAURI_INTERNALS__) {
       },
     },
     confirm: (message, ok, cancel) => invoke<boolean>('confirm', { message, ok, cancel }),
+    isOnTop: () => invoke<boolean>('get_on_top'),
     isDebug: import.meta.env.DEV || window.__DOMADO_FAST_TIMER__ === true,
   }
 

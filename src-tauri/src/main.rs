@@ -117,6 +117,57 @@ fn open_external(app: AppHandle, url: String) {
     }
 }
 
+// 트레이 "Stick on top"을 끈 상태를 다음 실행에도 유지한다. 파일이 있으면 꺼진 상태
+fn on_top_off_path(app: &AppHandle) -> Option<std::path::PathBuf> {
+    Some(app.path().app_config_dir().ok()?.join("always_on_top_off"))
+}
+
+fn is_on_top(app: &AppHandle) -> bool {
+    !on_top_off_path(app).is_some_and(|path| path.exists())
+}
+
+fn save_on_top(app: &AppHandle, value: bool) {
+    let Some(path) = on_top_off_path(app) else { return };
+    let _ = if value {
+        std::fs::remove_file(path)
+    } else {
+        std::fs::create_dir_all(path.parent().unwrap()).and_then(|_| std::fs::write(path, ""))
+    };
+}
+
+// 트레이 체크 메뉴와 설정 창 체크박스가 함께 쓰는 항상 위 토글
+fn apply_on_top(app: &AppHandle, value: bool) {
+    if let Some(window) = main_window(app) {
+        let _ = window.set_always_on_top(value);
+    }
+    let _ = app.state::<TrayMenu>().on_top.set_checked(value);
+    save_on_top(app, value);
+}
+
+#[tauri::command]
+fn get_on_top(app: AppHandle) -> bool {
+    is_on_top(&app)
+}
+
+#[tauri::command]
+fn set_on_top(app: AppHandle, value: bool) {
+    apply_on_top(&app, value);
+}
+
+// 트레이 메뉴 항목. renderer가 언어에 맞는 문구로 바꾼다
+struct TrayMenu {
+    reload: MenuItem<tauri::Wry>,
+    on_top: CheckMenuItem<tauri::Wry>,
+    quit: MenuItem<tauri::Wry>,
+}
+
+#[tauri::command]
+fn set_tray_labels(menu: tauri::State<TrayMenu>, reload: String, on_top: String, quit: String) {
+    let _ = menu.reload.set_text(reload);
+    let _ = menu.on_top.set_text(on_top);
+    let _ = menu.quit.set_text(quit);
+}
+
 fn create_main_window(app: &AppHandle) -> tauri::Result<WebviewWindow> {
     // E2E·수동 확인용 3초 타이머
     let fast_timer = std::env::var("DOMADO_FAST_TIMER").as_deref() == Ok("1");
@@ -127,7 +178,7 @@ fn create_main_window(app: &AppHandle) -> tauri::Result<WebviewWindow> {
         .transparent(true)
         .decorations(false)
         .shadow(false)
-        .always_on_top(true)
+        .always_on_top(is_on_top(app))
         .accept_first_mouse(true)
         .initialization_script(format!("window.__DOMADO_FAST_TIMER__ = {fast_timer};"))
         .build()
@@ -146,9 +197,10 @@ fn show_main_window(app: &AppHandle) {
 
 fn create_tray(app: &AppHandle) -> tauri::Result<()> {
     let reload = MenuItem::with_id(app, "reload", "Reload", true, None::<&str>)?;
-    let on_top = CheckMenuItem::with_id(app, "on_top", "Stick on top", true, true, None::<&str>)?;
+    let on_top = CheckMenuItem::with_id(app, "on_top", "Stick on top", true, is_on_top(app), None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&reload, &on_top, &quit])?;
+    app.manage(TrayMenu { reload, on_top, quit });
 
     let mut builder = TrayIconBuilder::with_id(TRAY_ID)
         .menu(&menu)
@@ -158,13 +210,7 @@ fn create_tray(app: &AppHandle) -> tauri::Result<()> {
                     let _ = window.eval("location.reload()");
                 }
             }
-            "on_top" => {
-                if let Some(window) = main_window(app) {
-                    let next = !window.is_always_on_top().unwrap_or(true);
-                    let _ = window.set_always_on_top(next);
-                    let _ = on_top.set_checked(next);
-                }
-            }
+            "on_top" => apply_on_top(app, !is_on_top(app)),
             "quit" => app.exit(0),
             _ => {}
         });
@@ -194,9 +240,17 @@ fn e2e_window_states(app: AppHandle) -> Vec<serde_json::Value> {
                 "fullScreen": full_screen,
                 "width": size.map(|s| s.width),
                 "height": size.map(|s| s.height),
+                "alwaysOnTop": window.is_always_on_top().unwrap_or(false),
             })
         })
         .collect()
+}
+
+// E2E가 트레이 "Stick on top" 체크 표시를 확인하는 커맨드
+#[cfg(feature = "e2e")]
+#[tauri::command]
+fn e2e_tray_on_top(app: AppHandle) -> bool {
+    app.state::<TrayMenu>().on_top.is_checked().unwrap_or(false)
 }
 
 // E2E가 OS 화면 캡처(screencapture -R)할 위젯 영역. 전역 좌표(포인트)
@@ -254,10 +308,15 @@ fn main() {
             resize_widget,
             open_window,
             open_external,
+            set_tray_labels,
+            get_on_top,
+            set_on_top,
             #[cfg(feature = "e2e")]
             e2e_window_states,
             #[cfg(feature = "e2e")]
-            e2e_main_bounds
+            e2e_main_bounds,
+            #[cfg(feature = "e2e")]
+            e2e_tray_on_top
         ])
         .setup(|app| {
             create_main_window(app.handle())?;

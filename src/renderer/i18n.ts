@@ -18,6 +18,10 @@ const ko = {
     reload: '새로고침',
     settings: '설정',
   },
+  tray: {
+    onTop: '항상 위에 표시',
+    quit: '종료',
+  },
   confirm: {
     increment: '오늘의 뽀모도로를 1개 추가할까요?',
     skipRest: '휴식을 건너뛰고 새 뽀모도로 대기 상태로 이동할까요?',
@@ -66,6 +70,10 @@ const en: Messages = {
     reload: 'Reload',
     settings: 'Settings',
   },
+  tray: {
+    onTop: 'Stick on top',
+    quit: 'Quit',
+  },
   confirm: {
     increment: "Add 1 to today's pomodoro count?",
     skipRest: 'Skip the break and get ready for a new pomodoro?',
@@ -112,6 +120,10 @@ const ja: Messages = {
     skipRest: '休憩をスキップ',
     reload: '再読み込み',
     settings: '設定',
+  },
+  tray: {
+    onTop: '常に手前に表示',
+    quit: '終了',
   },
   confirm: {
     increment: '今日のポモドーロ数を1つ増やしますか？',

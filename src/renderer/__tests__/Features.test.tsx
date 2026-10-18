@@ -124,6 +124,30 @@ describe('설정 창', () => {
     expect(container.querySelector('main')).toHaveStyle({ opacity: '0.4' })
   })
 
+  it('항상 위에 표시는 현재 값을 받아 보여 주고, 끄면 저장 없이 바로 메인 프로세스에 알린다', async () => {
+    vi.mocked(window.domado!.isOnTop).mockResolvedValueOnce(true)
+    render(<Settings />)
+
+    const checkbox = await screen.findByRole('checkbox', { name: '항상 위에 표시' })
+    await vi.waitFor(() => expect(checkbox).toBeEnabled())
+    expect(checkbox).toBeChecked()
+
+    await userEvent.click(checkbox)
+
+    expect(checkbox).not.toBeChecked()
+    expect(window.domado!.ipc.sendMessage).toHaveBeenCalledWith('set_on_top', false)
+  })
+
+  it('위젯 창은 현재 언어의 트레이 문구를 메인 프로세스에 보낸다', () => {
+    render(<Pomodoro />)
+
+    expect(window.domado!.ipc.sendMessage).toHaveBeenCalledWith('set_tray_labels', {
+      reload: '새로고침',
+      onTop: '항상 위에 표시',
+      quit: '종료',
+    })
+  })
+
   it('시간을 바꾸면 경고가 보이고 저장하면 값을 남기고 창을 닫는다', async () => {
     render(<Settings />)
 

@@ -19,6 +19,11 @@ export default function Pomodoro() {
   const { m } = useI18n()
   const { pomodoroMinutes, restMinutes } = usePomodoroSettings()
   const [opacity] = useWidgetOpacity()
+  // 트레이 메뉴 문구도 현재 언어로 맞춘다
+  useEffect(() => {
+    ipc()?.sendMessage('set_tray_labels', { reload: m.footer.reload, onTop: m.tray.onTop, quit: m.tray.quit })
+  }, [m])
+
   const [playbackFeedback, setPlaybackFeedback] = useState<{
     id: number
     mode: 'play' | 'pause'

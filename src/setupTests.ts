@@ -17,6 +17,7 @@ globalThis.ResizeObserver = ResizeObserverMock
 window.domado = {
   ipc: { sendMessage: vi.fn(), on: vi.fn(() => () => {}) },
   confirm: vi.fn(async () => true),
+  isOnTop: vi.fn(async () => true),
   isDebug: false,
 }
 

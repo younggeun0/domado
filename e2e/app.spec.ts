@@ -10,7 +10,14 @@ import { PNG } from 'pngjs'
 // 위젯 크기 변경, WebGL 컨텍스트 복구)마다 실제 렌더 결과와 창 상태를 확인한다.
 // 창 상태는 e2e feature 빌드에만 있는 e2e_window_states 커맨드로 읽는다
 
-type WindowState = { label: string; visible: boolean; fullScreen: boolean; width: number; height: number }
+type WindowState = {
+  label: string
+  visible: boolean
+  fullScreen: boolean
+  width: number
+  height: number
+  alwaysOnTop: boolean
+}
 
 const invoke = <T>(command: string, args?: Record<string, unknown>) =>
   browser.execute((c, a) => (window as any).__TAURI_INTERNALS__.invoke(c, a), command, args) as Promise<T>
@@ -144,6 +151,37 @@ it('휴식 중 설정에서 시간을 바꾸면 전체화면이 풀리고 토마
   await poll(async () => !(await widgetState()).fullScreen, 'still fullscreen')
   await poll(async () => (await windowStates()).length === 1, 'settings not closed by save')
   await expectTomatoRendered()
+})
+
+it('설정의 항상 위에 표시를 끄면 위젯·트레이에 바로 반영되고, 다시 열어도 꺼진 상태로 보인다', async () => {
+  expect(await widgetState()).toMatchObject({ alwaysOnTop: true })
+  expect(await invoke<boolean>('e2e_tray_on_top')).toBe(true)
+
+  await openPanel('설정', 'settings')
+  await switchToPanel('settings')
+  const checkbox = $('#on-top')
+  await poll(async () => (await checkbox.isEnabled()) && (await checkbox.isSelected()), 'on-top not loaded as checked')
+  await checkbox.click()
+  await browser.execute(() => void setTimeout(() => window.close(), 100))
+  await browser.switchToWindow('main')
+  await poll(async () => (await windowStates()).length === 1, 'settings not closed')
+
+  try {
+    expect(await widgetState()).toMatchObject({ alwaysOnTop: false })
+    expect(await invoke<boolean>('e2e_tray_on_top')).toBe(false)
+
+    await openPanel('설정', 'settings')
+    await switchToPanel('settings')
+    await poll(async () => (await checkbox.isEnabled()) && !(await checkbox.isSelected()), 'on-top not loaded as unchecked')
+    await browser.execute(() => void setTimeout(() => window.close(), 100))
+    await browser.switchToWindow('main')
+    await poll(async () => (await windowStates()).length === 1, 'settings not closed')
+  } finally {
+    // 같은 identifier라 실제 사용자 설정 파일을 쓴다: 켜진 상태로 되돌린다
+    await invoke('set_on_top', { value: true })
+  }
+  expect(await widgetState()).toMatchObject({ alwaysOnTop: true })
+  expect(await invoke<boolean>('e2e_tray_on_top')).toBe(true)
 })
 
 it('휴식이 끝나면 위젯 크기로 돌아와 토마토가 렌더된다', async () => {
