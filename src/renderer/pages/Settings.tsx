@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import PanelShell from '../components/PanelShell'
 import { promptInstall, useInstallState } from '../hooks/useInstallPrompt'
-import { usePomodoroSettings, useWidgetOpacity } from '../hooks/usePomodoroSettings'
+import { usePomodoroSettings, useSkipRest, useWidgetOpacity } from '../hooks/usePomodoroSettings'
 import { LANGUAGE_NAMES, LANGUAGES, type Language, useI18n } from '../i18n'
 
 const INPUT_CLASS =
@@ -22,6 +22,7 @@ export default function Settings({ onClose = () => window.close() }: { onClose?:
     updateSettings,
   } = usePomodoroSettings()
   const [opacity, setOpacity] = useWidgetOpacity()
+  const [skipRest, setSkipRest] = useSkipRest()
   const [pomodoroMinutes, setPomodoroMinutes] = useState(currentPomodoroMinutes.toString())
   const [restMinutes, setRestMinutes] = useState(currentRestMinutes.toString())
   const [onTop, setOnTop] = useState<boolean | null>(null)
@@ -104,6 +105,19 @@ export default function Settings({ onClose = () => window.close() }: { onClose?:
             className={INPUT_CLASS}
           />
         </div>
+        <label
+          htmlFor="skip-rest"
+          className="flex cursor-pointer items-center justify-between text-sm font-medium text-white/80"
+        >
+          {m.settings.skipRest}
+          <input
+            id="skip-rest"
+            type="checkbox"
+            checked={skipRest}
+            onChange={e => setSkipRest(e.target.checked)}
+            className="size-4 cursor-pointer accent-red-600"
+          />
+        </label>
         {hasChanged ? (
           <p className="rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-100">
             {m.settings.resetWarning}

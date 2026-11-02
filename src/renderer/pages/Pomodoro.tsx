@@ -10,7 +10,7 @@ import SceneErrorBoundary from '../components/scene/SceneErrorBoundary'
 import WebDialog from '../components/WebDialog'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts'
-import { usePomodoroSettings, useWidgetOpacity } from '../hooks/usePomodoroSettings'
+import { usePomodoroSettings, useSkipRest, useWidgetOpacity } from '../hooks/usePomodoroSettings'
 import { usePomodoroTimer } from '../hooks/usePomodoroTimer'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { useI18n } from '../i18n'
@@ -25,6 +25,7 @@ export default function Pomodoro() {
   const { m } = useI18n()
   const { pomodoroMinutes, restMinutes } = usePomodoroSettings()
   const [opacity] = useWidgetOpacity()
+  const [skipRest] = useSkipRest()
   // 트레이 메뉴 문구도 현재 언어로 맞춘다
   useEffect(() => {
     ipc()?.sendMessage('set_tray_labels', { reload: m.footer.reload, onTop: m.tray.onTop, quit: m.tray.quit })
@@ -43,7 +44,7 @@ export default function Pomodoro() {
   } | null>(null)
 
   const { status, isRest, todayInfo, remainingTime, togglePlay, setStatus, incrementCount, durations } =
-    usePomodoroTimer({ pomodoroMinutes, restMinutes })
+    usePomodoroTimer({ pomodoroMinutes, restMinutes, skipRest })
 
   const handleTogglePlay = useCallback(() => {
     setPlaybackFeedback(prev => ({
@@ -116,7 +117,7 @@ export default function Pomodoro() {
     if (!isTimerFinished) return
     const notification = isRest
       ? { title: m.notification.restEndTitle, body: m.notification.restEndBody }
-      : { title: m.notification.pomodoroEndTitle, body: m.notification.pomodoroEndBody(todayInfo.count + 1) }
+      : { title: m.notification.pomodoroEndTitle, body: m.notification.pomodoroEndBody(todayInfo.count + 1, !skipRest) }
     if (window.domado) window.domado.ipc.sendMessage('notify', notification)
     else notifyWeb(notification.title, notification.body)
     // 완료 시점에 한 번만 보낸다

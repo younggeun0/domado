@@ -10,9 +10,10 @@ type TimerStatus = 'restart' | 'running' | 'finish' | 'paused'
 interface UsePomodoroTimerProps {
   pomodoroMinutes: number
   restMinutes: number
+  skipRest: boolean
 }
 
-export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTimerProps) {
+export function usePomodoroTimer({ pomodoroMinutes, restMinutes, skipRest }: UsePomodoroTimerProps) {
   const initialTimeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
   const [status, setStatus] = useState<TimerStatus>('paused')
   const [isRest, setIsRest] = useState(false)
@@ -113,7 +114,8 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
   useEffect(() => {
     if (status === 'finish') {
       const timeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
-      const newRemainingTime = isRest ? timeInfo.POMODORO_SEC : timeInfo.REST_SEC
+      const nextIsRest = !isRest && !skipRest
+      const newRemainingTime = nextIsRest ? timeInfo.REST_SEC : timeInfo.POMODORO_SEC
       setRemainingTime(newRemainingTime)
       pausedTimeRef.current = newRemainingTime
       endTimeRef.current = null
@@ -123,10 +125,10 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes }: UsePomodoroTi
       if (!isRest) {
         setTodayInfo(incrementTodayInfo)
       }
-      setIsRest(prev => !prev)
+      setIsRest(nextIsRest)
       setStatus('paused')
     }
-  }, [status, isRest, pomodoroMinutes, restMinutes])
+  }, [status, isRest, skipRest, pomodoroMinutes, restMinutes])
 
   // 날짜가 바뀌면 뽀모도로 개수 초기화
   useEffect(() => {

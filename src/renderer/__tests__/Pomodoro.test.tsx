@@ -162,6 +162,30 @@ describe('Pomodoro', () => {
     })
     expect(sendMessage).toHaveBeenLastCalledWith('set_fullscreen', true)
   })
+
+  it('휴식 건너뛰기를 켜면 뽀모도로가 끝나도 휴식 없이 다음 뽀모도로 대기 상태가 된다', async () => {
+    vi.useFakeTimers()
+    localStorage.setItem('domado_pomodoro_minutes', '1')
+    localStorage.setItem('domado_rest_minutes', '2')
+    localStorage.setItem('domado_skip_rest', 'true')
+
+    render(<Pomodoro />)
+
+    const timeInfo = getTimeInfo(1, 2)
+    fireEvent.keyDown(document, { key: ' ' })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync((timeInfo.POMODORO_SEC + 1) * 1000)
+    })
+
+    expect(screen.getByLabelText('남은 시간')).toHaveTextContent(formatRemainingTime(timeInfo.POMODORO_SEC))
+    expect(screen.getByText('🍅 : 1')).toBeInTheDocument()
+    const { sendMessage } = window.domado!.ipc
+    expect(sendMessage).toHaveBeenCalledWith('notify', {
+      title: '뽀모도로가 완료되었습니다! 🎉',
+      body: '오늘 1개의 뽀모도로를 완료했습니다!',
+    })
+    expect(sendMessage).not.toHaveBeenCalledWith('set_fullscreen', true)
+  })
 })
 
 describe('트레이 남은 시간', () => {

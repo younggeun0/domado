@@ -111,6 +111,17 @@ describe('설정 창', () => {
     expect(screen.getByTitle("Today's count")).toBeInTheDocument()
   })
 
+  it('휴식 건너뛰기 체크박스는 저장 버튼 없이 바로 저장소에 남는다', async () => {
+    render(<Settings />)
+    const checkbox = screen.getByLabelText('휴식 없이 바로 다음 뽀모도로')
+    expect(checkbox).not.toBeChecked()
+
+    await userEvent.click(checkbox)
+
+    expect(checkbox).toBeChecked()
+    expect(localStorage.getItem('domado_skip_rest')).toBe('true')
+  })
+
   it('위젯 불투명도는 저장 없이 바로 저장소에 남고, 위젯 창은 storage 이벤트로 반영한다', () => {
     render(<Settings />)
     fireEvent.change(screen.getByLabelText(/위젯 불투명도/), { target: { value: '50' } })

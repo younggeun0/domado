@@ -3,7 +3,8 @@ import { useSyncExternalStore } from 'react'
 const STORAGE_KEY_POMODORO = 'domado_pomodoro_minutes'
 const STORAGE_KEY_REST = 'domado_rest_minutes'
 const STORAGE_KEY_OPACITY = 'domado_widget_opacity'
-const KEYS = [STORAGE_KEY_POMODORO, STORAGE_KEY_REST, STORAGE_KEY_OPACITY]
+const STORAGE_KEY_SKIP_REST = 'domado_skip_rest'
+const KEYS = [STORAGE_KEY_POMODORO, STORAGE_KEY_REST, STORAGE_KEY_OPACITY, STORAGE_KEY_SKIP_REST]
 
 const listeners = new Set<() => void>()
 const notify = () => listeners.forEach(listener => listener())
@@ -54,4 +55,16 @@ export function useWidgetOpacity() {
   }
 
   return [opacity, setOpacity] as const
+}
+
+// 켜 두면 뽀모도로가 끝나도 휴식 화면 없이 바로 다음 뽀모도로 대기 상태가 된다. 불투명도처럼 바로 반영한다
+export function useSkipRest() {
+  const skipRest = useSyncExternalStore(subscribe, () => localStorage.getItem(STORAGE_KEY_SKIP_REST) === 'true')
+
+  const setSkipRest = (value: boolean) => {
+    localStorage.setItem(STORAGE_KEY_SKIP_REST, String(value))
+    notify()
+  }
+
+  return [skipRest, setSkipRest] as const
 }

@@ -33,13 +33,15 @@ const ko = {
     restEndTitle: '휴식 시간이 끝났습니다! 🍅',
     restEndBody: '다시 집중할 시간입니다. 새로운 뽀모도로를 시작하세요!',
     pomodoroEndTitle: '뽀모도로가 완료되었습니다! 🎉',
-    pomodoroEndBody: (count: number) => `오늘 ${count}개의 뽀모도로를 완료했습니다! 휴식을 취하세요.`,
+    pomodoroEndBody: (count: number, takeBreak = true) =>
+      `오늘 ${count}개의 뽀모도로를 완료했습니다!${takeBreak ? ' 휴식을 취하세요.' : ''}`,
   },
   settings: {
     title: '뽀모도로 설정',
     description: '뽀모도로 시간과 휴식 시간을 설정하세요.',
     pomodoroMinutes: '뽀모도로 시간 (분)',
     restMinutes: '휴식 시간 (분)',
+    skipRest: '휴식 없이 바로 다음 뽀모도로',
     resetWarning: '시간을 변경하면 현재 진행 중인 뽀모도로 정보가 초기화됩니다.',
     language: '언어',
     opacity: '위젯 불투명도',
@@ -89,14 +91,15 @@ const en: Messages = {
     restEndTitle: 'Break is over! 🍅',
     restEndBody: 'Time to focus again. Start a new pomodoro!',
     pomodoroEndTitle: 'Pomodoro complete! 🎉',
-    pomodoroEndBody: (count: number) =>
-      `You've completed ${count} ${count === 1 ? 'pomodoro' : 'pomodoros'} today! Take a break.`,
+    pomodoroEndBody: (count: number, takeBreak = true) =>
+      `You've completed ${count} ${count === 1 ? 'pomodoro' : 'pomodoros'} today!${takeBreak ? ' Take a break.' : ''}`,
   },
   settings: {
     title: 'Pomodoro settings',
     description: 'Set your pomodoro and break durations.',
     pomodoroMinutes: 'Pomodoro (minutes)',
     restMinutes: 'Break (minutes)',
+    skipRest: 'Skip breaks',
     resetWarning: 'Changing the durations will reset your current pomodoro.',
     language: 'Language',
     opacity: 'Widget opacity',
@@ -144,13 +147,15 @@ const ja: Messages = {
     restEndTitle: '休憩時間が終わりました！🍅',
     restEndBody: 'また集中する時間です。新しいポモドーロを始めましょう！',
     pomodoroEndTitle: 'ポモドーロが完了しました！🎉',
-    pomodoroEndBody: (count: number) => `今日は${count}個のポモドーロを完了しました！\u3000休憩しましょう。`,
+    pomodoroEndBody: (count: number, takeBreak = true) =>
+      `今日は${count}個のポモドーロを完了しました！${takeBreak ? '\u3000休憩しましょう。' : ''}`,
   },
   settings: {
     title: 'ポモドーロ設定',
     description: 'ポモドーロの時間と休憩時間を設定してください。',
     pomodoroMinutes: 'ポモドーロ時間（分）',
     restMinutes: '休憩時間（分）',
+    skipRest: '休憩なしで次のポモドーロへ',
     resetWarning: '時間を変更すると、進行中のポモドーロ情報がリセットされます。',
     language: '言語',
     opacity: 'ウィジェットの不透明度',
