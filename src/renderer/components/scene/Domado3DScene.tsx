@@ -1,11 +1,13 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { memo, Suspense } from 'react'
+import { lazy, memo, Suspense } from 'react'
 import { TOUCH } from 'three'
 
 import CameraSetup from './CameraSetup'
-import CoffeeCupModel from './CoffeeCupModel'
 import TomatoModel from './TomatoModel'
+
+// 휴식 때만 쓰는 커피잔(OBJ를 문자열로 품어 gzip 약 95KB)은 첫 번들에서 떼어 휴식이 시작될 때 받는다
+const CoffeeCupModel = lazy(() => import('./CoffeeCupModel'))
 
 interface Domado3DSceneProps {
   isRest: boolean

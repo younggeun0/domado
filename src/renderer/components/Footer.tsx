@@ -10,24 +10,35 @@ interface FooterProps {
   onIncrementCount: () => void
   onSkipRest: () => void
   onReload: () => void
+  onOpenPanel: (panel: Panel) => void
 }
 
-const openWindow = (name: 'settings' | 'history') => window.domado?.ipc.sendMessage('open_window', name)
+export type Panel = 'settings' | 'history'
 
 const ICON_CLASS = 'h-4 w-4 min-[240px]:h-6 min-[240px]:w-6'
 
 // 작은 위젯(폭 240px 미만)에서는 개수 아래에 버튼을 한 줄로, 넓으면 웹앱처럼 좌우로 배치
-export default function Footer({ todayInfo, canSkipRest, onIncrementCount, onSkipRest, onReload }: FooterProps) {
+export default function Footer({
+  todayInfo,
+  canSkipRest,
+  onIncrementCount,
+  onSkipRest,
+  onReload,
+  onOpenPanel,
+}: FooterProps) {
   const { m } = useI18n()
+  // 데스크톱 위젯은 마우스를 올렸을 때만 개수·버튼이 함께 보인다. 웹은 터치 기기에 hover가 없어 늘 보인다
+  const reveal = window.domado ? 'opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100' : ''
 
   return (
-    // 마우스를 올렸을 때만 개수·버튼이 함께 보인다
-    <div className="flex w-full select-none flex-col gap-1 px-0.5 pb-1 text-sm opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 min-[240px]:flex-row min-[240px]:items-end min-[240px]:justify-between min-[240px]:p-3">
-      {/* 오늘 개수를 누르면 일별 기록 히트맵 창을 연다 */}
+    <div
+      className={`flex w-full select-none flex-col gap-1 px-0.5 pb-1 text-sm ${reveal} min-[240px]:flex-row min-[240px]:items-end min-[240px]:justify-between min-[240px]:p-3`}
+    >
+      {/* 오늘 개수를 누르면 일별 기록 히트맵을 연다 */}
       <button
         type="button"
         title={m.todayRecord}
-        onClick={() => openWindow('history')}
+        onClick={() => onOpenPanel('history')}
         className="pointer-events-auto self-start rounded-full px-1 py-1 text-white transition-colors hover:text-white/80"
       >
         🍅 : {todayInfo.count}
@@ -43,7 +54,7 @@ export default function Footer({ todayInfo, canSkipRest, onIncrementCount, onSki
         <FooterActionButton title={m.footer.reload} onClick={onReload}>
           <ArrowPathIcon className={ICON_CLASS} />
         </FooterActionButton>
-        <FooterActionButton title={m.footer.settings} onClick={() => openWindow('settings')}>
+        <FooterActionButton title={m.footer.settings} onClick={() => onOpenPanel('settings')}>
           <Cog6ToothIcon className={ICON_CLASS} />
         </FooterActionButton>
       </div>

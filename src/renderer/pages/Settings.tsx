@@ -1,7 +1,9 @@
 import { ChevronUpDownIcon } from '@heroicons/react/20/solid'
-import { GlobeAltIcon } from '@heroicons/react/24/outline'
+import { ArrowDownTrayIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 
+import PanelShell from '../components/PanelShell'
+import { promptInstall, useInstallState } from '../hooks/useInstallPrompt'
 import { usePomodoroSettings, useWidgetOpacity } from '../hooks/usePomodoroSettings'
 import { LANGUAGE_NAMES, LANGUAGES, type Language, useI18n } from '../i18n'
 
@@ -9,11 +11,16 @@ const INPUT_CLASS =
   'w-full rounded-lg border border-white/40 bg-black/60 px-3 py-2 text-base text-white outline-hidden focus:ring-2 focus:ring-red-400'
 const BUTTON_CLASS = 'rounded-lg px-4 py-2 text-sm font-medium transition-colors'
 
-// 위젯 창과 별개인 설정 창. 저장하면 localStorage를 거쳐 위젯 창에 반영된다
-export default function Settings() {
+// 설정 화면. 데스크톱은 위젯과 별개인 창이라 저장하면 localStorage를 거쳐 위젯 창에 반영되고, 웹은 같은 화면의 모달이다
+export default function Settings({ onClose = () => window.close() }: { onClose?: () => void }) {
+  const isDesktop = Boolean(window.domado)
   const { language, setLanguage, m } = useI18n()
-  const { pomodoroMinutes: currentPomodoroMinutes, restMinutes: currentRestMinutes, updateSettings } =
-    usePomodoroSettings()
+  const installState = useInstallState()
+  const {
+    pomodoroMinutes: currentPomodoroMinutes,
+    restMinutes: currentRestMinutes,
+    updateSettings,
+  } = usePomodoroSettings()
   const [opacity, setOpacity] = useWidgetOpacity()
   const [pomodoroMinutes, setPomodoroMinutes] = useState(currentPomodoroMinutes.toString())
   const [restMinutes, setRestMinutes] = useState(currentRestMinutes.toString())
@@ -37,19 +44,39 @@ export default function Settings() {
   const handleSave = () => {
     if (!hasValidInput) return
     if (hasChanged) updateSettings(nextPomodoro, nextRest)
-    window.close()
+    onClose()
   }
 
-  return (
-    <main className="flex h-screen flex-col gap-4 bg-neutral-900 p-5 pt-10 text-white">
-      {/* 숨긴 타이틀바 자리. 창을 끌어 옮기는 손잡이이자 신호등 버튼과 내용이 겹치지 않게 하는 여백 */}
-      <div data-tauri-drag-region className="drag-region fixed inset-x-0 top-0 h-8" />
-      <title>{m.settings.title}</title>
-      <header className="grid gap-1.5">
-        <h1 className="text-lg font-semibold leading-none tracking-tight">{m.settings.title}</h1>
-        <p className="text-sm text-white/70">{m.settings.description}</p>
-      </header>
+  const footer = (
+    <footer className="flex items-center justify-between gap-3">
+      <a
+        href="https://younggeun0.dev"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="younggeun0.dev"
+        aria-label="younggeun0.dev"
+        className="text-white/45 transition-colors hover:text-white"
+      >
+        <GlobeAltIcon className="h-5 w-5" aria-hidden="true" />
+      </a>
 
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className={`${BUTTON_CLASS} border border-white/10 text-white/75 hover:bg-white/5 hover:text-white`}
+        >
+          {m.settings.cancel}
+        </button>
+        <button type="button" onClick={handleSave} className={`${BUTTON_CLASS} bg-red-700 text-white hover:bg-red-600`}>
+          {m.settings.save}
+        </button>
+      </div>
+    </footer>
+  )
+
+  return (
+    <PanelShell title={m.settings.title} description={m.settings.description} footer={footer}>
       <div className="-mx-1.5 grid min-h-0 flex-1 content-start gap-4 overflow-y-auto px-1.5 py-2">
         <div className="grid gap-2">
           <label htmlFor="pomodoro" className="text-sm font-medium text-white/80">
@@ -104,68 +131,66 @@ export default function Settings() {
             <ChevronUpDownIcon className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-white/70" />
           </div>
         </div>
-        <div className="grid gap-2">
-          <label htmlFor="opacity" className="flex justify-between text-sm font-medium text-white/80">
-            {m.settings.opacity}
-            <span className="tabular-nums text-white/60">{opacity}%</span>
-          </label>
-          {/* 언어처럼 저장 버튼과 별개로 움직이는 즉시 위젯에 반영한다 */}
-          <input
-            id="opacity"
-            type="range"
-            min="20"
-            max="100"
-            step="5"
-            value={opacity}
-            onChange={e => setOpacity(Number(e.target.value))}
-            // 네이티브 트랙은 accent-color 때문에 밝게 그려져 직접 그린다 (채워진 부분은 그라디언트)
-            style={{
-              background: `linear-gradient(to right, var(--color-red-600) ${((opacity - 20) / 80) * 100}%, rgb(255 255 255 / 0.12) 0)`,
-            }}
-            className="h-1.5 cursor-pointer appearance-none rounded-full [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600"
-          />
-        </div>
-        <label
-          htmlFor="on-top"
-          className="flex cursor-pointer items-center justify-between text-sm font-medium text-white/80"
-        >
-          {m.tray.onTop}
-          <input
-            id="on-top"
-            type="checkbox"
-            checked={onTop ?? true}
-            disabled={onTop === null}
-            onChange={e => handleOnTopChange(e.target.checked)}
-            className="size-4 cursor-pointer accent-red-600"
-          />
-        </label>
-      </div>
-
-      <footer className="flex items-center justify-between gap-3">
-        <a
-          href="https://younggeun0.dev"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="younggeun0.dev"
-          aria-label="younggeun0.dev"
-          className="text-white/45 transition-colors hover:text-white"
-        >
-          <GlobeAltIcon className="h-5 w-5" aria-hidden="true" />
-        </a>
-
-        <div className="flex gap-2">
+        {isDesktop ? (
+          <>
+            <div className="grid gap-2">
+              <label htmlFor="opacity" className="flex justify-between text-sm font-medium text-white/80">
+                {m.settings.opacity}
+                <span className="tabular-nums text-white/60">{opacity}%</span>
+              </label>
+              {/* 언어처럼 저장 버튼과 별개로 움직이는 즉시 위젯에 반영한다 */}
+              <input
+                id="opacity"
+                type="range"
+                min="20"
+                max="100"
+                step="5"
+                value={opacity}
+                onChange={e => setOpacity(Number(e.target.value))}
+                // 네이티브 트랙은 accent-color 때문에 밝게 그려져 직접 그린다 (채워진 부분은 그라디언트)
+                style={{
+                  background: `linear-gradient(to right, var(--color-red-600) ${((opacity - 20) / 80) * 100}%, rgb(255 255 255 / 0.12) 0)`,
+                }}
+                className="h-1.5 cursor-pointer appearance-none rounded-full [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-red-600"
+              />
+            </div>
+            <label
+              htmlFor="on-top"
+              className="flex cursor-pointer items-center justify-between text-sm font-medium text-white/80"
+            >
+              {m.tray.onTop}
+              <input
+                id="on-top"
+                type="checkbox"
+                checked={onTop ?? true}
+                disabled={onTop === null}
+                onChange={e => handleOnTopChange(e.target.checked)}
+                className="size-4 cursor-pointer accent-red-600"
+              />
+            </label>
+          </>
+        ) : installState === 'available' ? (
           <button
             type="button"
-            onClick={() => window.close()}
-            className={`${BUTTON_CLASS} border border-white/10 text-white/75 hover:bg-white/5 hover:text-white`}
+            onClick={promptInstall}
+            className={`${BUTTON_CLASS} inline-flex items-center justify-center gap-2 border border-white/15 text-white/85 hover:bg-white/5 hover:text-white`}
           >
-            {m.settings.cancel}
+            <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
+            {m.settings.install}
           </button>
-          <button type="button" onClick={handleSave} className={`${BUTTON_CLASS} bg-red-700 text-white hover:bg-red-600`}>
-            {m.settings.save}
-          </button>
-        </div>
-      </footer>
-    </main>
+        ) : (
+          <div className="grid gap-1 text-sm">
+            <span className="font-medium text-white/80">{m.settings.install}</span>
+            <p className="text-white/60">
+              {installState === 'installed'
+                ? m.settings.installed
+                : installState === 'ios'
+                  ? m.settings.installGuideIos
+                  : m.settings.installGuideOther}
+            </p>
+          </div>
+        )}
+      </div>
+    </PanelShell>
   )
 }

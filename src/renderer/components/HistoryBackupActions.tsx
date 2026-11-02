@@ -4,7 +4,7 @@ import { type ChangeEvent, useRef, useState } from 'react'
 import { downloadHistoryBackup, importDailyCounts, parseHistoryBackup } from '../hooks/pomodoroHistory'
 import { useI18n } from '../i18n'
 
-// 기록 JSON 내보내기·불러오기 (웹앱 younggeun0.dev/apps/domado와 같은 파일)
+// 기록 JSON 내보내기·불러오기 (데스크톱 앱과 웹앱이 같은 파일)
 export default function HistoryBackupActions({ onImported }: { onImported: () => void }) {
   const { m } = useI18n()
   const inputRef = useRef<HTMLInputElement>(null)

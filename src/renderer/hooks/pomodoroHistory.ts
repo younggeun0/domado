@@ -75,7 +75,7 @@ export function buildHeatmapWeeks(today: Date, weeks = 53): (string | null)[][] 
   )
 }
 
-// ── JSON 백업 (웹앱 younggeun0.dev/apps/domado와 같은 형식이라 서로 주고받을 수 있다) ──
+// ── JSON 백업 (데스크톱 앱과 웹앱이 같은 형식이라 서로 주고받을 수 있다) ──
 
 const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 

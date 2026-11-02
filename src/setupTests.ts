@@ -13,6 +13,15 @@ class ResizeObserverMock implements ResizeObserver {
 
 globalThis.ResizeObserver = ResizeObserverMock
 
+// jsdom에는 <dialog>의 showModal·close가 없다 (웹앱 설정·기록 모달)
+HTMLDialogElement.prototype.showModal = function () {
+  this.setAttribute('open', '')
+}
+HTMLDialogElement.prototype.close = function () {
+  this.removeAttribute('open')
+  this.dispatchEvent(new Event('close'))
+}
+
 // tauriBridge가 만드는 window.domado 목. 테스트에서 sendMessage 호출로 메인 프로세스 연동을 확인한다
 window.domado = {
   ipc: { sendMessage: vi.fn(), on: vi.fn(() => () => {}) },

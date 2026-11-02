@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import HistoryBackupActions from '../components/HistoryBackupActions'
+import PanelShell from '../components/PanelShell'
 import { buildHeatmapWeeks, loadDailyCounts } from '../hooks/pomodoroHistory'
 import { getTodayKey, loadTodayInfo } from '../hooks/todayInfoStorage'
 import { useI18n } from '../i18n'
@@ -25,7 +26,7 @@ function parseDateKey(key: string) {
   return new Date(year, month - 1, day)
 }
 
-// 위젯 창과 별개인 기록 창. 창이 열릴 때마다 새로 마운트되므로 한 번만 읽는다
+// 기록 화면(데스크톱은 별도 창, 웹은 모달). 열릴 때마다 새로 마운트되므로 한 번만 읽는다
 export default function History() {
   const { language, m } = useI18n()
   const [counts, setCounts] = useState<Record<string, number>>({})
@@ -49,15 +50,7 @@ export default function History() {
   const dayFormat = new Intl.DateTimeFormat(language, { dateStyle: 'medium' })
 
   return (
-    <main className="flex h-screen flex-col gap-4 bg-neutral-900 p-5 pt-10 text-white">
-      {/* 숨긴 타이틀바 자리. 창을 끌어 옮기는 손잡이이자 신호등 버튼과 내용이 겹치지 않게 하는 여백 */}
-      <div data-tauri-drag-region className="drag-region fixed inset-x-0 top-0 h-8" />
-      <title>{m.history.title}</title>
-      <header className="grid gap-1.5">
-        <h1 className="text-lg font-semibold leading-none tracking-tight">{m.history.title}</h1>
-        <p className="text-sm text-white/70">{m.history.description}</p>
-      </header>
-
+    <PanelShell title={m.history.title} description={m.history.description}>
       {/* 창이 낮으면 헤더를 고정하고 이 영역만 스크롤 */}
       <div className="min-h-0 space-y-4 overflow-y-auto">
         <p className="text-sm text-white/80">{m.history.summary(total, activeDays)}</p>
@@ -112,6 +105,6 @@ export default function History() {
 
         <HistoryBackupActions onImported={() => loadDailyCounts().then(setCounts)} />
       </div>
-    </main>
+    </PanelShell>
   )
 }

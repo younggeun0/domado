@@ -35,6 +35,20 @@ body {
   height: 100vh;
 }
 
+/* 위젯은 화면을 채운다. 홈 화면에 설치한 웹앱은 노치·홈 표시줄 아래로 들어가지 않게 안전 영역만큼 띄운다(데스크톱은 0) */
+.widget {
+  inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
+}
+
+/* 데스크톱 위젯 창은 투명하고, 웹은 검은 바탕 위에 위젯을 그린다 */
+html.web,
+html.web body {
+  height: 100%;
+  background-color: #000;
+  overscroll-behavior: none;
+}
+
 .drag-region {
   -webkit-app-region: drag;
   cursor: grab;

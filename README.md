@@ -30,7 +30,12 @@ npm run dev        # tauri dev (타이머가 3초씩 돈다)
 npm test           # vitest (단위)
 npm run test:e2e   # e2e feature로 앱을 빌드해 3D 렌더링·창 상태 검사 (macOS, 릴리스 전 실행)
 npm run build      # src-tauri/target/release/bundle에 앱·dmg·업데이트 파일 생성
+npm run build:web  # 웹앱을 dist에 빌드 (Vercel이 실행, npx vite preview로 확인)
 ```
+
+웹앱은 같은 renderer를 Tauri 브리지 없이 띄운다. `window.domado`가 없으면 설정·기록을 별도 창 대신 위젯 위 모달로 열고, 알림은 브라우저 Notification, 작업 중에는 화면 꺼짐 방지(Wake Lock)를 쓴다. 불투명도·항상 위 설정은 데스크톱에만, 앱 설치 안내는 웹에만 있다.
+
+Node 25 이상에서 `npm test`를 돌리면 Node 내장 `localStorage`가 jsdom 것을 가려 실패한다. `NODE_OPTIONS=--no-experimental-webstorage npm test`로 돌린다.
 
 ### 릴리스
 

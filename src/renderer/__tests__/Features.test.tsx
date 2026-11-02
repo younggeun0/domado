@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, vi } from 'vitest'
 
@@ -182,5 +182,62 @@ describe('설정 창', () => {
 
     expect(localStorage.getItem('domado_pomodoro_minutes')).toBeNull()
     expect(window.close).not.toHaveBeenCalled()
+  })
+})
+
+describe('웹앱 (Tauri 브리지 없음)', () => {
+  const bridge = window.domado
+
+  beforeEach(() => {
+    window.domado = undefined
+  })
+
+  afterEach(() => {
+    window.domado = bridge
+    localStorage.clear()
+    vi.restoreAllMocks()
+  })
+
+  it('설정 버튼은 위젯 위 모달로 설정을 열고, 저장하면 새 시간이 남은 시간에 반영되며 닫힌다', async () => {
+    render(<Pomodoro />)
+
+    await userEvent.click(screen.getByTitle('설정'))
+    const dialog = screen.getByRole('dialog', { name: '뽀모도로 설정' })
+    await userEvent.clear(within(dialog).getByLabelText('뽀모도로 시간 (분)'))
+    await userEvent.type(within(dialog).getByLabelText('뽀모도로 시간 (분)'), '30')
+    await userEvent.click(within(dialog).getByRole('button', { name: '저장' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(localStorage.getItem('domado_pomodoro_minutes')).toBe('30')
+    expect(screen.getByText('30:00')).toBeInTheDocument()
+  })
+
+  it('웹 설정에는 데스크톱 위젯 전용 항목 대신 앱 설치 안내가 있다', async () => {
+    render(<Pomodoro />)
+
+    await userEvent.click(screen.getByTitle('설정'))
+
+    expect(screen.queryByLabelText(/위젯 불투명도/)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('항상 위에 표시')).not.toBeInTheDocument()
+    expect(screen.getByText('앱 설치')).toBeInTheDocument()
+  })
+
+  it('오늘 개수를 누르면 기록이 모달로 열린다', async () => {
+    localStorage.setItem('domado_today_info', JSON.stringify({ count: 2, date: getTodayKey() }))
+    render(<Pomodoro />)
+
+    await userEvent.click(screen.getByTitle('오늘의 기록'))
+
+    expect(within(screen.getByRole('dialog', { name: '뽀모도로 기록' })).getByText('총 2개 · 1일')).toBeInTheDocument()
+  })
+
+  it('개수 증가는 브라우저 확인 창을 거친다', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    render(<Pomodoro />)
+
+    await userEvent.click(screen.getByTitle('뽀모도로 개수 증가'))
+
+    expect(confirm).toHaveBeenCalledWith('오늘의 뽀모도로를 1개 추가할까요?')
+    expect(await screen.findByText('🍅 : 1')).toBeInTheDocument()
   })
 })
