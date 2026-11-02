@@ -354,6 +354,8 @@ fn main() {
                 // macOS 관례대로 창을 모두 닫아도 트레이에 남는다 (트레이 Quit은 code가 있어 그대로 종료)
                 #[cfg(target_os = "macos")]
                 tauri::RunEvent::ExitRequested { code: None, api, .. } => api.prevent_exit(),
+                #[cfg(target_os = "macos")]
+                tauri::RunEvent::Exit => widget::clear(),
                 _ => {}
             }
         });

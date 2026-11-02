@@ -39,3 +39,10 @@ pub fn publish(state: &serde_json::Value) -> io::Result<()> {
     unsafe { dm_reload_widgets() };
     Ok(())
 }
+
+// 앱이 꺼지면 타이머도 멈추므로 위젯이 지난 카운트다운을 이어 가지 않게 상태를 지운다. 다시 켜면 renderer가 새로 쓴다
+pub fn clear() {
+    let Some(dir) = container() else { return };
+    let _ = std::fs::remove_file(dir.join("widget.json"));
+    unsafe { dm_reload_widgets() };
+}

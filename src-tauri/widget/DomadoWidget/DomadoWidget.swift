@@ -12,16 +12,17 @@ struct TimerState: Codable {
     var count: Int
     var date: String
 
-    static let idle = TimerState(phase: .focus, endsAt: nil, remaining: 25 * 60, duration: 25 * 60, count: 0, date: "")
+    static let sample = TimerState(phase: .focus, endsAt: nil, remaining: 25 * 60, duration: 25 * 60, count: 0, date: "")
 
-    static func load() -> TimerState {
+    // 앱이 꺼져 있으면 widget.json이 없다 (src-tauri/src/widget.rs의 clear)
+    static func load() -> TimerState? {
         guard
             let url = FileManager.default
                 .containerURL(forSecurityApplicationGroupIdentifier: "TFLHLW3C9D.domado")?
                 .appendingPathComponent("widget.json"),
             let data = try? Data(contentsOf: url),
             let state = try? JSONDecoder().decode(TimerState.self, from: data)
-        else { return .idle }
+        else { return nil }
         return state
     }
 
@@ -37,11 +38,11 @@ struct TimerState: Codable {
 
 struct Entry: TimelineEntry {
     let date: Date
-    let state: TimerState
+    let state: TimerState?
 }
 
 struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> Entry { Entry(date: Date(), state: .idle) }
+    func placeholder(in context: Context) -> Entry { Entry(date: Date(), state: .sample) }
 
     func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) {
         completion(Entry(date: Date(), state: TimerState.load()))
@@ -51,7 +52,7 @@ struct Provider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
         let state = TimerState.load()
         var entries = [Entry(date: Date(), state: state)]
-        if let end = state.endDate, end > Date() {
+        if let state, let end = state.endDate, end > Date() {
             var finished = state
             finished.endsAt = nil
             finished.remaining = 0
@@ -65,7 +66,23 @@ struct DomadoWidgetView: View {
     let entry: Entry
 
     var body: some View {
-        let state = entry.state
+        if let state = entry.state {
+            timer(state)
+        } else {
+            VStack(spacing: 8) {
+                Image(systemName: "timer")
+                    .font(.title)
+                    .foregroundStyle(.red)
+                Text("Open domado")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+            }
+            .widgetBackground()
+        }
+    }
+
+    @ViewBuilder
+    func timer(_ state: TimerState) -> some View {
         let tint: Color = state.phase == .rest ? .brown : .red
         let running = state.endDate.map { $0 > entry.date } ?? false
         VStack(spacing: 6) {
