@@ -24,7 +24,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDYxQkM4NkE2QkVDODBFMDcKUldRSERzaStwb2E4WVpYMkE0YmVCaE52QktuQ3ZEM0ZqdXppZmM1K0VWMk1iUkdIdzNNQVBWcE8K",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY3MkIxQzMwNDBGNUVEQTcKUldTbjdmVkFNQndyWjdSbXhJUjVURjhScmdaVlc3QXR4d0RzcjJqTG9HaGk5aE1DcTJZRVdCVFQK",
       "endpoints": ["https://github.com/younggeun0/domado/releases/latest/download/latest.json"]
     }
   }
