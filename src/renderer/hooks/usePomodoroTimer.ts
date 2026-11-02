@@ -180,6 +180,23 @@ export function usePomodoroTimer({ pomodoroMinutes, restMinutes, skipRest }: Use
     setRemainingTime(nextTimeInfo.POMODORO_SEC)
   }, [pomodoroMinutes, restMinutes])
 
+  // 알림센터 위젯은 매초가 아니라 상태가 바뀔 때만 받는다. 실행 중이면 종료 시각을 넘겨 위젯이 스스로 카운트다운한다.
+  // 위 효과들이 ref를 갱신한 뒤에 읽도록 마지막에 둔다
+  useEffect(() => {
+    if (status === 'finish') return
+    const running = status === 'running' && endTimeRef.current !== null
+    const timeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
+    window.domado?.ipc.sendMessage('update_widget', {
+      phase: isRest ? 'rest' : 'focus',
+      endsAt: running ? endTimeRef.current : null,
+      remaining: running ? 0 : pausedTimeRef.current || remainingTime,
+      duration: isRest ? timeInfo.REST_SEC : timeInfo.POMODORO_SEC,
+      count: todayInfo.count,
+      date: todayInfo.date,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, isRest, todayInfo.count, todayInfo.date, pomodoroMinutes, restMinutes])
+
   const timeInfo = getTimeInfo(pomodoroMinutes, restMinutes)
 
   return {

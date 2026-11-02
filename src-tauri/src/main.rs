@@ -11,6 +11,9 @@ use tauri::{AppHandle, Emitter, LogicalSize, Manager, WebviewUrl, WebviewWindow,
 use tauri_plugin_global_shortcut::ShortcutState;
 use tauri_plugin_notification::NotificationExt;
 
+#[cfg(target_os = "macos")]
+mod widget;
+
 // 위젯 최소 크기. 폭 100px 미만이면 타이머 숫자와 하단 버튼 4개가 잘리고,
 // 높이 200px 미만이면 높이에 비례해 작아지는 3D 모델을 타이머·하단 버튼이 덮는다
 const WIDGET_MIN: (f64, f64) = (100.0, 200.0);
@@ -67,6 +70,17 @@ fn update_tray(app: AppHandle, title: Option<String>, icon: bool) {
     let Some(tray) = app.tray_by_id(TRAY_ID) else { return };
     let _ = tray.set_icon(if icon { default_tray_icon(&app) } else { None });
     let _ = tray.set_title(title);
+}
+
+// 알림센터 위젯(src-tauri/widget)이 읽는 타이머 상태. 같은 App Group 폴더에 쓰고 위젯을 새로고침한다
+#[tauri::command]
+fn update_widget(state: serde_json::Value) {
+    #[cfg(target_os = "macos")]
+    std::thread::spawn(move || {
+        if let Err(error) = widget::publish(&state) {
+            eprintln!("widget update failed: {error}");
+        }
+    });
 }
 
 #[tauri::command]
@@ -303,6 +317,7 @@ fn main() {
             confirm,
             notify,
             update_tray,
+            update_widget,
             resize_widget,
             open_window,
             open_external,

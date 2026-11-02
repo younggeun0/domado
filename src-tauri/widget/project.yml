@@ -1,0 +1,31 @@
+name: DomadoWidget
+options:
+  deploymentTarget:
+    macOS: "13.0"
+settings:
+  base:
+    DEVELOPMENT_TEAM: TFLHLW3C9D
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "Developer ID Application"
+    ENABLE_HARDENED_RUNTIME: YES
+    OTHER_CODE_SIGN_FLAGS: --timestamp
+    CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  DomadoWidget:
+    type: app-extension
+    platform: macOS
+    sources: [DomadoWidget]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: domado.widget
+        PRODUCT_NAME: DomadoWidget
+        INFOPLIST_FILE: DomadoWidget/Info.plist
+        CODE_SIGN_ENTITLEMENTS: DomadoWidget/DomadoWidget.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework

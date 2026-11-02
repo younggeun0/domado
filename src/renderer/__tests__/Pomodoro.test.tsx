@@ -46,10 +46,34 @@ describe('Pomodoro', () => {
     })
     await user.keyboard(' ')
 
-    expect(window.domado!.ipc.sendMessage).toHaveBeenLastCalledWith('update_tray', {
+    expect(window.domado!.ipc.sendMessage).toHaveBeenCalledWith('update_tray', {
       title: expect.stringMatching(/^⏸ 24:5\d$/),
       icon: false,
     })
+  })
+
+  it('알림센터 위젯에는 실행 중이면 종료 시각을, 일시정지하면 남은 시간을 보낸다', async () => {
+    render(<Pomodoro />)
+    const user = userEvent.setup()
+    const { sendMessage } = window.domado!.ipc
+    const widgetStates = () => vi.mocked(sendMessage).mock.calls.filter(([channel]) => channel === 'update_widget')
+
+    const before = Date.now()
+    await user.keyboard(' ')
+    expect(widgetStates().at(-1)?.[1]).toMatchObject({ phase: 'focus', remaining: 0, duration: 25 * 60, count: 0 })
+    const endsAt = (widgetStates().at(-1)?.[1] as { endsAt: number }).endsAt
+    expect(endsAt - before).toBeGreaterThanOrEqual(25 * 60 * 1000 - 100)
+    expect(endsAt - before).toBeLessThanOrEqual(25 * 60 * 1000 + 1000)
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 1200))
+    })
+    const callsWhileRunning = widgetStates().length
+    await user.keyboard(' ')
+
+    expect(widgetStates()).toHaveLength(callsWhileRunning + 1)
+    expect(widgetStates().at(-1)?.[1]).toMatchObject({ phase: 'focus', endsAt: null, remaining: expect.any(Number) })
+    expect((widgetStates().at(-1)?.[1] as { remaining: number }).remaining).toBeLessThan(25 * 60)
   })
 
   it('IndexedDB 기록이 화면 개수보다 작으면 화면 개수를 유지한다', async () => {

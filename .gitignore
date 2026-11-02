@@ -31,3 +31,7 @@ npm-debug.log.*
 dist
 src-tauri/target
 src-tauri/gen
+
+# 위젯 확장: project.yml에서 생성한다
+src-tauri/widget/build
+src-tauri/widget/DomadoWidget.xcodeproj

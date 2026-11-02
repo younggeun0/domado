@@ -8,6 +8,7 @@ export type Channels =
   | 'set_fullscreen'
   | 'notify'
   | 'update_tray'
+  | 'update_widget'
   | 'open_window'
   | 'resize_widget'
   | 'set_tray_labels'
@@ -40,6 +41,7 @@ const toArgs: Partial<Record<Channels, (...args: any[]) => Record<string, unknow
   set_fullscreen: value => ({ value }),
   notify: ({ title, body }) => ({ title, body }),
   update_tray: ({ title, icon }) => ({ title, icon }),
+  update_widget: state => ({ state }),
   open_window: name => ({ name }),
   resize_widget: (width, height) => ({ width, height }),
   set_tray_labels: ({ reload, onTop, quit }) => ({ reload, onTop, quit }),

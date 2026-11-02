@@ -15,6 +15,7 @@
     "dev": "tauri dev",
     "build": "tauri build --bundles app,dmg",
     "build:web": "vite build",
+    "build:widget": "src-tauri/widget/build.sh",
     "build:e2e": "tauri build --bundles app --features e2e --config src-tauri/tauri.e2e.conf.json",
     "typecheck": "tsc --noEmit && tsc --noEmit -p e2e",
     "lint": "eslint .",
